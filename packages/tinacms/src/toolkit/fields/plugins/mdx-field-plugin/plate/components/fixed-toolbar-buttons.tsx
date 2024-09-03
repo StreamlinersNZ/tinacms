@@ -40,26 +40,6 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
       </ToolbarGroup>
     ),
   },
-  link: {
-    label: 'Link',
-    Component: <LinkToolbarButton />,
-  },
-  image: {
-    label: 'Image',
-    Component: <ImageToolbarButton />,
-  },
-  quote: {
-    label: 'Quote',
-    Component: <QuoteToolbarButton tooltip="Quote Quote (⌘+⇧+.)" />,
-  },
-  ul: {
-    label: 'Unordered List',
-    Component: <IndentListToolbarButton nodeType={ELEMENT_UL} />,
-  },
-  ol: {
-    label: 'Ordered List',
-    Component: <IndentListToolbarButton nodeType={ELEMENT_OL} />,
-  },
   bold: {
     label: 'Bold',
     Component: (
@@ -76,18 +56,38 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
       </MarkToolbarButton>
     ),
   },
-  code: {
-    label: 'Code',
-    Component: (
-      <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
-        <Icons.code />
-      </MarkToolbarButton>
-    ),
+  link: {
+    label: 'Link',
+    Component: <LinkToolbarButton />,
   },
-  codeBlock: {
-    label: 'Code Block',
-    Component: <CodeBlockToolbarButton />,
+  ul: {
+    label: 'Unordered List',
+    Component: <IndentListToolbarButton nodeType={ELEMENT_UL} />,
   },
+  ol: {
+    label: 'Ordered List',
+    Component: <IndentListToolbarButton nodeType={ELEMENT_OL} />,
+  },
+  image: {
+    label: 'Image',
+    Component: <ImageToolbarButton />,
+  },
+  // quote: {
+  //   label: 'Quote',
+  //   Component: <QuoteToolbarButton tooltip="Quote Quote (⌘+⇧+.)" />,
+  // },
+  // code: {
+  //   label: 'Code',
+  //   Component: (
+  //     <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={MARK_CODE}>
+  //       <Icons.code />
+  //     </MarkToolbarButton>
+  //   ),
+  // },
+  // codeBlock: {
+  //   label: 'Code Block',
+  //   Component: <CodeBlockToolbarButton />,
+  // },
   raw: {
     label: 'Raw Markdown',
     Component: <RawMarkdownToolbarButton />,

@@ -37,6 +37,7 @@
 	},
 	"dependencies": {
 		"@tinacms/schema-tools": "workspace:*",
+		"@xmldom/xmldom": "^0.9.0",
 		"acorn": "8.8.2",
 		"ccount": "2.0.1",
 		"estree-util-is-identifier-name": "2.1.0",
