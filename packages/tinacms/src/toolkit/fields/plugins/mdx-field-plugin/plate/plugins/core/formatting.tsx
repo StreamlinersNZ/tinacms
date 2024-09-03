@@ -1,7 +1,4 @@
 import {
-  createPluginFactory,
-  isSelectionAtBlockStart,
-  isBlockAboveEmpty,
   createAutoformatPlugin,
   createResetNodePlugin,
   createTrailingBlockPlugin,
@@ -18,10 +15,15 @@ import {
   KEYS_HEADING,
   ELEMENT_LIC,
   ELEMENT_TD,
-} from '@udecode/plate-headless'
+} from '@udecode/plate'
 import { createSoftBreakPlugin } from '../soft-break'
 import { autoformatRules } from './autoformat/autoformat-rules'
 import { withCorrectVoidBehavior } from './with-correct-void-behavior'
+import {
+  createPluginFactory,
+  isBlockAboveEmpty,
+  isSelectionAtBlockStart,
+} from '@udecode/plate-common'
 
 export const HANDLES_MDX = [
   ELEMENT_H1,
