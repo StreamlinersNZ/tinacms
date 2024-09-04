@@ -13,6 +13,7 @@ import {
   createIndentPlugin,
   createIndentListPlugin,
 } from '@udecode/plate'
+import { TablePlugin } from '@udecode/plate-table'
 import { ReactEditor } from 'slate-react'
 import {
   createCodeBlockPlugin,
@@ -52,6 +53,11 @@ export const plugins = [
   // Allows us to do things like copy/paste, remembering the state of the element (like mdx)
   createNodeIdPlugin(),
   createSlashPlugin(),
+  TablePlugin.configure({
+    options: {
+      initialTableWidth: 600,
+    },
+  }),
 ]
 
 const isNodeActive = (editor, type) => {
