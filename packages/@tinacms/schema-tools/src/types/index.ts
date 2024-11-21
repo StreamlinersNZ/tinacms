@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, ReactNode } from 'react'
 import type React from 'react'
 
 type Meta = {
@@ -6,6 +6,10 @@ type Meta = {
   dirty?: boolean
   error?: any
 }
+
+// This type is used in collectionFilter for reference field, it represent the datatype of the field in the referenced collection that will be used to do the filter
+// This type is extendable if we need to support more type for reference selection filter (e.g. boolean)
+type FilterValue = string[] | string
 
 type Component<Type, List> = (props: {
   field: TinaField & { namespace: string[] }
@@ -213,27 +217,25 @@ export type ImageField = (
     type: 'image'
   }
 
+type ReferenceFieldOptions = {
+  optionComponent?: OptionComponent
+  /**
+   * @deprecated use `collectionFilter` instead as experimental___Filter will be removed in a future release
+   */
+  experimental___filter?: (list: Array<any>, searchQuery: string) => Array<any>
+  collectionFilter?:
+    | Record<string, Record<string, FilterValue>>
+    | (() => Record<string, Record<string, FilterValue>>)
+}
+
+type OptionComponent<P = Record<string, unknown>, S = Document['_sys']> = (
+  props: P,
+  _internalSys: S
+) => React.ReactNode | Element | undefined
+
 export type ReferenceField = (
-  | FieldGeneric<
-      string,
-      undefined,
-      {
-        optionComponent?: (props: {
-          values: Record<string, unknown>
-          _sys: Document['_sys']
-        }) => Element | undefined
-      }
-    >
-  | FieldGeneric<
-      string,
-      false,
-      {
-        optionComponent?: (props: {
-          values: Record<string, unknown>
-          _sys: Document['_sys']
-        }) => Element | undefined
-      }
-    >
+  | FieldGeneric<string, undefined, ReferenceFieldOptions>
+  | FieldGeneric<string, false, ReferenceFieldOptions>
 ) &
   BaseField & {
     type: 'reference'
@@ -258,7 +260,7 @@ export type PasswordField = (
     type: 'password'
   }
 
-type toolbarItemName =
+type ToolbarOverrideType =
   | 'heading'
   | 'link'
   | 'image'
@@ -271,6 +273,8 @@ type toolbarItemName =
   | 'italic'
   | 'raw'
   | 'embed'
+  | 'mermaid'
+  | 'table'
 type RichTextAst = { type: 'root'; children: Record<string, unknown>[] }
 export type RichTextField<WithNamespace extends boolean = false> = (
   | FieldGeneric<RichTextAst, undefined>
@@ -285,7 +289,7 @@ export type RichTextField<WithNamespace extends boolean = false> = (
      * will be stored as frontmatter
      */
     isBody?: boolean
-    toolbarOverride?: toolbarItemName[]
+    toolbarOverride?: ToolbarOverrideType[]
     templates?: RichTextTemplate<WithNamespace>[]
     /**
      * By default, Tina parses markdown with MDX, this is a more strict parser
@@ -839,6 +843,7 @@ type Document = {
     relativePath: string
     filename: string
     extension: string
+    hasReferences?: boolean
   }
 }
 export interface UICollection<Form = any, CMS = any, TinaForm = any> {
@@ -863,6 +868,15 @@ export interface UICollection<Form = any, CMS = any, TinaForm = any> {
      * When set to `true`, editors won't be able to modify the filename
      */
     readonly?: boolean
+    /**
+     * When set to `true`, the filename will be shown first in the form
+     * @default false
+     */
+    showFirst?: boolean
+    /**
+     * Sets the description for the filename field
+     */
+    description?: string
   }
   /**
    * Determines whether or not this collection can accept new docments
