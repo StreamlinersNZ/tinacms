@@ -3,7 +3,6 @@ import {
   ELEMENT_TABLE,
   ELEMENT_UL,
   MARK_BOLD,
-  MARK_CODE,
   MARK_ITALIC,
 } from '@udecode/plate'
 import { useEditorState } from '@udecode/plate-common'
@@ -22,15 +21,12 @@ import {
 } from '../toolbar/toolbar-overrides'
 import { useToolbarContext } from '../toolbar/toolbar-provider'
 import { HeadingsMenu } from './headings-dropdown'
-import { CodeBlockToolbarButton } from './plate-ui/code-block-toolbar-button'
 import { Icons } from './plate-ui/icons'
 import { ImageToolbarButton } from './plate-ui/image-toolbar-button'
 import { IndentListToolbarButton } from './plate-ui/indent-list-toolbar-button'
-import { LinkToolbarButton } from './plate-ui/link-toolbar-button'
 import { MarkToolbarButton } from './plate-ui/mark-toolbar-button'
 import { MermaidToolbarButton } from './plate-ui/mermaid-toolbar-button'
 import OverflowMenu from './plate-ui/overflow-menu'
-import { QuoteToolbarButton } from './plate-ui/quote-toolbar-button'
 import { RawMarkdownToolbarButton } from './plate-ui/raw-markdown-toolbar-button'
 import { TableDropdownMenu } from './plate-ui/table-dropdown-menu'
 import TemplatesToolbarButton from './plate-ui/templates-toolbar-button'
@@ -55,14 +51,17 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
   },
   image: {
     label: 'Image',
+    width: () => STANDARD_ICON_WIDTH,
     Component: <ImageToolbarButton />,
   },
   ul: {
     label: 'Unordered List',
+    width: () => STANDARD_ICON_WIDTH,
     Component: <IndentListToolbarButton nodeType={ELEMENT_UL} />,
   },
   ol: {
     label: 'Ordered List',
+    width: () => STANDARD_ICON_WIDTH,
     Component: <IndentListToolbarButton nodeType={ELEMENT_OL} />,
   },
   bold: {
@@ -82,6 +81,16 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
         <Icons.italic />
       </MarkToolbarButton>
     ),
+  },
+  mermaid: {
+    label: 'Mermaid',
+    width: () => STANDARD_ICON_WIDTH,
+    Component: <MermaidToolbarButton />,
+  },
+  table: {
+    label: 'Table',
+    width: () => STANDARD_ICON_WIDTH,
+    Component: <TableDropdownMenu />,
   },
   raw: {
     label: 'Raw Markdown',
