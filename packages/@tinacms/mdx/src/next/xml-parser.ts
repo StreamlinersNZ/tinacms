@@ -116,7 +116,43 @@ export function stringifyToXML(slateDoc: SlateNode): string {
   return formatXML(`<data>${sanitisedXml}</data>`)
 }
 
-function parseXmlToSlateNode(node: Element): SlateNode {
+// Type definition for DOM Element from @xmldom/xmldom
+interface XMLDOMElement {
+  getAttribute: (name: string) => string | null
+  hasAttribute: (name: string) => boolean
+  nodeName: string
+  nodeType: number
+  textContent: string | null
+  childNodes: NodeList
+  hasAttributes: () => boolean
+  attributes: NamedNodeMap
+}
+
+interface NodeList {
+  length: number
+  item: (index: number) => XMLDOMNode | null
+  [index: number]: XMLDOMNode
+}
+
+interface NamedNodeMap {
+  length: number
+  item: (index: number) => Attr | null
+  [index: number]: Attr
+}
+
+interface Attr {
+  name: string
+  value: string
+}
+
+// Type definition for DOM Node from @xmldom/xmldom
+interface XMLDOMNode {
+  nodeType: number
+  nodeValue: string | null
+  nodeName?: string
+}
+
+function parseXmlToSlateNode(node: XMLDOMElement): SlateNode {
   const type = node.getAttribute('type') || node.nodeName
   const isMdxNode = type.startsWith('mdxJsx')
   const name = isMdxNode ? node.nodeName : undefined
@@ -141,7 +177,9 @@ function parseXmlToSlateNode(node: Element): SlateNode {
       const childNode = node.childNodes[i]
       if (!childNode) continue
       if (childNode.nodeType === 1) {
-        childNodes.push(parseXmlToSlateNode(childNode as Element))
+        childNodes.push(
+          parseXmlToSlateNode(childNode as unknown as XMLDOMElement)
+        )
       } else if (
         childNode.nodeType === 3 &&
         !childNode?.nodeValue?.startsWith('\n')
@@ -197,10 +235,17 @@ export function parseFromXml(xml: string): SlateNode {
   const doc = parser.parseFromString(xml, 'text/xml')
   const root = doc.documentElement
 
+  if (!root) {
+    return {
+      type: 'root',
+      children: [],
+    }
+  }
+
   const childNodes = Array.from(root.childNodes)
   const children = childNodes
     .filter((node) => node.nodeType === 1)
-    .map((node) => parseXmlToSlateNode(node as Element))
+    .map((node) => parseXmlToSlateNode(node as unknown as XMLDOMElement))
   return {
     type: 'root',
     children,
