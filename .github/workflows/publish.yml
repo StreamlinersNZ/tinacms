@@ -1,7 +1,8 @@
 name: Publish
 on:
   push:
-    branches: [main]
+    branches:
+      - '*'
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -12,19 +13,9 @@ jobs:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
     steps:
-      - name: Generate a token
-        uses: actions/create-github-app-token@v1
-        id: generate-token
-        with:
-          # uses https://github.com/organizations/tinacms/settings/apps/release-bot-allow-prs-and-push
-          app-id: ${{ secrets.BOT_APP_ID }}
-          private-key: ${{ secrets.BOT_APP_SECRET }}
-
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ steps.generate-token.outputs.token }}
-          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
           fetch-depth: 0
 
       - name: Setup Node.js environment
@@ -62,68 +53,95 @@ jobs:
       - name: Build Types
         run: pnpm types
 
-      - name: Set NPMRC
-        run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
+      - name: Configure .npmrc for GitHub Package Registry
+        run: echo "@streamlinersnz:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup git credentials
         run: |
-          git config --global user.email "bot@tina.io"
-          git config --global user.name "Tina Realease Bot"
+          git config --global user.email "ci@streamliners.co.nz"
+          git config --global user.name "Streamliners CI"
 
-      - name: Create release pull request or publish packages
+      # Original Changesets step (only used for main/stable branch)
+      # - name: Create release pull request or publish packages
+      #   uses: changesets/action@v1
+      #   id: changesets
+      #   with:
+      #     version: pnpm run version
+      #     publish: pnpm run publish
+      #     createGithubReleases: true
+      #     setupGitUser: false
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Stable publish for snz-main
+      - name: Publish stable release
+        if: github.ref == 'refs/heads/snz-main'
         uses: changesets/action@v1
         id: changesets
         with:
           version: pnpm run version
           publish: pnpm run publish
           createGithubReleases: true
-          setupGitUser: false
         env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release to @dev channel
-        if: steps.changesets.outputs.hasChangesets == 'true'
+      # Beta/preview publish for all other branches
+      - name: Publish beta release
+        if: github.ref != 'refs/heads/snz-main'
         run: |
           git checkout ${{ github.sha }}
           pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
           pnpm run publish:beta
-          echo "A release PR has been created: <https://github.com/tinacms/tinacms/pull/${{ steps.changesets.outputs.pullRequestNumber }}>" >> $GITHUB_STEP_SUMMARY
         env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token  }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Has TinaCMS been published
-        id: newTinaCMSVersion
-        if: steps.changesets.outputs.published == 'true'
+      - name: Summary (no publish fallback)
+        if: always()
         run: |
-          # $publishedPackages is a json array of [{"name": "@xx/xx", "version": "1.2.0"}]
-          # work out if tinacms has been published and output the version number
-          newTinaCMSVersion=$(echo $publishedPackages | jq -r '.[] | select(.name == "tinacms") | .version')
+          echo "📝 Build completed. Check above for publish status." >> $GITHUB_STEP_SUMMARY
 
-          if [ -z "$newTinaCMSVersion" ]; then
-            echo "❌ TinaCMS not published" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "🚀 A new version of TinaCMS was released: $newTinaCMSVersion" >> $GITHUB_STEP_SUMMARY
-          fi
+      # Release to @dev channel (only if changesets ran)
+      # - name: Release to @dev channel
+      #   if: github.ref == 'refs/heads/snz-main' && steps.changesets.outputs.hasChangesets == 'true'
+      #   run: |
+      #     git checkout ${{ github.sha }}
+      #     pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
+      #     pnpm run publish:beta
+      #     echo "A release PR has been created: <https://github.com/streamlinersnz/tinacms/pull/${{ steps.changesets.outputs.pullRequestNumber }}>" >> $GITHUB_STEP_SUMMARY
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          echo "newTinaCMSVersion=$newTinaCMSVersion" >> $GITHUB_OUTPUT
-        env:
-          publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+      # - name: Has TinaCMS been published
+      #   id: newTinaCMSVersion
+      #   if: github.ref == 'refs/heads/snz-main' && steps.changesets.outputs.published == 'true'
+      #   run: |
+      #     newTinaCMSVersion=$(echo $publishedPackages | jq -r '.[] | select(.name == "tinacms") | .version')
 
-      - name: Publish release notes
-        if: steps.newTinaCMSVersion.outputs.newTinaCMSVersion != ''
-        uses: benc-uk/workflow-dispatch@v1
-        with:
-          ref: main
-          workflow: main-generate-release-notes.yml
-          inputs: |
-            {
-              "release_name": "${{ steps.newTinaCMSVersion.outputs.newTinaCMSVersion }}"
-            }
-          token: ${{ steps.generate-token.outputs.token }}
+      #     if [ -z "$newTinaCMSVersion" ]; then
+      #       echo "❌ TinaCMS not published" >> $GITHUB_STEP_SUMMARY
+      #     else
+      #       echo "🚀 A new version of TinaCMS was released: $newTinaCMSVersion" >> $GITHUB_STEP_SUMMARY
+      #     fi
 
-      - name: Summary
-        if: steps.newTinaCMSVersion.outputs.newTinaCMSVersion == '' && steps.changesets.outputs.hasChangesets == 'false'
-        run: |
-          echo "❌ Nothing was published" >> $GITHUB_STEP_SUMMARY
+      #     echo "newTinaCMSVersion=$newTinaCMSVersion" >> $GITHUB_OUTPUT
+      #   env:
+      #     publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+
+      # - name: Publish release notes
+      #   if: github.ref == 'refs/heads/snz-main' && steps.newTinaCMSVersion.outputs.newTinaCMSVersion != ''
+      #   uses: benc-uk/workflow-dispatch@v1
+      #   with:
+      #     ref: main
+      #     workflow: main-generate-release-notes.yml
+      #     inputs: |
+      #       {
+      #         "release_name": "${{ steps.newTinaCMSVersion.outputs.newTinaCMSVersion }}"
+      #       }
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Summary
+      #   if: github.ref == 'refs/heads/snz-main' && steps.newTinaCMSVersion.outputs.newTinaCMSVersion == '' && steps.changesets.outputs.hasChangesets == 'false'
+      #   run: |
+      #     echo "❌ Nothing was published" >> $GITHUB_STEP_SUMMARY
