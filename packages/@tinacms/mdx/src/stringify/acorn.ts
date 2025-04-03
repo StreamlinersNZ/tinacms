@@ -238,11 +238,14 @@ export function stringifyProps(
           } else {
             const stringValue = stringifyMDX(value, field, imageCallback)
             if (stringValue) {
-              val = stringValue
-                .trim()
-                .split('\n')
-                .map((str) => `  ${str.trim()}`)
-                .join(joiner)
+              val =
+                typeof stringValue === 'string'
+                  ? stringValue
+                      .trim()
+                      .split('\n')
+                      .map((str: string) => `  ${str.trim()}`)
+                      .join(joiner)
+                  : ''
             }
           }
           if (flatten) {
