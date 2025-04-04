@@ -2,10 +2,9 @@ name: Publish
 on:
   push:
     branches:
-      - '*'
-    paths:
-      - 'packages/**' # Trigger when any file in packages directory changes
-      - '.github/workflows/**' # Trigger when workflow files change
+      - 'snz-main'
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
   workflow_dispatch: # Manual trigger
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
