@@ -3,7 +3,10 @@ on:
   push:
     branches:
       - '*'
-  workflow_dispatch:
+    paths:
+      - 'packages/**' # Trigger when any file in packages directory changes
+      - '.github/workflows/**' # Trigger when workflow files change
+  workflow_dispatch: # Manual trigger
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
