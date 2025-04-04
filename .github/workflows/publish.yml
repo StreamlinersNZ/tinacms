@@ -58,7 +58,10 @@ jobs:
         run: pnpm types
 
       - name: Configure .npmrc for GitHub Package Registry
-        run: echo "@streamlinersnz:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+        run: |
+          echo "@streamlinersnz:registry=https://npm.pkg.github.com" > ~/.npmrc
+          echo "@tinacms:registry=https://npm.pkg.github.com" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN}}
 
