@@ -15,6 +15,7 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      GITHUB_TOKEN: ${{ secrets.GH_PAT }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
