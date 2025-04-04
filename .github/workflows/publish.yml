@@ -58,9 +58,9 @@ jobs:
         run: pnpm types
 
       - name: Configure .npmrc for GitHub Package Registry
-        run: echo "@streamlinersnz:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+        run: echo "@streamlinersnz:registry=https://npm.pkg.github.com\n//npm.pkg.github.com/:_authToken=${NPM_TOKEN}" > ~/.npmrc
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN}}
 
       - name: Setup git credentials
         run: |
@@ -99,7 +99,7 @@ jobs:
           pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
           pnpm run publish:beta
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN}}
 
       - name: Summary (no publish fallback)
         if: always()
