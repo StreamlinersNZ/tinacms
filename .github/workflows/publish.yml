@@ -53,15 +53,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build packages in correct order
+      - name: Build all packages in correct order
         run: |
-          # Build @tinacms/graphql first (dependency)
-          pnpm --filter="@tinacms/graphql" build
-          pnpm --filter="@tinacms/graphql" tsc --emitDeclarationOnly --declaration --declarationDir dist
+          # Build all packages with proper dependency ordering
+          pnpm build
 
-          # Then build @tinacms/datalayer (which imports from graphql)
-          pnpm --filter="@tinacms/datalayer" build
-          pnpm --filter="@tinacms/datalayer" tsc --emitDeclarationOnly --declaration --declarationDir dist
+          # Generate TypeScript declaration files
+          pnpm types
 
           # Verify exports exist in built files
           grep -r "createLocalDatabase" packages/tinacms/packages/@tinacms/graphql/dist/ || echo "Warning: createLocalDatabase not found in graphql"
