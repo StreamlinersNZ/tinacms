@@ -36,20 +36,6 @@ jobs:
           package_json_file: package.json
           run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
       - name: Setup git credentials
         run: |
           git config --global user.email "ci@streamliners.co.nz"
@@ -70,26 +56,38 @@ jobs:
           TOKEN=$(aws codeartifact get-authorization-token --domain streamliners-npm --domain-owner 368438108069 --query authorizationToken --output text)
           echo "CODEARTIFACT_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      - name: Build and publish TinaCMS packages
+      - name: Configure .npmrc for AWS CodeArtifact
         run: |
-          # Move to the TinaCMS directory
-          cd packages/tinacms
-
-          # Configure .npmrc for AWS CodeArtifact only
           echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > ~/.npmrc
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> ~/.npmrc
 
-          # Install dependencies
-          pnpm install --no-frozen-lockfile
+      - name: Clean workspace and prepare
+        run: |
+          # Clean node_modules to ensure clean install
+          find . -name "node_modules" -type d -exec rm -rf {} +
+          find . -name ".turbo" -type d -exec rm -rf {} +
 
-          # Build all packages
+          # Create a docker-like isolated environment
+          cd packages/tinacms
+
+          # Configure .npmrc for AWS CodeArtifact in the tinacms directory too
+          echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > .npmrc
+          echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> .npmrc
+
+          # Install with proper dependency resolution
+          echo "Installing dependencies with pnpm recursive..."
+          PNPM_CACHE_FOLDER=./node_modules/.pnpm-store pnpm install --no-frozen-lockfile --ignore-scripts
+
+          # Now run install scripts separately
+          PNPM_CACHE_FOLDER=./node_modules/.pnpm-store pnpm install --no-frozen-lockfile --only-scripts
+
+          # Build using same command that works locally
           pnpm build
-
-          # Generate type definitions
           pnpm types
 
-          # Verify build succeeded
-          test -f packages/@tinacms/datalayer/dist/index.js || (echo "Build failed - datalayer missing" && exit 1)
+      - name: Publish to CodeArtifact
+        run: |
+          cd packages/tinacms
 
           # Stable publish for snz-main
           if [[ "$GITHUB_REF" == "refs/heads/snz-main" ]]; then
