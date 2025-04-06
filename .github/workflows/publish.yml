@@ -74,12 +74,11 @@ jobs:
           echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > .npmrc
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> .npmrc
 
-          # Install with proper dependency resolution
-          echo "Installing dependencies with pnpm recursive..."
-          PNPM_CACHE_FOLDER=./node_modules/.pnpm-store pnpm install --no-frozen-lockfile --ignore-scripts
+          # First install with scripts ignored
+          pnpm install --no-frozen-lockfile --ignore-scripts
 
-          # Now run install scripts separately
-          PNPM_CACHE_FOLDER=./node_modules/.pnpm-store pnpm install --no-frozen-lockfile --only-scripts
+          # Then run the scripts separately (rebuild native modules)
+          pnpm rebuild
 
           # Build using same command that works locally
           pnpm build
