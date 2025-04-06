@@ -50,32 +50,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Bootstrap build process
-        run: |
-          # First build the scripts package which is needed to build other packages
-          cd packages/tinacms/packages/@tinacms/scripts
-
-          # Build scripts directly with tsc
-          npx tsc
-
-          # Go back to tinacms root
-          cd ../../../
-
-          # Now build all packages
-          pnpm build
-
-          # Generate declaration files
-          pnpm types
-
-      - name: Build
-        run: pnpm build
-
-      - name: Build Types
-        run: pnpm types
-
       - name: Setup git credentials
         run: |
           git config --global user.email "ci@streamliners.co.nz"
@@ -96,93 +70,44 @@ jobs:
           TOKEN=$(aws codeartifact get-authorization-token --domain streamliners-npm --domain-owner 368438108069 --query authorizationToken --output text)
           echo "CODEARTIFACT_TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # Update this step to configure both GitHub and AWS CodeArtifact
-      - name: Configure .npmrc for AWS CodeArtifact only
+      - name: Build and publish TinaCMS packages
         run: |
+          # Move to the TinaCMS directory
+          cd packages/tinacms
+
+          # Configure .npmrc for AWS CodeArtifact only
           echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > ~/.npmrc
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> ~/.npmrc
+
+          # Install dependencies
+          pnpm install --no-frozen-lockfile
+
+          # Build all packages
+          pnpm build
+
+          # Generate type definitions
+          pnpm types
+
+          # Verify build succeeded
+          test -f packages/@tinacms/datalayer/dist/index.js || (echo "Build failed - datalayer missing" && exit 1)
+
+          # Stable publish for snz-main
+          if [[ "$GITHUB_REF" == "refs/heads/snz-main" ]]; then
+            echo "Publishing stable version"
+            pnpm run version
+            pnpm publish -r --no-git-checks --access public
+          # Beta/preview publish for all other branches
+          else
+            echo "Publishing beta version"
+            git checkout ${{ github.sha }}
+            pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
+            pnpm publish -r --tag beta --no-git-checks --access public
+          fi
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CODEARTIFACT_TOKEN: ${{ env.CODEARTIFACT_TOKEN }}
 
-      # Original Changesets step (only used for main/stable branch)
-      # - name: Create release pull request or publish packages
-      #   uses: changesets/action@v1
-      #   id: changesets
-      #   with:
-      #     version: pnpm run version
-      #     publish: pnpm run publish
-      #     createGithubReleases: true
-      #     setupGitUser: false
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Stable publish for snz-main
-      - name: Publish stable release
-        if: github.ref == 'refs/heads/snz-main'
-        uses: changesets/action@v1
-        id: changesets
-        with:
-          version: pnpm run version
-          publish: pnpm run publish
-          createGithubReleases: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Beta/preview publish for all other branches
-      - name: Publish beta release
-        if: github.ref != 'refs/heads/snz-main'
-        run: |
-          git checkout ${{ github.sha }}
-          pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
-          pnpm run publish:beta
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN}}
-
-      - name: Summary (no publish fallback)
+      - name: Summary
         if: always()
         run: |
           echo "📝 Build completed. Check above for publish status." >> $GITHUB_STEP_SUMMARY
-
-      # Release to @dev channel (only if changesets ran)
-      # - name: Release to @dev channel
-      #   if: github.ref == 'refs/heads/snz-main' && steps.changesets.outputs.hasChangesets == 'true'
-      #   run: |
-      #     git checkout ${{ github.sha }}
-      #     pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
-      #     pnpm run publish:beta
-      #     echo "A release PR has been created: <https://github.com/streamlinersnz/tinacms/pull/${{ steps.changesets.outputs.pullRequestNumber }}>" >> $GITHUB_STEP_SUMMARY
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Has TinaCMS been published
-      #   id: newTinaCMSVersion
-      #   if: github.ref == 'refs/heads/snz-main' && steps.changesets.outputs.published == 'true'
-      #   run: |
-      #     newTinaCMSVersion=$(echo $publishedPackages | jq -r '.[] | select(.name == "tinacms") | .version')
-
-      #     if [ -z "$newTinaCMSVersion" ]; then
-      #       echo "❌ TinaCMS not published" >> $GITHUB_STEP_SUMMARY
-      #     else
-      #       echo "🚀 A new version of TinaCMS was released: $newTinaCMSVersion" >> $GITHUB_STEP_SUMMARY
-      #     fi
-
-      #     echo "newTinaCMSVersion=$newTinaCMSVersion" >> $GITHUB_OUTPUT
-      #   env:
-      #     publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
-
-      # - name: Publish release notes
-      #   if: github.ref == 'refs/heads/snz-main' && steps.newTinaCMSVersion.outputs.newTinaCMSVersion != ''
-      #   uses: benc-uk/workflow-dispatch@v1
-      #   with:
-      #     ref: main
-      #     workflow: main-generate-release-notes.yml
-      #     inputs: |
-      #       {
-      #         "release_name": "${{ steps.newTinaCMSVersion.outputs.newTinaCMSVersion }}"
-      #       }
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Summary
-      #   if: github.ref == 'refs/heads/snz-main' && steps.newTinaCMSVersion.outputs.newTinaCMSVersion == '' && steps.changesets.outputs.hasChangesets == 'false'
-      #   run: |
-      #     echo "❌ Nothing was published" >> $GITHUB_STEP_SUMMARY
