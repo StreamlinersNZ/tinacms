@@ -17,6 +17,39 @@ export interface SlateNode {
   caption?: string
 }
 
+// Define XML DOM types that are missing
+interface Attr {
+  name: string
+  value: string
+}
+
+interface NamedNodeMap {
+  length: number
+  [index: number]: Attr
+}
+
+// Define base Node type
+interface Node {
+  nodeType: number
+  nodeValue: string | null
+}
+
+interface NodeList {
+  length: number
+  [index: number]: Node
+}
+
+// Define a more specific Element type for XMLdom
+interface XMLElement extends Node {
+  getAttribute(name: string): string | null
+  hasAttribute(name: string): boolean
+  nodeName: string
+  textContent: string | null
+  hasAttributes(): boolean
+  attributes: NamedNodeMap
+  childNodes: NodeList
+}
+
 // These attributes are either to be ignored or are manually added elsewehere
 const ignoreThisAttributes = ['type', 'name', 'id']
 function propsToAttributes(node?: { [key: string]: any }) {
