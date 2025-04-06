@@ -27,5 +27,8 @@
     "tsup": "^8.3.0",
     "typescript": "^5.6.2",
     "vite": "^4.5.5"
+  },
+  "publishConfig": {
+    "registry": "https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/"
   }
 }
