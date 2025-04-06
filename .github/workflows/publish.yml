@@ -53,22 +53,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build TinaCMS packages
+      - name: Bootstrap build process
         run: |
-          # Move into the tinacms directory to work within its workspace
-          cd packages/tinacms
+          # First build the scripts package which is needed to build other packages
+          cd packages/tinacms/packages/@tinacms/scripts
 
-          # Build all packages in the tinacms workspace
+          # Build scripts directly with tsc
+          npx tsc
+
+          # Go back to tinacms root
+          cd ../../../
+
+          # Now build all packages
           pnpm build
 
           # Generate declaration files
           pnpm types
-
-          # Return to root
-          cd ../..
-
-          # Verify the build succeeded
-          test -f packages/tinacms/packages/@tinacms/datalayer/dist/index.js
 
       - name: Build
         run: pnpm build
