@@ -53,17 +53,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build all packages in correct order
+      - name: Build TinaCMS packages
         run: |
-          # Build all packages with proper dependency ordering
+          # Move into the tinacms directory to work within its workspace
+          cd packages/tinacms
+
+          # Build all packages in the tinacms workspace
           pnpm build
 
-          # Generate TypeScript declaration files
+          # Generate declaration files
           pnpm types
 
-          # Verify exports exist in built files
-          grep -r "createLocalDatabase" packages/tinacms/packages/@tinacms/graphql/dist/ || echo "Warning: createLocalDatabase not found in graphql"
-          grep -r "createLocalDatabase" packages/tinacms/packages/@tinacms/datalayer/dist/ || echo "Warning: createLocalDatabase not found in datalayer"
+          # Return to root
+          cd ../..
+
+          # Verify the build succeeded
+          test -f packages/tinacms/packages/@tinacms/datalayer/dist/index.js
 
       - name: Build
         run: pnpm build
