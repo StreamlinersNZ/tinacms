@@ -74,13 +74,15 @@ jobs:
           echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > .npmrc
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> .npmrc
 
-          # First install with scripts ignored
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          # Install with scripts enabled (removed --ignore-scripts)
+          pnpm install --no-frozen-lockfile
 
-          # Then run the scripts separately (rebuild native modules)
-          pnpm rebuild
+          # Build @tinacms/scripts first
+          cd packages/@tinacms/scripts
+          pnpm build
+          cd ../..
 
-          # Build using same command that works locally
+          # Then build the rest
           pnpm build
           pnpm types
 
