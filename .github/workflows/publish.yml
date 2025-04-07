@@ -1,11 +1,7 @@
 name: Publish
 on:
   push:
-    branches:
-      - 'snz-main'
-  pull_request:
-    types: [opened, synchronize, reopened, labeled]
-  workflow_dispatch: # Manual trigger
+    branches: [main]
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -15,13 +11,20 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      GITHUB_TOKEN: ${{ secrets.NPM_TOKEN }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     steps:
+      - name: Generate a token
+        uses: actions/create-github-app-token@v1
+        id: generate-token
+        with:
+          # uses https://github.com/organizations/tinacms/settings/apps/release-bot-allow-prs-and-push
+          app-id: ${{ secrets.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_APP_SECRET }}
+
       - name: Check out code
         uses: actions/checkout@v4
         with:
+          token: ${{ steps.generate-token.outputs.token }}
+          # This makes Actions fetch all Git history so that Changesets can generate changelogs with the correct commits
           fetch-depth: 0
 
       - name: Setup Node.js environment
@@ -36,77 +39,91 @@ jobs:
           package_json_file: package.json
           run_install: false
 
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Build Types
+        run: pnpm types
+
+      - name: Set NPMRC
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > .npmrc
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+
       - name: Setup git credentials
         run: |
-          git config --global user.email "ci@streamliners.co.nz"
-          git config --global user.name "Streamliners CI"
+          git config --global user.email "bot@tina.io"
+          git config --global user.name "Tina Realease Bot"
 
-      # Configure AWS credentials step
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Create release pull request or publish packages
+        uses: changesets/action@v1
+        id: changesets
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2
-
-      # Get CodeArtifact authorization token
-      - name: Get CodeArtifact token
-        id: codeartifact-token
-        run: |
-          TOKEN=$(aws codeartifact get-authorization-token --domain streamliners-npm --domain-owner 368438108069 --query authorizationToken --output text)
-          echo "CODEARTIFACT_TOKEN=$TOKEN" >> $GITHUB_ENV
-
-      - name: Configure .npmrc for AWS CodeArtifact
-        run: |
-          echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > ~/.npmrc
-          echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> ~/.npmrc
-
-      - name: Clean workspace and prepare
-        run: |
-          # Clean node_modules to ensure clean install
-          find . -name "node_modules" -type d -exec rm -rf {} +
-          find . -name ".turbo" -type d -exec rm -rf {} +
-
-          # Create a docker-like isolated environment
-          cd packages/tinacms
-
-          # Configure .npmrc for AWS CodeArtifact in the tinacms directory too
-          echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > .npmrc
-          echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> .npmrc
-
-          # Install with scripts enabled (removed --ignore-scripts)
-          pnpm install --no-frozen-lockfile
-
-          # Build @tinacms/scripts first
-          cd packages/@tinacms/scripts
-          pnpm build
-          cd ../..
-
-          # Then build the rest
-          pnpm build
-          pnpm types
-
-      - name: Publish to CodeArtifact
-        run: |
-          cd packages/tinacms
-
-          # Stable publish for snz-main
-          if [[ "$GITHUB_REF" == "refs/heads/snz-main" ]]; then
-            echo "Publishing stable version"
-            pnpm run version
-            pnpm publish -r --no-git-checks --access public
-          # Beta/preview publish for all other branches
-          else
-            echo "Publishing beta version"
-            git checkout ${{ github.sha }}
-            pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
-            pnpm publish -r --tag beta --no-git-checks --access public
-          fi
+          version: pnpm run version
+          publish: pnpm run publish
+          createGithubReleases: true
+          setupGitUser: false
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          CODEARTIFACT_TOKEN: ${{ env.CODEARTIFACT_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token  }}
+
+      - name: Release to @dev channel
+        if: steps.changesets.outputs.hasChangesets == 'true'
+        run: |
+          git checkout ${{ github.sha }}
+          pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
+          pnpm run publish:beta
+          echo "A release PR has been created: <https://github.com/tinacms/tinacms/pull/${{ steps.changesets.outputs.pullRequestNumber }}>" >> $GITHUB_STEP_SUMMARY
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token  }}
+
+      - name: Has TinaCMS been published
+        id: newTinaCMSVersion
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          # $publishedPackages is a json array of [{"name": "@xx/xx", "version": "1.2.0"}]
+          # work out if tinacms has been published and output the version number
+          newTinaCMSVersion=$(echo $publishedPackages | jq -r '.[] | select(.name == "tinacms") | .version')
+
+          if [ -z "$newTinaCMSVersion" ]; then
+            echo "❌ TinaCMS not published" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "🚀 A new version of TinaCMS was released: $newTinaCMSVersion" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "newTinaCMSVersion=$newTinaCMSVersion" >> $GITHUB_OUTPUT
+        env:
+          publishedPackages: ${{ steps.changesets.outputs.publishedPackages }}
+
+      - name: Publish release notes
+        if: steps.newTinaCMSVersion.outputs.newTinaCMSVersion != ''
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          ref: main
+          workflow: main-generate-release-notes.yml
+          inputs: |
+            {
+              "release_name": "${{ steps.newTinaCMSVersion.outputs.newTinaCMSVersion }}"
+            }
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Summary
-        if: always()
+        if: steps.newTinaCMSVersion.outputs.newTinaCMSVersion == '' && steps.changesets.outputs.hasChangesets == 'false'
         run: |
-          echo "📝 Build completed. Check above for publish status." >> $GITHUB_STEP_SUMMARY
+          echo "❌ Nothing was published" >> $GITHUB_STEP_SUMMARY
