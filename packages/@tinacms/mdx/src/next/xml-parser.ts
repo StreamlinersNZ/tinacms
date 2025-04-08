@@ -1,4 +1,5 @@
 import { DOMParser } from '@xmldom/xmldom'
+import { RichTextParseError } from '../parse/remarkToPlate'
 
 export interface SlateNode {
   type: string
@@ -14,6 +15,39 @@ export interface SlateNode {
   url?: string
   alt?: string
   caption?: string
+}
+
+// Define XML DOM types that are missing
+interface Attr {
+  name: string
+  value: string
+}
+
+interface NamedNodeMap {
+  length: number
+  [index: number]: Attr
+}
+
+// Define base Node type
+interface Node {
+  nodeType: number
+  nodeValue: string | null
+}
+
+interface NodeList {
+  length: number
+  [index: number]: Node
+}
+
+// Define a more specific Element type for XMLdom
+interface XMLElement extends Node {
+  getAttribute(name: string): string | null
+  hasAttribute(name: string): boolean
+  nodeName: string
+  textContent: string | null
+  hasAttributes(): boolean
+  attributes: NamedNodeMap
+  childNodes: NodeList
 }
 
 // These attributes are either to be ignored or are manually added elsewehere
@@ -116,14 +150,59 @@ export function stringifyToXML(slateDoc: SlateNode): string {
   return formatXML(`<data>${sanitisedXml}</data>`)
 }
 
-function parseXmlToSlateNode(node: Element): SlateNode {
-  const type = node.getAttribute('type') || node.nodeName
+// Safely check if a node has an attribute
+const safeGetAttribute = (node: any, name: string): string | null => {
+  try {
+    if (node && typeof node.getAttribute === 'function') {
+      return node.getAttribute(name)
+    }
+  } catch (e) {
+    // Ignore error, return null
+  }
+  return null
+}
+
+// Safely check if a node has an attribute
+const safeHasAttribute = (node: any, name: string): boolean => {
+  try {
+    if (node && typeof node.hasAttribute === 'function') {
+      return node.hasAttribute(name)
+    }
+  } catch (e) {
+    // Ignore error, return false
+  }
+  return false
+}
+
+// Safely get node attributes
+const safeGetAttributes = (
+  node: any
+): Array<{ name: string; value: string }> => {
+  try {
+    if (node && node.attributes && typeof node.attributes === 'object') {
+      const result = []
+      for (let i = 0; i < node.attributes.length; i++) {
+        const attr = node.attributes[i]
+        if (attr && attr.name && attr.value !== undefined) {
+          result.push({ name: attr.name, value: attr.value })
+        }
+      }
+      return result
+    }
+  } catch (e) {
+    // Ignore error, return empty array
+  }
+  return []
+}
+
+function parseXmlToSlateNode(node: any): SlateNode {
+  const type = safeGetAttribute(node, 'type') || node.nodeName
   const isMdxNode = type.startsWith('mdxJsx')
   const name = isMdxNode ? node.nodeName : undefined
   const slateNode: SlateNode = { type, name }
 
-  if (node.hasAttribute('id')) {
-    slateNode.id = node.getAttribute('id')!
+  if (safeHasAttribute(node, 'id')) {
+    slateNode.id = safeGetAttribute(node, 'id')!
   }
 
   if (node.nodeName === 'bold' || node.nodeName === 'italic') {
@@ -141,7 +220,7 @@ function parseXmlToSlateNode(node: Element): SlateNode {
       const childNode = node.childNodes[i]
       if (!childNode) continue
       if (childNode.nodeType === 1) {
-        childNodes.push(parseXmlToSlateNode(childNode as Element))
+        childNodes.push(parseXmlToSlateNode(childNode))
       } else if (
         childNode.nodeType === 3 &&
         !childNode?.nodeValue?.startsWith('\n')
@@ -172,17 +251,16 @@ function parseXmlToSlateNode(node: Element): SlateNode {
 
   if (type === 'img' || type === 'a') {
     // This might need better handling, e.g. parsing the "title" of a link etc
-    slateNode.url = node.getAttribute('url') || ''
-    slateNode.alt = node.getAttribute('alt') || undefined
-    slateNode.caption = node.getAttribute('caption') || undefined
+    slateNode.url = safeGetAttribute(node, 'url') || ''
+    slateNode.alt = safeGetAttribute(node, 'alt') || undefined
+    slateNode.caption = safeGetAttribute(node, 'caption') || undefined
   } else {
-    if (node.hasAttributes()) {
+    // Get attributes safely
+    const attributes = safeGetAttributes(node)
+    if (attributes.length > 0) {
       slateNode.props = slateNode.props || {}
-      for (let i = 0; i < node.attributes.length; i++) {
-        const attr = node.attributes[i]
-        if (!attr) continue
-
-        if (attr.name !== 'id' && attr?.name !== 'type') {
+      for (const attr of attributes) {
+        if (attr.name !== 'id' && attr.name !== 'type') {
           slateNode.props[attr.name] = attr.value
         }
       }
@@ -193,16 +271,32 @@ function parseXmlToSlateNode(node: Element): SlateNode {
 }
 
 export function parseFromXml(xml: string): SlateNode {
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(xml, 'text/xml')
-  const root = doc.documentElement
+  try {
+    const parser = new DOMParser({
+      // Use a simple error handler that ignores errors
+      errorHandler: () => {},
+    })
+    const doc = parser.parseFromString(xml, 'text/xml')
+    const root = doc.documentElement
 
-  const childNodes = Array.from(root.childNodes)
-  const children = childNodes
-    .filter((node) => node.nodeType === 1)
-    .map((node) => parseXmlToSlateNode(node as Element))
-  return {
-    type: 'root',
-    children,
+    if (!root) {
+      return {
+        type: 'root',
+        children: [],
+      }
+    }
+
+    const childNodes = Array.from(root.childNodes)
+    const children = childNodes
+      .filter((node) => node.nodeType === 1)
+      .map((node) => parseXmlToSlateNode(node))
+
+    // Create the root node with the parsed children
+    return {
+      type: 'root',
+      children,
+    }
+  } catch (err: any) {
+    throw new RichTextParseError(err.message || 'Error parsing XML')
   }
 }
