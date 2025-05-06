@@ -68,7 +68,7 @@ jobs:
           find . -name ".turbo" -type d -exec rm -rf {} +
 
           # Create a docker-like isolated environment
-          cd packages/tinacms
+          # cd packages/tinacms
 
           # Configure .npmrc for AWS CodeArtifact in the tinacms directory too
           echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > .npmrc
