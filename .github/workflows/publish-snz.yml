@@ -88,7 +88,7 @@ jobs:
 
       - name: Publish to CodeArtifact
         run: |
-          cd packages/tinacms
+          # cd packages/tinacms
 
           # Stable publish for snz-main
           if [[ "$GITHUB_REF" == "refs/heads/snz-main" ]]; then
