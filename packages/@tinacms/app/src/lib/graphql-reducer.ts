@@ -621,7 +621,18 @@ const onSubmit = async (
         params: tinaSchema.transformPayload(collection.name, payload),
       },
     })
-    cms.alerts.success('Document saved!')
+
+    // --- Dispatch Custom Event ---
+    // @ts-ignore events does exist
+    cms.events.dispatch({
+      type: 'custom:document-saved',
+      payload: {
+        collectionName: collection.name,
+        relativePath: relativePath,
+      },
+    })
+    // --- End Custom Event ---
+    cms.alerts.success('Document saved! Test local link')
   } catch (e) {
     cms.alerts.error(() =>
       ErrorDialog({
