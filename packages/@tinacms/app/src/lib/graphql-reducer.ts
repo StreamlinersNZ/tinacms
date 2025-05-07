@@ -632,7 +632,7 @@ const onSubmit = async (
       },
     })
     // --- End Custom Event ---
-    cms.alerts.success('Document saved! Test local link')
+    cms.alerts.success('Document saved! Test SNZ tina changes')
   } catch (e) {
     cms.alerts.error(() =>
       ErrorDialog({
