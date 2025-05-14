@@ -51,6 +51,9 @@ export const stringifyMDX = (
   if (typeof value === 'string') {
     throw new Error('Expected an object to stringify, but received a string');
   }
+  if (field.parser?.type === 'json') {
+    return value;
+  }
   if (value?.children[0]) {
     if (value?.children[0].type === 'invalid_markdown') {
       return value.children[0].value;

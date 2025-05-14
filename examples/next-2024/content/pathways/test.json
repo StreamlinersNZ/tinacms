@@ -1,0 +1,193 @@
+{
+  "title": "Test",
+  "unstructured": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A test pathway with "
+          },
+          {
+            "type": "text",
+            "id": "ov1do",
+            "text": "formatting",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "id": "zmuvy",
+            "text": "."
+          }
+        ],
+        "id": 1747218892119
+      },
+      {
+        "type": "p",
+        "id": "7ayx1",
+        "children": [
+          {
+            "type": "text",
+            "id": "nncim",
+            "text": "And a table:"
+          }
+        ]
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "Title"
+                      }
+                    ],
+                    "type": "p",
+                    "id": "lesyv"
+                  }
+                ],
+                "type": "td",
+                "id": "iod3w"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "Description"
+                      }
+                    ],
+                    "type": "p",
+                    "id": "e0604"
+                  }
+                ],
+                "type": "td",
+                "id": "5mmzu"
+              }
+            ],
+            "type": "tr",
+            "id": "rngnk"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "Some title"
+                      }
+                    ],
+                    "type": "p",
+                    "id": "d8nwk"
+                  }
+                ],
+                "type": "td",
+                "id": "8qect"
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "a description"
+                      }
+                    ],
+                    "type": "p",
+                    "id": "axo2s"
+                  }
+                ],
+                "type": "td",
+                "id": "rjw40"
+              }
+            ],
+            "type": "tr",
+            "id": "ecv2j"
+          }
+        ],
+        "type": "table",
+        "id": "8oaub"
+      },
+      {
+        "children": [
+          {
+            "text": "And a list:"
+          }
+        ],
+        "type": "p",
+        "id": "kkz1i"
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "type": "lic",
+                "id": "z6d5p",
+                "children": [
+                  {
+                    "text": "First topic"
+                  }
+                ]
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "text": "And bullets in the nested list"
+                          }
+                        ],
+                        "type": "lic",
+                        "id": "ycxr0"
+                      }
+                    ],
+                    "type": "li",
+                    "id": "sdre9"
+                  }
+                ],
+                "type": "ul",
+                "id": "fca4j"
+              }
+            ],
+            "type": "li",
+            "id": "bwr94"
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "text": "Second topic"
+                  }
+                ],
+                "type": "lic",
+                "id": "jjzom"
+              }
+            ],
+            "type": "li",
+            "id": "tidr5"
+          }
+        ],
+        "type": "ol",
+        "id": "n7twi"
+      },
+      {
+        "children": [
+          {
+            "text": ""
+          }
+        ],
+        "type": "p",
+        "id": "pbs38"
+      }
+    ]
+  }
+}

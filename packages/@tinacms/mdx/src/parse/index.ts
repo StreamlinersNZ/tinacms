@@ -110,6 +110,9 @@ export const parseMDX = (
     if (field.parser?.type === 'markdown') {
       return parseMDXNext(value, field, imageCallback);
     }
+    if (field.parser?.type === 'json') {
+      return value as unknown as Plate.RootElement;
+    }
     let preprocessedString = value;
     const templatesWithMatchers = field.templates?.filter(
       (template) => template.match

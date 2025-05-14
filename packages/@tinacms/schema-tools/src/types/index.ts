@@ -312,7 +312,13 @@ export type RichTextField<WithNamespace extends boolean = false> = (
            */
           skipEscaping?: 'all' | 'html' | 'none';
         }
-      | { type: 'mdx' };
+      | { type: 'mdx' }
+      | {
+        /**
+         * Returns the native Slate.js document as JSON. Ideal to retain the pure editor content structure.
+         */
+        type: 'json'
+      };
   };
 export type RichTextTemplate<WithNamespace extends boolean = false> =
   Template<WithNamespace> & {
