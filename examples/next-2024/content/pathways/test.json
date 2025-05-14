@@ -22,11 +22,11 @@
             "text": "."
           }
         ],
-        "id": 1747218892119
+        "id": 1747219841596
       },
       {
         "type": "p",
-        "id": "7ayx1",
+        "id": 1747219841596,
         "children": [
           {
             "type": "text",
@@ -48,11 +48,11 @@
                       }
                     ],
                     "type": "p",
-                    "id": "lesyv"
+                    "id": 1747219841596
                   }
                 ],
                 "type": "td",
-                "id": "iod3w"
+                "id": 1747219841596
               },
               {
                 "children": [
@@ -63,15 +63,15 @@
                       }
                     ],
                     "type": "p",
-                    "id": "e0604"
+                    "id": 1747219841596
                   }
                 ],
                 "type": "td",
-                "id": "5mmzu"
+                "id": 1747219841596
               }
             ],
             "type": "tr",
-            "id": "rngnk"
+            "id": 1747219841596
           },
           {
             "children": [
@@ -80,15 +80,15 @@
                   {
                     "children": [
                       {
-                        "text": "Some title"
+                        "text": "Nested lists in table"
                       }
                     ],
                     "type": "p",
-                    "id": "d8nwk"
+                    "id": 1747219841596
                   }
                 ],
                 "type": "td",
-                "id": "8qect"
+                "id": 1747219841596
               },
               {
                 "children": [
@@ -99,19 +99,76 @@
                       }
                     ],
                     "type": "p",
-                    "id": "axo2s"
+                    "id": 1747219841596
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "text": "List"
+                              }
+                            ],
+                            "type": "lic",
+                            "id": "i6px1"
+                          },
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "type": "lic",
+                                    "id": 1747219841596,
+                                    "children": [
+                                      {
+                                        "text": "bullet point 1"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "type": "li",
+                                "id": 1747219841596
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "text": "bullet point 2"
+                                      }
+                                    ],
+                                    "type": "lic",
+                                    "id": 1747219841596
+                                  }
+                                ],
+                                "type": "li",
+                                "id": 1747219841596
+                              }
+                            ],
+                            "type": "ul",
+                            "id": "5m84f"
+                          }
+                        ],
+                        "type": "li",
+                        "id": "jbodt"
+                      }
+                    ],
+                    "type": "ol",
+                    "id": 1747219841596
                   }
                 ],
                 "type": "td",
-                "id": "rjw40"
+                "id": 1747219841596
               }
             ],
             "type": "tr",
-            "id": "ecv2j"
+            "id": 1747219841596
           }
         ],
         "type": "table",
-        "id": "8oaub"
+        "id": 1747219841596
       },
       {
         "children": [
@@ -120,7 +177,7 @@
           }
         ],
         "type": "p",
-        "id": "kkz1i"
+        "id": 1747219841596
       },
       {
         "children": [
@@ -128,7 +185,7 @@
             "children": [
               {
                 "type": "lic",
-                "id": "z6d5p",
+                "id": 1747219841596,
                 "children": [
                   {
                     "text": "First topic"
@@ -146,19 +203,19 @@
                           }
                         ],
                         "type": "lic",
-                        "id": "ycxr0"
+                        "id": 1747219841596
                       }
                     ],
                     "type": "li",
-                    "id": "sdre9"
+                    "id": 1747219841596
                   }
                 ],
                 "type": "ul",
-                "id": "fca4j"
+                "id": 1747219841596
               }
             ],
             "type": "li",
-            "id": "bwr94"
+            "id": 1747219841596
           },
           {
             "children": [
@@ -169,15 +226,15 @@
                   }
                 ],
                 "type": "lic",
-                "id": "jjzom"
+                "id": 1747219841596
               }
             ],
             "type": "li",
-            "id": "tidr5"
+            "id": 1747219841596
           }
         ],
         "type": "ol",
-        "id": "n7twi"
+        "id": 1747219841596
       },
       {
         "children": [
@@ -186,7 +243,7 @@
           }
         ],
         "type": "p",
-        "id": "pbs38"
+        "id": 1747219841596
       }
     ]
   }
