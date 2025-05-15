@@ -1,0 +1,250 @@
+{
+  "title": "Test",
+  "unstructured": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "A test pathway with "
+          },
+          {
+            "type": "text",
+            "id": "ov1do",
+            "text": "formatting",
+            "bold": true
+          },
+          {
+            "type": "text",
+            "id": "zmuvy",
+            "text": "."
+          }
+        ],
+        "id": 1747219841596
+      },
+      {
+        "type": "p",
+        "id": 1747219841596,
+        "children": [
+          {
+            "type": "text",
+            "id": "nncim",
+            "text": "And a table:"
+          }
+        ]
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "Title"
+                      }
+                    ],
+                    "type": "p",
+                    "id": 1747219841596
+                  }
+                ],
+                "type": "td",
+                "id": 1747219841596
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "Description"
+                      }
+                    ],
+                    "type": "p",
+                    "id": 1747219841596
+                  }
+                ],
+                "type": "td",
+                "id": 1747219841596
+              }
+            ],
+            "type": "tr",
+            "id": 1747219841596
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "Nested lists in table"
+                      }
+                    ],
+                    "type": "p",
+                    "id": 1747219841596
+                  }
+                ],
+                "type": "td",
+                "id": 1747219841596
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "text": "a description"
+                      }
+                    ],
+                    "type": "p",
+                    "id": 1747219841596
+                  },
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "children": [
+                              {
+                                "text": "List"
+                              }
+                            ],
+                            "type": "lic",
+                            "id": "i6px1"
+                          },
+                          {
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "type": "lic",
+                                    "id": 1747219841596,
+                                    "children": [
+                                      {
+                                        "text": "bullet point 1"
+                                      }
+                                    ]
+                                  }
+                                ],
+                                "type": "li",
+                                "id": 1747219841596
+                              },
+                              {
+                                "children": [
+                                  {
+                                    "children": [
+                                      {
+                                        "text": "bullet point 2"
+                                      }
+                                    ],
+                                    "type": "lic",
+                                    "id": 1747219841596
+                                  }
+                                ],
+                                "type": "li",
+                                "id": 1747219841596
+                              }
+                            ],
+                            "type": "ul",
+                            "id": "5m84f"
+                          }
+                        ],
+                        "type": "li",
+                        "id": "jbodt"
+                      }
+                    ],
+                    "type": "ol",
+                    "id": 1747219841596
+                  }
+                ],
+                "type": "td",
+                "id": 1747219841596
+              }
+            ],
+            "type": "tr",
+            "id": 1747219841596
+          }
+        ],
+        "type": "table",
+        "id": 1747219841596
+      },
+      {
+        "children": [
+          {
+            "text": "And a list:"
+          }
+        ],
+        "type": "p",
+        "id": 1747219841596
+      },
+      {
+        "children": [
+          {
+            "children": [
+              {
+                "type": "lic",
+                "id": 1747219841596,
+                "children": [
+                  {
+                    "text": "First topic"
+                  }
+                ]
+              },
+              {
+                "children": [
+                  {
+                    "children": [
+                      {
+                        "children": [
+                          {
+                            "text": "And bullets in the nested list"
+                          }
+                        ],
+                        "type": "lic",
+                        "id": 1747219841596
+                      }
+                    ],
+                    "type": "li",
+                    "id": 1747219841596
+                  }
+                ],
+                "type": "ul",
+                "id": 1747219841596
+              }
+            ],
+            "type": "li",
+            "id": 1747219841596
+          },
+          {
+            "children": [
+              {
+                "children": [
+                  {
+                    "text": "Second topic"
+                  }
+                ],
+                "type": "lic",
+                "id": 1747219841596
+              }
+            ],
+            "type": "li",
+            "id": 1747219841596
+          }
+        ],
+        "type": "ol",
+        "id": 1747219841596
+      },
+      {
+        "children": [
+          {
+            "text": ""
+          }
+        ],
+        "type": "p",
+        "id": 1747219841596
+      }
+    ]
+  }
+}
