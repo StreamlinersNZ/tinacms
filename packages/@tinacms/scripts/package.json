@@ -37,6 +37,7 @@
     "registry": "https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/"
   },
   "repository": {
-    "url": "https://github.com/StreamlinersNZ/tinacms.git"
+    "url": "https://github.com/StreamlinersNZ/tinacms.git",
+    "directory": "packages/@tinacms/scripts"
   }
 }
