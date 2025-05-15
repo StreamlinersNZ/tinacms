@@ -40,11 +40,11 @@ function updatePackageJson(filePath) {
 }
 
 // Find all package.json files in the @tinacms packages
-const packageJsonFiles = glob.sync('packages/@tinacms/*/package.json', {
+const packageJsonFiles = glob.sync('packages/**/package.json', {
   ignore: ['**/node_modules/**', '**/dist/**']
 })
 
-console.log(`Found ${packageJsonFiles.length} package.json files in @tinacms packages`)
+console.log(`Found ${packageJsonFiles.length} package.json files in packages directory`)
 
 // Process each package.json file
 packageJsonFiles.forEach(file => {
