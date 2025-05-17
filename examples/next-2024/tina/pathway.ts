@@ -1,26 +1,28 @@
-import { Collection } from "tinacms";
+import { Collection } from 'tinacms';
+import { contentBlockTemplate } from './content-block';
 
 const PathwaySchema: Collection = {
-    name: 'pathways',
-    label: 'Health Pathways',
-    path: 'content/pathways',
-    format: 'json',
-    fields: [
-      {
-        type: 'string',
-        name: 'title',
-        label: 'Page Title',
-        isTitle: true,
-        required: true,
-      },
+  name: 'pathways',
+  label: 'Health Pathways',
+  path: 'content/pathways',
+  format: 'json',
+  fields: [
+    {
+      type: 'string',
+      name: 'title',
+      label: 'Page Title',
+      isTitle: true,
+      required: true,
+    },
 
-      {
-        name: 'unstructured',
-        label: 'Unstructured Content',
-        type: 'rich-text',
-        parser: { type: 'json' },
-      },
-    ],
-  };
-  
-  export default PathwaySchema;
+    {
+      name: 'unstructured',
+      label: 'Unstructured Content',
+      type: 'rich-text',
+      parser: { type: 'json' },
+      templates: [contentBlockTemplate],
+    },
+  ],
+};
+
+export default PathwaySchema;
