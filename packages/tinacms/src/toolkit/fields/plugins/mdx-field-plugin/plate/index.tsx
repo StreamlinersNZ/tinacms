@@ -2,10 +2,7 @@ import React from 'react';
 import { Components } from './plugins/ui/components';
 import { formattingPlugins, commonPlugins } from './plugins/core';
 import { helpers } from './plugins/core/common';
-import {
-  createMdxBlockPlugin,
-  createMdxInlinePlugin,
-} from './plugins/create-mdx-plugins';
+import { createMdxBlockPlugin, createMdxInlinePlugin } from './plugins/create-mdx-plugins';
 import createImgPlugin from './plugins/create-img-plugin';
 import { createInvalidMarkdownPlugin } from './plugins/create-invalid-markdown-plugin';
 import { createLinkPlugin } from './plugins/create-link-plugin';
@@ -22,8 +19,13 @@ import { LinkFloatingToolbar } from './components/plate-ui/link-floating-toolbar
 import { isUrl } from './transforms/is-url';
 import { ToolbarProvider } from './toolbar/toolbar-provider';
 import { createMermaidPlugin } from './plugins/custom/mermaid-plugin';
+// import { createPreviewPlugin } from './plugins/create-preview-plugin';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
+  console.log(
+    '[TinaCMS Debug] RichEditor: input.value received:',
+    JSON.stringify(input.value, null, 2)
+  );
   const initialValue = React.useMemo(
     () =>
       input.value?.children?.length
@@ -50,6 +52,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
             },
             renderAfterEditable: LinkFloatingToolbar,
           }),
+          // createPreviewPlugin(), // Assuming this was used here; will comment out if found elsewhere during review
         ],
         {
           components: Components(),
@@ -68,9 +71,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       setTimeout(() => {
         // Slate/Plate doesn't expose it's underlying element
         // as a ref, so we need to query for it ourselves
-        const plateElement = ref.current?.querySelector(
-          '[role="textbox"]'
-        ) as HTMLElement;
+        const plateElement = ref.current?.querySelector('[role="textbox"]') as HTMLElement;
         if (field.experimental_focusIntent && plateElement) {
           if (plateElement) plateElement.focus();
         }
@@ -96,9 +97,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
           <ToolbarProvider
             tinaForm={tinaForm}
             templates={field.templates}
-            overrides={
-              field?.toolbarOverride ? field.toolbarOverride : field.overrides
-            }
+            overrides={field?.toolbarOverride ? field.toolbarOverride : field.overrides}
           >
             <FixedToolbar>
               <FixedToolbarButtons />

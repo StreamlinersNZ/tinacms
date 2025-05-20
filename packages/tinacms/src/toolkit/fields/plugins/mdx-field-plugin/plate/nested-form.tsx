@@ -13,8 +13,10 @@ export const NestedForm = (props: {
   onChange: (values: object) => void;
 }) => {
   const FormPortal = useFormPortal();
+  console.log('[TinaCMS Debug] NestedForm received props:', JSON.stringify(props, null, 2));
   const id = React.useMemo(() => uuid(), [props.id, props.initialValues]);
   const form = React.useMemo(() => {
+    console.log('[TinaCMS Debug] NestedForm: props.id being used for Form relativePath:', props.id);
     return new Form({
       ...props,
       relativePath: props.id,
@@ -24,7 +26,7 @@ export const NestedForm = (props: {
       },
       onSubmit: () => {},
     });
-  }, [id, props.onChange]);
+  }, [id, props.onChange, props.fields, props.id, props.initialValues, props.label, props.onClose]);
 
   return (
     <FormPortal>

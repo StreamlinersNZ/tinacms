@@ -1,11 +1,7 @@
 import React from 'react';
 import { ReactEditor } from 'slate-react';
 import { BlockEmbed, InlineEmbed } from './component';
-import {
-  insertBlockElement,
-  insertInlineElement,
-  helpers,
-} from '../core/common';
+import { insertBlockElement, insertInlineElement, helpers } from '../core/common';
 import type { MdxTemplate } from '../../types';
 import {
   createPluginFactory,
@@ -18,10 +14,21 @@ export const ELEMENT_MDX_INLINE = 'mdxJsxTextElement';
 export const ELEMENT_MDX_BLOCK = 'mdxJsxFlowElement';
 
 const Embed = (props) => {
-  const handleChange = (values) => {
-    const path = ReactEditor.findPath(props.editor, props.element);
-    setNodes(props.editor, { props: values }, { at: path });
-  };
+  // Store props.element in a ref to keep handleChange stable
+  const elementRef = React.useRef(props.element);
+
+  React.useEffect(() => {
+    elementRef.current = props.element;
+  }, [props.element]);
+
+  const handleChange = React.useCallback(
+    (values) => {
+      // Use the latest element from the ref
+      const path = ReactEditor.findPath(props.editor, elementRef.current);
+      setNodes(props.editor, { props: values }, { at: path });
+    },
+    [props.editor] // props.editor should be stable (from usePlateEditorRef or context)
+  );
 
   if (props.inline) {
     return <InlineEmbed {...props} onChange={handleChange} />;

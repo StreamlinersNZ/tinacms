@@ -29,10 +29,15 @@ type Meta = {
  */
 export class TinaSchema {
   public schema: Schema<true>;
+  private config: { version?: Version; meta?: Meta } & Schema;
+  private tinaCloudBeingUsed?: boolean;
+
   /**
    * Create a schema class from a user defined schema object
    */
-  constructor(public config: { version?: Version; meta?: Meta } & Schema) {
+  constructor(config: { version?: Version; meta?: Meta } & Schema, tinaCloudBeingUsed?: boolean) {
+    this.tinaCloudBeingUsed = tinaCloudBeingUsed;
+    this.config = config;
     // @ts-ignore
     this.schema = config;
     // NOTE: Any changes to the logic below or the legacyWalkFields
@@ -117,47 +122,81 @@ export class TinaSchema {
     };
   };
   public getCollections = () => {
-    return (
-      this.schema.collections.map((collection) =>
-        this.getCollection(collection.name)
-      ) || []
-    );
+    return this.schema.collections.map((collection) => this.getCollection(collection.name)) || [];
   };
-  public getCollectionByFullPath = (filepath: string) => {
+  public getCollectionByFullPath = (filepath: string, silenceErrors?: boolean) => {
+    console.log('[TinaCMS Debug] TinaSchema.getCollectionByFullPath received filepath:', filepath);
     const fileExtension = filepath.split('.').pop();
     const normalizedPath = filepath.replace(/\\/g, '/');
 
     const possibleCollections = this.getCollections().filter((collection) => {
+      console.log(
+        `[TinaCMS Debug]   Checking collection: ${collection.name}, path: ${collection.path}, format: ${collection.format}`
+      );
       // filter out file extensions that don't match the collection format
       if (
         !normalizedPath.endsWith(`.gitkeep.${collection.format || 'md'}`) &&
         fileExtension !== (collection.format || 'md')
       ) {
+        console.log(
+          `[TinaCMS Debug]     Rejected: File extension mismatch. Filepath ext: ${fileExtension}, Collection format: ${
+            collection.format || 'md'
+          }`
+        );
         return false;
       }
       if (collection?.match?.include || collection?.match?.exclude) {
         // if the collection has a match or exclude, we need to check if the file matches
         const matches = this.getMatches({ collection });
         const match = picomatch.isMatch(normalizedPath, matches);
-
+        console.log(
+          `[TinaCMS Debug]     Collection has match rules. Pattern: ${JSON.stringify(
+            matches
+          )}, Path: ${normalizedPath}, IsMatch: ${match}`
+        );
         if (!match) {
+          console.log(
+            "[TinaCMS Debug]     Rejected: Does not match collection's include/exclude pattern."
+          );
           return false;
         }
       }
       // add / to the end of the path if it is not "''"
-      const path = collection.path ? collection.path.replace(/\/?$/, '/') : '';
-      return normalizedPath.startsWith(path);
+      const collectionBasePath = collection.path ? collection.path.replace(/\/?$/, '/') : '';
+      const startsWith = normalizedPath.startsWith(collectionBasePath);
+      console.log(
+        `[TinaCMS Debug]     Checking path prefix. Collection base path: ${collectionBasePath}, Normalized filepath: ${normalizedPath}, StartsWith: ${startsWith}`
+      );
+      if (!startsWith) {
+        console.log('[TinaCMS Debug]     Rejected: Filepath does not start with collection path.');
+      }
+      return startsWith;
     });
 
     // No matches
     if (possibleCollections.length === 0) {
+      console.error(
+        `[TinaCMS Debug] TinaSchema.getCollectionByFullPath - Failed to find any matching collection for filepath: ${filepath}`
+      );
+      if (silenceErrors) {
+        return undefined;
+      }
       throw new Error(`Unable to find collection for file at ${filepath}`);
     }
     // One match
     if (possibleCollections.length === 1) {
+      console.log(
+        `[TinaCMS Debug] TinaSchema.getCollectionByFullPath - Found single matching collection: ${possibleCollections[0].name} for filepath: ${filepath}`
+      );
       return possibleCollections[0];
     }
     if (possibleCollections.length > 1) {
+      console.log(
+        `[TinaCMS Debug] TinaSchema.getCollectionByFullPath - Found multiple (${possibleCollections.length}) possible collections for ${filepath}. Determining longest path...`
+      );
+      possibleCollections.forEach((pc) =>
+        console.log(`[TinaCMS Debug]     Possible: ${pc.name}, path: ${pc.path}`)
+      );
       /**
        * If there are multiple matches, we want to return the collection
        * with the longest path.
@@ -219,9 +258,7 @@ export class TinaSchema {
           (template) => lastItem(template.namespace) === templateName
         );
         if (!template) {
-          throw new Error(
-            `Unable to determine template for item at ${filepath}`
-          );
+          throw new Error(`Unable to determine template for item at ${filepath}`);
         }
       } else {
         throw new Error(
@@ -233,9 +270,7 @@ export class TinaSchema {
       template = templates.template;
     }
     if (!template) {
-      throw new Error(
-        `Something went wrong while trying to determine template for ${filepath}`
-      );
+      throw new Error(`Something went wrong while trying to determine template for ${filepath}`);
     }
 
     return { collection: collection, template: template };
@@ -257,15 +292,14 @@ export class TinaSchema {
           yup.object({ _template: yup.string().required() })
         );
         const template = templateInfo.templates.find(
-          (template) =>
-            template.namespace[template.namespace.length - 1] === data._template
+          (template) => template.namespace[template.namespace.length - 1] === data._template
         );
         if (!template) {
           // TODO: This should be a tina error
           throw new Error(
-            `Expected to find template named '${
-              data._template
-            }' for collection '${lastItem(collection.namespace)}'`
+            `Expected to find template named '${data._template}' for collection '${lastItem(
+              collection.namespace
+            )}'`
           );
         }
         return template;
@@ -300,10 +334,7 @@ export class TinaSchema {
       [collectionName]: this.transformCollectablePayload(payload, collection),
     };
   };
-  private transformCollectablePayload = (
-    payload: object,
-    collection: Collectable
-  ) => {
+  private transformCollectablePayload = (payload: object, collection: Collectable) => {
     const accumulator: { [key: string]: unknown } = {};
     Object.entries(payload).forEach(([key, value]) => {
       if (typeof collection.fields === 'string') {
@@ -395,17 +426,12 @@ export class TinaSchema {
    *
    *
    */
-  public getTemplatesForCollectable = (
-    collection: Collectable
-  ): CollectionTemplateable => {
+  public getTemplatesForCollectable = (collection: Collectable): CollectionTemplateable => {
     const extraFields: TinaField<true>[] = [];
     if (collection?.fields) {
       const template = collection;
 
-      if (
-        typeof template.fields === 'string' ||
-        typeof template.fields === 'undefined'
-      ) {
+      if (typeof template.fields === 'string' || typeof template.fields === 'undefined') {
         throw new Error('Expected template to have fields but none were found');
       }
 
@@ -446,18 +472,9 @@ export class TinaSchema {
    * @param cb callback function invoked for each field
    */
   public walkFields(
-    cb: (args: {
-      field: any;
-      collection: any;
-      path: string;
-      isListItem?: boolean;
-    }) => void
+    cb: (args: { field: any; collection: any; path: string; isListItem?: boolean }) => void
   ) {
-    const walk = (
-      collectionOrObject: any,
-      collection: any,
-      path: string = '$'
-    ) => {
+    const walk = (collectionOrObject: any, collection: any, path: string = '$') => {
       if (collectionOrObject.templates) {
         collectionOrObject.templates.forEach((template: any) => {
           const templatePath = `${path}.${template.name}`;
@@ -474,9 +491,7 @@ export class TinaSchema {
       }
       if (collectionOrObject.fields) {
         collectionOrObject.fields.forEach((field: any) => {
-          const fieldPath = field.list
-            ? `${path}.${field.name}[*]`
-            : `${path}.${field.name}`;
+          const fieldPath = field.list ? `${path}.${field.name}[*]` : `${path}.${field.name}`;
           cb({ field, collection, path: fieldPath });
           if (field.type === 'object' && field.fields) {
             walk(field, collection, fieldPath);
@@ -512,11 +527,7 @@ export class TinaSchema {
    * @param cb callback function invoked for each field
    */
   public legacyWalkFields = (
-    cb: (args: {
-      field: TinaField;
-      collection: Collection;
-      path: string[];
-    }) => void
+    cb: (args: { field: TinaField; collection: Collection; path: string[] }) => void
   ) => {
     const walk = (
       collectionOrObject: {
@@ -552,11 +563,7 @@ export class TinaSchema {
    * @param collection The collection to get the matches for. Can be a string or a collection object.
    * @returns An array of glob matches.
    */
-  public getMatches({
-    collection: collectionOrString,
-  }: {
-    collection: string | Collection;
-  }) {
+  public getMatches({ collection: collectionOrString }: { collection: string | Collection }) {
     const collection =
       typeof collectionOrString === 'string'
         ? this.getCollection(collectionOrString)
@@ -578,13 +585,7 @@ export class TinaSchema {
     return matches;
   }
 
-  public matchFiles({
-    collection,
-    files,
-  }: {
-    collection: string | Collection;
-    files: string[];
-  }) {
+  public matchFiles({ collection, files }: { collection: string | Collection; files: string[] }) {
     const matches = this.getMatches({ collection });
     const matcher = picomatch(matches);
     const matchedFiles = files.filter((file) => matcher(file));
