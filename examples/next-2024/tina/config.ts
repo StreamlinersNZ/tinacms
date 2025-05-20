@@ -1,4 +1,6 @@
 import { defineConfig } from 'tinacms'
+import PathwaySchema from './pathway'
+import ContentBlockSchema from './content-block'
 
 // Your hosting provider likely exposes this as an environment variable
 const branch =
@@ -83,6 +85,8 @@ export default defineConfig({
           },
         ],
       },
+      PathwaySchema,
+      ContentBlockSchema,
     ],
   },
 })

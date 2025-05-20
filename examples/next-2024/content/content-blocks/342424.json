@@ -1,0 +1,16 @@
+{
+  "content": {
+    "type": "root",
+    "children": [
+      {
+        "type": "p",
+        "children": [
+          {
+            "type": "text",
+            "text": "Some text in a content block"
+          }
+        ]
+      }
+    ]
+  }
+}
