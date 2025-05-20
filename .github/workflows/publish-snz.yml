@@ -1,8 +1,8 @@
-name: Publish
+name: Publish SNZ
 on:
   push:
     branches:
-      - 'snz-main'
+      - 'main'
   pull_request:
     types: [opened, synchronize, reopened, labeled]
   workflow_dispatch: # Manual trigger
