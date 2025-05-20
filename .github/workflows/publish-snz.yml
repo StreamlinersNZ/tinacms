@@ -67,9 +67,6 @@ jobs:
           find . -name "node_modules" -type d -exec rm -rf {} +
           find . -name ".turbo" -type d -exec rm -rf {} +
 
-          # Create a docker-like isolated environment
-          cd packages/tinacms
-
           # Configure .npmrc for AWS CodeArtifact in the tinacms directory too
           echo "registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/" > .npmrc
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> .npmrc
@@ -88,7 +85,6 @@ jobs:
 
       - name: Publish to CodeArtifact
         run: |
-          cd packages/tinacms
 
           # Stable publish for snz-main
           if [[ "$GITHUB_REF" == "refs/heads/snz-main" ]]; then
