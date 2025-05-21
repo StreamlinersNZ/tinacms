@@ -278,7 +278,7 @@ export const FormStatus = ({ pristine }) => {
       {!pristine && (
         <>
           <p className="text-gray-500 text-xs leading-tight whitespace-nowrap mr-2">
-            Unsaved Changes
+            Unsaved Changes (SNZ-main)
           </p>
           <span className="w-3 h-3 flex-0 rounded-full bg-red-300 border border-red-400" />{' '}
         </>
