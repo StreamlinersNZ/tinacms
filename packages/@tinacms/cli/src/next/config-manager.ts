@@ -96,9 +96,7 @@ export class ConfigManager {
     this.tinaFolderPath = await this.getTinaFolderPath(this.rootPath);
 
     // TODO - .env should potentially be configurable
-    this.envFilePath = path.resolve(
-      path.join(this.tinaFolderPath, '..', '.env')
-    );
+    this.envFilePath = path.resolve(path.join(this.tinaFolderPath, '..', '.env'));
     dotenv.config({ path: this.envFilePath });
 
     // Setup file paths that don't depend on the config file
@@ -122,64 +120,22 @@ export class ConfigManager {
       String(new Date().getTime())
     );
 
-    this.generatedGraphQLGQLPath = path.join(
-      this.generatedFolderPath,
-      GRAPHQL_GQL_FILE
-    );
-    this.generatedGraphQLJSONPath = path.join(
-      this.generatedFolderPath,
-      GRAPHQL_JSON_FILE
-    );
-    this.generatedSchemaJSONPath = path.join(
-      this.generatedFolderPath,
-      SCHEMA_JSON_FILE
-    );
-    this.generatedLookupJSONPath = path.join(
-      this.generatedFolderPath,
-      LOOKUP_JSON_FILE
-    );
-    this.generatedQueriesFilePath = path.join(
-      this.generatedFolderPath,
-      'queries.gql'
-    );
-    this.generatedFragmentsFilePath = path.join(
-      this.generatedFolderPath,
-      'frags.gql'
-    );
+    this.generatedGraphQLGQLPath = path.join(this.generatedFolderPath, GRAPHQL_GQL_FILE);
+    this.generatedGraphQLJSONPath = path.join(this.generatedFolderPath, GRAPHQL_JSON_FILE);
+    this.generatedSchemaJSONPath = path.join(this.generatedFolderPath, SCHEMA_JSON_FILE);
+    this.generatedLookupJSONPath = path.join(this.generatedFolderPath, LOOKUP_JSON_FILE);
+    this.generatedQueriesFilePath = path.join(this.generatedFolderPath, 'queries.gql');
+    this.generatedFragmentsFilePath = path.join(this.generatedFolderPath, 'frags.gql');
 
-    this.generatedTypesTSFilePath = path.join(
-      this.generatedFolderPath,
-      'types.ts'
-    );
-    this.generatedTypesJSFilePath = path.join(
-      this.generatedFolderPath,
-      'types.js'
-    );
-    this.generatedTypesDFilePath = path.join(
-      this.generatedFolderPath,
-      'types.d.ts'
-    );
-    this.userQueriesAndFragmentsGlob = path.join(
-      this.tinaFolderPath,
-      'queries/**/*.{graphql,gql}'
-    );
-    this.generatedQueriesAndFragmentsGlob = path.join(
-      this.generatedFolderPath,
-      '*.{graphql,gql}'
-    );
+    this.generatedTypesTSFilePath = path.join(this.generatedFolderPath, 'types.ts');
+    this.generatedTypesJSFilePath = path.join(this.generatedFolderPath, 'types.js');
+    this.generatedTypesDFilePath = path.join(this.generatedFolderPath, 'types.d.ts');
+    this.userQueriesAndFragmentsGlob = path.join(this.tinaFolderPath, 'queries/**/*.{graphql,gql}');
+    this.generatedQueriesAndFragmentsGlob = path.join(this.generatedFolderPath, '*.{graphql,gql}');
     // TODO: make these match the behavior where this matches the config format
-    this.generatedClientTSFilePath = path.join(
-      this.generatedFolderPath,
-      'client.ts'
-    );
-    this.generatedClientJSFilePath = path.join(
-      this.generatedFolderPath,
-      'client.js'
-    );
-    this.generatedClientDFilePath = path.join(
-      this.generatedFolderPath,
-      'client.d.ts'
-    );
+    this.generatedClientTSFilePath = path.join(this.generatedFolderPath, 'client.ts');
+    this.generatedClientJSFilePath = path.join(this.generatedFolderPath, 'client.js');
+    this.generatedClientDFilePath = path.join(this.generatedFolderPath, 'client.d.ts');
 
     this.generatedDatabaseClientDFilePath = path.join(
       this.generatedFolderPath,
@@ -223,21 +179,12 @@ export class ConfigManager {
     this.config = config;
     this.prebuildFilePath = prebuildPath;
 
-    this.publicFolderPath = path.join(
-      this.rootPath,
-      this.config.build.publicFolder
-    );
-    this.outputFolderPath = path.join(
-      this.publicFolderPath,
-      this.config.build.outputFolder
-    );
+    this.publicFolderPath = path.join(this.rootPath, this.config.build.publicFolder);
+    this.outputFolderPath = path.join(this.publicFolderPath, this.config.build.outputFolder);
     this.outputHTMLFilePath = path.join(this.outputFolderPath, 'index.html');
     this.outputGitignorePath = path.join(this.outputFolderPath, '.gitignore');
 
-    const fullLocalContentPath = path.join(
-      this.tinaFolderPath,
-      this.config.localContentPath || ''
-    );
+    const fullLocalContentPath = path.join(this.tinaFolderPath, this.config.localContentPath || '');
 
     if (this.config.localContentPath) {
       // Check if the localContentPath exists
@@ -305,13 +252,8 @@ export class ConfigManager {
       };
     }
     const generatedSchema = fs.readJSONSync(this.generatedSchemaJSONPath);
-    if (
-      !generatedSchema ||
-      !(typeof generatedSchema?.version !== 'undefined')
-    ) {
-      throw new Error(
-        `Can not find Tina GraphQL version in ${this.generatedSchemaJSONPath}`
-      );
+    if (!generatedSchema || !(typeof generatedSchema?.version !== 'undefined')) {
+      throw new Error(`Can not find Tina GraphQL version in ${this.generatedSchemaJSONPath}`);
     }
     return generatedSchema.version;
   }
@@ -342,9 +284,7 @@ export class ConfigManager {
   }
   printContentRelativePath(filename: string) {
     if (filename) {
-      return filename
-        .replace(/\\/g, '/')
-        .replace(`${this.contentRootPath}/`, '');
+      return filename.replace(/\\/g, '/').replace(`${this.contentRootPath}/`, '');
     }
     throw `No path provided to print`;
   }
@@ -394,10 +334,7 @@ export class ConfigManager {
     // good way of invalidating them when this file changes
     // https://github.com/nodejs/modules/issues/307
     const tmpdir = path.join(os.tmpdir(), Date.now().toString());
-    const preBuildConfigPath = path.join(
-      this.generatedFolderPath,
-      'config.prebuild.jsx'
-    );
+    const preBuildConfigPath = path.join(this.generatedFolderPath, 'config.prebuild.jsx');
 
     const outfile = path.join(tmpdir, 'config.build.jsx');
     const outfile2 = path.join(tmpdir, 'config.build.js');
@@ -416,6 +353,8 @@ export class ConfigManager {
       outfile: preBuildConfigPath,
       loader: loaders,
       metafile: true,
+      //snz - enabled alias for monorepo
+      tsconfig: path.join(this.rootPath, 'tsconfig.json'),
     });
     const flattenedList = [];
 
