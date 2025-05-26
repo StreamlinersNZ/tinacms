@@ -35,5 +35,9 @@
   "repository": {
     "url": "https://github.com/StreamlinersNZ/tinacms.git",
     "directory": "packages/@tinacms/scripts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/json-diff": "^1.0.3"
   }
 }
