@@ -3,14 +3,40 @@ import type { Database } from '@tinacms/graphql';
 import react from '@vitejs/plugin-react';
 import fs from 'fs-extra';
 import normalizePath from 'normalize-path';
-import {
-  type BuildOptions,
-  type InlineConfig,
-  type Plugin,
-  splitVendorChunkPlugin,
-} from 'vite';
+import { type BuildOptions, type InlineConfig, type Plugin, splitVendorChunkPlugin } from 'vite';
 import type { ConfigManager } from '../config-manager';
 import { tinaTailwind } from './tailwind';
+
+// Helper function to convert tsconfig paths to Vite alias format
+const convertTsConfigPathsToViteAliases = (
+  tsConfigPaths: Record<string, string[]>,
+  baseUrl: string,
+  projectRoot: string
+): { find: string | RegExp; replacement: string }[] => {
+  const aliases: { find: string | RegExp; replacement: string }[] = [];
+  for (const tsPath in tsConfigPaths) {
+    const vitePath = tsConfigPaths[tsPath][0]; // Take the first path mapping
+    if (vitePath) {
+      const findPattern = tsPath.replace(/\/\*$/, '');
+      const replacementPath = normalizePath(
+        path.resolve(projectRoot, baseUrl, vitePath.replace(/\/\*$/, ''))
+      );
+
+      aliases.push({
+        find: new RegExp(`^${findPattern}(.*)`),
+        replacement: `${replacementPath}$1`,
+      });
+      // Add a specific alias for exact matches if the tsPath doesn't end with /*
+      if (!tsPath.endsWith('/*')) {
+        aliases.push({
+          find: tsPath,
+          replacement: normalizePath(path.resolve(projectRoot, baseUrl, vitePath)),
+        });
+      }
+    }
+  }
+  return aliases;
+};
 
 /**
  * This type is duplicated in he `TinaMediaStore`
@@ -43,11 +69,7 @@ async function listFilesRecursively({
   config: { publicFolder: string; mediaRoot: string };
   roothPath: string;
 }): Promise<StaticMedia> {
-  const fullDirectoryPath = path.join(
-    roothPath,
-    config.publicFolder,
-    directoryPath
-  );
+  const fullDirectoryPath = path.join(roothPath, config.publicFolder, directoryPath);
   const exists = await fs.pathExists(fullDirectoryPath);
   if (!exists) {
     return { '0': [] };
@@ -82,10 +104,7 @@ async function listFilesRecursively({
     }
     staticMediaItems.push(staticMediaItem);
   }
-  function chunkArrayIntoObject<T>(
-    array: T[],
-    chunkSize: number
-  ): { [key: string]: T[] } {
+  function chunkArrayIntoObject<T>(array: T[], chunkSize: number): { [key: string]: T[] } {
     const result: { [key: string]: T[] } = {};
 
     for (let i = 0; i < array.length; i += chunkSize) {
@@ -131,18 +150,13 @@ export const createConfig = async ({
         }
       } catch (error) {
         // if we can't stringify it, we'll just warn the user
-        console.warn(
-          `Could not stringify public env process.env.${key} env variable`
-        );
+        console.warn(`Could not stringify public env process.env.${key} env variable`);
         console.warn(error);
       }
     }
   });
 
-  const staticMediaPath: string = path.join(
-    configManager.generatedFolderPath,
-    'static-media.json'
-  );
+  const staticMediaPath: string = path.join(configManager.generatedFolderPath, 'static-media.json');
   if (configManager.config.media?.tina?.static) {
     const staticMedia = await listFilesRecursively({
       directoryPath: configManager.config.media.tina?.mediaRoot || '',
@@ -154,7 +168,7 @@ export const createConfig = async ({
     await fs.outputFile(staticMediaPath, `[]`);
   }
 
-  const alias = {
+  const baseAliases = {
     TINA_IMPORT: configManager.prebuildFilePath,
     SCHEMA_IMPORT: configManager.generatedGraphQLJSONPath,
     STATIC_MEDIA_IMPORT: staticMediaPath,
@@ -165,16 +179,61 @@ export const createConfig = async ({
   };
 
   if (configManager.shouldSkipSDK()) {
-    alias['CLIENT_IMPORT'] = path.join(
-      configManager.spaRootPath,
-      'src',
-      'dummy-client.ts'
-    );
+    baseAliases['CLIENT_IMPORT'] = path.join(configManager.spaRootPath, 'src', 'dummy-client.ts');
   } else {
-    alias['CLIENT_IMPORT'] = configManager.isUsingTs()
+    baseAliases['CLIENT_IMPORT'] = configManager.isUsingTs()
       ? configManager.generatedTypesTSFilePath
       : configManager.generatedTypesJSFilePath;
   }
+
+  // --- BEGIN: Load and apply tsconfig paths for Vite ---
+  let projectAliases: { find: string | RegExp; replacement: string }[] = [];
+  const projectTsConfigPath = path.join(configManager.rootPath, 'tsconfig.json');
+  try {
+    if (fs.existsSync(projectTsConfigPath)) {
+      const tsConfigRaw = fs.readFileSync(projectTsConfigPath, 'utf-8');
+
+      const tsConfigNoComments = tsConfigRaw.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '');
+
+      const tsConfig = JSON.parse(tsConfigNoComments);
+      const tsConfigPaths = tsConfig.compilerOptions?.paths;
+      const baseUrl = tsConfig.compilerOptions?.baseUrl || '.';
+      if (tsConfigPaths) {
+        projectAliases = convertTsConfigPathsToViteAliases(
+          tsConfigPaths,
+          baseUrl,
+          configManager.rootPath
+        );
+        console.log(
+          '[TinaCMS CLI Vite Debug] Successfully applied tsconfig paths to Vite aliases:',
+          projectAliases
+        );
+      } else {
+        console.log(
+          '[TinaCMS CLI Vite Debug] No paths found in tsconfig.compilerOptions, not applying project aliases.'
+        );
+      }
+    } else {
+      console.log(
+        `[TinaCMS CLI Vite Debug] tsconfig.json not found at ${projectTsConfigPath}, not applying project aliases.`
+      );
+    }
+  } catch (e) {
+    console.error(
+      '[TinaCMS CLI Vite Debug] Error processing project tsconfig for Vite aliases:',
+      e
+    );
+  }
+  // --- END: Load and apply tsconfig paths for Vite ---
+
+  // Merge base aliases with project-specific aliases
+  // Project aliases should take precedence if there are any theoretical overlaps with generic find patterns
+  const finalAliases = Array.isArray(baseAliases) // Vite can take an object or array
+    ? [...projectAliases, ...baseAliases]
+    : [
+        ...projectAliases,
+        ...Object.entries(baseAliases).map(([find, replacement]) => ({ find, replacement })),
+      ];
 
   let basePath;
   if (configManager.config.build.basePath) {
@@ -190,7 +249,7 @@ export const createConfig = async ({
     )}/`,
     appType: 'spa',
     resolve: {
-      alias,
+      alias: finalAliases,
       dedupe: ['graphql', 'tinacms', 'react', 'react-dom', 'react-router-dom'],
     },
     define: {
@@ -230,9 +289,7 @@ export const createConfig = async ({
           }
         : {
             // Ignore everything except for the alias fields we specified above
-            ignored: [
-              `${configManager.tinaFolderPath}/**/!(config.prebuild.jsx|_graphql.json)`,
-            ],
+            ignored: [`${configManager.tinaFolderPath}/**/!(config.prebuild.jsx|_graphql.json)`],
           },
       fs: {
         strict: false,

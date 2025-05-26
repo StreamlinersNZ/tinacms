@@ -338,23 +338,23 @@ export class ConfigManager {
 
     const outfile = path.join(tmpdir, 'config.build.jsx');
     const outfile2 = path.join(tmpdir, 'config.build.js');
-    const tempTSConfigFile = path.join(tmpdir, 'tsconfig.json');
 
-    fs.outputFileSync(tempTSConfigFile, '{}');
+    const tsconfigPathForEsbuild = path.join(this.rootPath, 'tsconfig.json');
+
     const result2 = await esbuild.build({
       entryPoints: [configFilePath],
       bundle: true,
       target: ['es2020'],
       platform: 'browser',
       format: 'esm',
-      logLevel: 'silent',
+      logLevel: 'info',
       packages: 'external',
       ignoreAnnotations: true,
       outfile: preBuildConfigPath,
       loader: loaders,
       metafile: true,
-      //snz - enabled alias for monorepo
-      tsconfig: path.join(this.rootPath, 'tsconfig.json'),
+      jsx: 'automatic',
+      tsconfig: tsconfigPathForEsbuild,
     });
     const flattenedList = [];
 
