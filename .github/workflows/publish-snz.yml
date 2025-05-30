@@ -98,7 +98,7 @@ jobs:
             echo "Publishing beta version"
             git checkout ${{ github.sha }}
             pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
-            pnpm publish -r --tag beta --no-git-checks --access public
+            pnpm publish -r --tag beta --no-git-checks --access public --registry https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/
           #fi
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
