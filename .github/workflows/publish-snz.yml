@@ -94,12 +94,12 @@ jobs:
           #   pnpm run version
           #   pnpm publish -r --no-git-checks --access public
           # Beta/preview publish for all other branches
-          else
+          #else
             echo "Publishing beta version"
             git checkout ${{ github.sha }}
             pnpm version:snapshot $(echo ${{ github.sha }} | cut -c1-7)
             pnpm publish -r --tag beta --no-git-checks --access public
-          fi
+          #fi
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CODEARTIFACT_TOKEN: ${{ env.CODEARTIFACT_TOKEN }}
