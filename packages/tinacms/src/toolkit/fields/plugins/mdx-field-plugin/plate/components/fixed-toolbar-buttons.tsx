@@ -145,9 +145,9 @@ export default function FixedToolbarButtons() {
         : overrides.toolbar.map((item) => toolbarItems[item]).filter((item) => item !== undefined);
   }
 
-  if (!showEmbedButton) {
-    items = items.filter((item) => item.label !== toolbarItems.embed.label);
-  }
+  // if (!showEmbedButton) {
+  //   items = items.filter((item) => item.label !== toolbarItems.embed.label);
+  // }
 
   // const editorState = useEditorState();
   // const userInTable = helpers.isNodeActive(editorState, ELEMENT_TABLE);
@@ -192,13 +192,13 @@ export default function FixedToolbarButtons() {
           {items.slice(0, itemsShown).map((item) => (
             <React.Fragment key={item.label}>{item.Component}</React.Fragment>
           ))}
-          {items.length > itemsShown && (
-            <OverflowMenu>
-              {items.slice(itemsShown).flatMap((c) => (
-                <React.Fragment key={c.label}>{c.Component}</React.Fragment>
-              ))}
-            </OverflowMenu>
-          )}
+          {/* {items.length > itemsShown && (
+            // <OverflowMenu>
+            //   {items.slice(itemsShown).flatMap((c) => (
+            //     <React.Fragment key={c.label}>{c.Component}</React.Fragment>
+            //   ))}
+            // </OverflowMenu>
+          )} */}
         </>
       </div>
     </div>
