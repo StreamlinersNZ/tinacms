@@ -8,7 +8,7 @@ import { ELEMENT_MDX_INLINE } from '.';
 import { EllipsisIcon } from '../ui/icons';
 import { useEmbedHandles, useHotkey } from '../../hooks/embed-hooks';
 import { useTemplates } from '../../editor-context';
-import { insertNodes } from '@udecode/plate-common';
+// import { insertNodes } from '@udecode/plate-common';
 // import { ELEMENT_PARAGRAPH } from '@udecode/plate';
 
 const Wrapper = ({ inline, children }) => {
@@ -31,16 +31,16 @@ export const InlineEmbed = ({ attributes, children, element, onChange, editor })
   // useHotkey('enter', () => {
   //   insertNodes(editor, [{ type: ELEMENT_PARAGRAPH, children: [{ text: '' }] }]);
   // });
-  useHotkey('space', () => {
-    insertNodes(editor, [{ text: ' ' }], {
-      match: (n) => {
-        if (Element.isElement(n) && n.type === ELEMENT_MDX_INLINE) {
-          return true;
-        }
-      },
-      select: true,
-    });
-  });
+  // useHotkey('space', () => {
+  //   insertNodes(editor, [{ text: ' ' }], {
+  //     match: (n) => {
+  //       if (Element.isElement(n) && n.type === ELEMENT_MDX_INLINE) {
+  //         return true;
+  //       }
+  //     },
+  //     select: true,
+  //   });
+  // });
 
   const activeTemplate = templates.find((template) => template.name === element.name);
 

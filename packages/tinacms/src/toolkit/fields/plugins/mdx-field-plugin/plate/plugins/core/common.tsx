@@ -12,33 +12,33 @@
 //   createBasicMarksPlugin,
 // } from '@udecode/plate';
 import { ReactEditor } from 'slate-react';
-import {
-  createCodeBlockPlugin,
-  createHTMLBlockPlugin,
-  createHTMLInlinePlugin,
-} from '../create-code-block';
+// import {
+//   createCodeBlockPlugin,
+//   createHTMLBlockPlugin,
+//   createHTMLInlinePlugin,
+// } from '../create-code-block';
 import { ELEMENT_IMG } from '../create-img-plugin';
 import { ELEMENT_MDX_BLOCK, ELEMENT_MDX_INLINE } from '../create-mdx-plugins';
 // import { HANDLES_MDX } from './formatting';
-import {
-  findNode,
-  getBlockAbove,
-  getPluginType,
-  insertNodes,
-  type PlateEditor,
-  setNodes,
-  someNode,
-} from '@udecode/plate-common';
-import { createSlashPlugin } from '@udecode/plate-slash-command';
+// import {
+//   findNode,
+//   getBlockAbove,
+//   getPluginType,
+//   insertNodes,
+//   type PlateEditor,
+//   setNodes,
+//   someNode,
+// } from '@udecode/plate-common';
+// import { createSlashPlugin } from '@udecode/plate-slash-command';
 import { Transforms, Editor, Node } from 'slate';
 
 export const plugins = [
   // createBasicMarksPlugin(),
   // createHeadingPlugin(),
   // createParagraphPlugin(),
-  createCodeBlockPlugin(),
-  createHTMLBlockPlugin(),
-  createHTMLInlinePlugin(),
+  // createCodeBlockPlugin(),
+  // createHTMLBlockPlugin(),
+  // createHTMLInlinePlugin(),
   // createBlockquotePlugin(),
   // createUnderlinePlugin(),
   // createListPlugin(),
@@ -46,7 +46,7 @@ export const plugins = [
   // createHorizontalRulePlugin(),
   // Allows us to do things like copy/paste, remembering the state of the element (like mdx)
   // createNodeIdPlugin(),
-  createSlashPlugin(),
+  // createSlashPlugin(),
   // createTablePlugin(),
 ];
 
@@ -64,10 +64,10 @@ export const unsupportedItemsInTable = new Set([
   'Heading 6',
 ]);
 
-const isNodeActive = (editor, type) => {
-  const pluginType = getPluginType(editor, type);
-  return !!editor?.selection && someNode(editor, { match: { type: pluginType } });
-};
+// const isNodeActive = (editor, type) => {
+//   const pluginType = getPluginType(editor, type);
+//   return !!editor?.selection && someNode(editor, { match: { type: pluginType } });
+// };
 
 // const isListActive = (editor, type) => {
 //   const res = !!editor?.selection && getListItemEntry(editor);
@@ -101,7 +101,7 @@ const normalize = (node: any) => {
 };
 
 export const insertInlineElement = (editor, inlineElement) => {
-  insertNodes(editor, [inlineElement]);
+  // insertNodes(editor, [inlineElement]);
   /**
    * FIXME mdx-setTimeout: setTimeout seems to work, but not sure why it's necessary
    * Without this, the move occurs on the element that was selected
@@ -130,9 +130,9 @@ export const insertBlockElement = (editor, blockElement) => {
     setTimeout(() => {
       // If empty, replace the current block
       if (isCurrentBlockEmpty(editor)) {
-        setNodes(editor, blockElement);
+        // setNodes(editor, blockElement);
       } else {
-        insertNodes(editor, [blockElement]);
+        // insertNodes(editor, [blockElement]);
       }
     }, 1);
   }
@@ -144,13 +144,13 @@ const isCurrentBlockEmpty = (editor) => {
   }
   const [node] = Editor.node(editor, editor.selection);
   const cursor = editor.selection.focus;
-  const blockAbove = getBlockAbove(editor);
+  // const blockAbove = getBlockAbove(editor);
   const isEmpty =
     !Node.string(node) &&
     // @ts-ignore bad type from slate
-    !node.children?.some((n) => Editor.isInline(editor, n)) &&
-    // Only do this if we're at the start of a block
-    Editor.isStart(editor, cursor, blockAbove[1]);
+    !node.children?.some((n) => Editor.isInline(editor, n));
+  // Only do this if we're at the start of a block
+  // Editor.isStart(editor, cursor, blockAbove[1]);
 
   return isEmpty;
 };
@@ -161,14 +161,14 @@ const isCurrentBlockEmpty = (editor) => {
  * NOTE: this also excludes block quotes, but probably should
  * allow for that, at the moment blockquotes are strict
  */
-const currentNodeSupportsMDX = (editor: PlateEditor) =>
-  findNode(editor, {
-    // match: { type: HANDLES_MDX },
-  });
+// const currentNodeSupportsMDX = (editor: PlateEditor) =>
+// findNode(editor, {
+//   // match: { type: HANDLES_MDX },
+// });
 
 export const helpers = {
-  isNodeActive,
+  // isNodeActive,
   // isListActive,
-  currentNodeSupportsMDX,
+  // currentNodeSupportsMDX,
   normalize,
 };
