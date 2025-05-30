@@ -85,13 +85,14 @@ jobs:
           pnpm build
           pnpm types
 
+          # TODO: Uncomment this when we are ready to publish stable
       - name: Publish to CodeArtifact
         run: |
           # Stable publish for main
-          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
-            echo "Publishing stable version"
-            pnpm run version
-            pnpm publish -r --no-git-checks --access public
+          # if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+          #   echo "Publishing stable version"
+          #   pnpm run version
+          #   pnpm publish -r --no-git-checks --access public
           # Beta/preview publish for all other branches
           else
             echo "Publishing beta version"
