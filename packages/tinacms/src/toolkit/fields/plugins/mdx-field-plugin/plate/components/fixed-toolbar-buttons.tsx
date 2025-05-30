@@ -1,5 +1,5 @@
 // import { ELEMENT_TABLE } from '@udecode/plate';
-import { useEditorState } from '@udecode/plate-common';
+// import { useEditorState } from '@udecode/plate-common';
 import React from 'react';
 import { useResize } from '../hooks/use-resize';
 import { helpers, unsupportedItemsInTable } from '../plugins/core/common';
@@ -24,7 +24,7 @@ import { ImageToolbarButton } from './plate-ui/image-toolbar-button';
 import { LinkToolbarButton } from './plate-ui/link-toolbar-button';
 import { MermaidToolbarButton } from './plate-ui/mermaid-toolbar-button';
 import OverflowMenu from './plate-ui/overflow-menu';
-import { QuoteToolbarButton } from './plate-ui/quote-toolbar-button';
+// import { QuoteToolbarButton } from './plate-ui/quote-toolbar-button';
 import { RawMarkdownToolbarButton } from './plate-ui/raw-markdown-toolbar-button';
 import { TableDropdownMenu } from './plate-ui/table-dropdown-menu';
 import TemplatesToolbarButton from './plate-ui/templates-toolbar-button';
@@ -63,11 +63,11 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
     width: () => STANDARD_ICON_WIDTH,
     Component: <ImageToolbarButton />,
   },
-  quote: {
-    label: 'Quote',
-    width: () => STANDARD_ICON_WIDTH,
-    Component: <QuoteToolbarButton />,
-  },
+  // quote: {
+  //   label: 'Quote',
+  //   width: () => STANDARD_ICON_WIDTH,
+  //   Component: <QuoteToolbarButton />,
+  // },
   // ul: {
   //   label: 'Unordered List',
   //   width: () => STANDARD_ICON_WIDTH,
@@ -149,7 +149,7 @@ export default function FixedToolbarButtons() {
     items = items.filter((item) => item.label !== toolbarItems.embed.label);
   }
 
-  const editorState = useEditorState();
+  // const editorState = useEditorState();
   // const userInTable = helpers.isNodeActive(editorState, ELEMENT_TABLE);
   // if (userInTable) {
   //   items = items.filter((item) => !unsupportedItemsInTable.has(item.label));

@@ -3,7 +3,7 @@
 import React from 'react';
 
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import { withCn, withProps } from '@udecode/cn';
+// import { withCn, withProps } from '@udecode/cn';
 
 export const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -13,16 +13,20 @@ export const TooltipTrigger = TooltipPrimitive.Trigger;
 
 export const TooltipPortal = TooltipPrimitive.Portal;
 
-export const TooltipContent = withCn(
-  withProps(TooltipPrimitive.Content, {
-    sideOffset: 4,
-  }),
-  'z-[9999] overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md'
-);
+// export const TooltipContent = withCn(
+//   withProps(TooltipPrimitive.Content, {
+//     sideOffset: 4,
+//   }),
+//   'z-[9999] overflow-hidden rounded-md border bg-popover px-3 py-1.5 text-sm text-popover-foreground shadow-md'
+// );
 
-export function withTooltip<
-  T extends React.ComponentType<any> | keyof HTMLElementTagNameMap,
->(Component: T) {
+export const TooltipContent = () => {
+  return <div>TooltipContent</div>;
+};
+
+export function withTooltip<T extends React.ComponentType<any> | keyof HTMLElementTagNameMap>(
+  Component: T
+) {
   return React.forwardRef<
     React.ElementRef<T>,
     {
@@ -31,15 +35,9 @@ export function withTooltip<
         React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>,
         'children'
       >;
-      tooltipProps?: Omit<
-        React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>,
-        'children'
-      >;
+      tooltipProps?: Omit<React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Root>, 'children'>;
     } & React.ComponentPropsWithoutRef<T>
-  >(function ExtendComponent(
-    { tooltip, tooltipContentProps, tooltipProps, ...props },
-    ref
-  ) {
+  >(function ExtendComponent({ tooltip, tooltipContentProps, tooltipProps, ...props }, ref) {
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {

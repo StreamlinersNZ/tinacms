@@ -5,8 +5,8 @@ import {
   commonPlugins,
 } from './plugins/core';
 import { helpers } from './plugins/core/common';
-import { createMdxBlockPlugin, createMdxInlinePlugin } from './plugins/create-mdx-plugins';
-import createImgPlugin from './plugins/create-img-plugin';
+// import { createMdxBlockPlugin, createMdxInlinePlugin } from './plugins/create-mdx-plugins';
+// import createImgPlugin from './plugins/create-img-plugin';
 // import { createInvalidMarkdownPlugin } from './plugins/create-invalid-markdown-plugin';
 import { createLinkPlugin } from './plugins/create-link-plugin';
 import { uuid } from './plugins/ui/helpers';

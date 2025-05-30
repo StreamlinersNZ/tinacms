@@ -5,7 +5,7 @@ import { useEmbedHandles, useHotkey } from '../../hooks/embed-hooks';
 import { useTemplates } from '../../editor-context';
 import { DeleteImageButton, StyledFile, StyledImage } from '../../../../../components';
 import { isImage } from '@toolkit/components/media/utils';
-import { insertNodes } from '@udecode/plate-common';
+// import { insertNodes } from '@udecode/plate-common';
 // import { ELEMENT_PARAGRAPH } from '@udecode/plate';
 
 export const ImgEmbed = ({ attributes, children, element, editor, onChange }) => {

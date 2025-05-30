@@ -1,4 +1,4 @@
-import { withProps } from '@udecode/cn';
+// import { withProps } from '@udecode/cn';
 // import {
 //   ELEMENT_BLOCKQUOTE,
 //   ELEMENT_CODE_BLOCK,
@@ -26,11 +26,11 @@ import { withProps } from '@udecode/cn';
 //   MARK_STRIKETHROUGH,
 //   MARK_UNDERLINE,
 // } from '@udecode/plate';
-import { PlateElement, PlateLeaf } from '@udecode/plate-common';
-import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash-command';
+// import { PlateElement, PlateLeaf } from '@udecode/plate-common';
+// import { ELEMENT_SLASH_INPUT } from '@udecode/plate-slash-command';
 import React from 'react';
 import { useSelected } from 'slate-react';
-import { BlockquoteElement } from '../../components/plate-ui/blockquote-element';
+// import { BlockquoteElement } from '../../components/plate-ui/blockquote-element';
 import { CodeBlockElement } from '../../components/plate-ui/code-block-element';
 import { CodeLeaf } from '../../components/plate-ui/code-leaf';
 import { CodeLineElement } from '../../components/plate-ui/code-line-element';
@@ -44,7 +44,7 @@ import {
 } from '../../components/plate-ui/table-cell-element';
 import { TableElement } from '../../components/plate-ui/table-element';
 import { TableRowElement } from '../../components/plate-ui/table-row-element';
-import { ELEMENT_MERMAID } from '../custom/mermaid-plugin';
+// import { ELEMENT_MERMAID } from '../custom/mermaid-plugin';
 import { classNames } from './helpers';
 
 /**
@@ -59,7 +59,7 @@ const headerClasses = 'font-normal';
 
 export const Components = () => {
   return {
-    [ELEMENT_SLASH_INPUT]: SlashInputElement,
+    // [ELEMENT_SLASH_INPUT]: SlashInputElement,
     // [ELEMENT_H1]: ({ attributes, editor, element, className, ...props }) => (
     //   <h1
     //     className={classNames(
@@ -151,7 +151,7 @@ export const Components = () => {
     //     {...props}
     //   />
     // ),
-    [ELEMENT_MERMAID]: MermaidElement,
+    // [ELEMENT_MERMAID]: MermaidElement,
     // [ELEMENT_BLOCKQUOTE]: BlockquoteElement,
     // [ELEMENT_CODE_BLOCK]: CodeBlockElement,
     // [ELEMENT_CODE_LINE]: CodeLineElement,

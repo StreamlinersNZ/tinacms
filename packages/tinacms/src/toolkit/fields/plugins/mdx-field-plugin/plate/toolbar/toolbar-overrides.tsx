@@ -2,7 +2,7 @@ export type ToolbarOverrideType =
   | 'heading'
   | 'link'
   | 'image'
-  | 'quote'
+  // | 'quote'
   // | 'ul'
   // | 'ol'
   // | 'code'
