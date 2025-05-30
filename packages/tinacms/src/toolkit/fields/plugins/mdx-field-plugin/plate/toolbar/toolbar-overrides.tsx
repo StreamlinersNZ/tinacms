@@ -1,18 +1,18 @@
 export type ToolbarOverrideType =
-  | 'heading'
+  // | 'heading'
   | 'link'
   | 'image'
-  | 'quote'
-  | 'ul'
-  | 'ol'
-  | 'code'
+  // | 'quote'
+  // | 'ul'
+  // | 'ol'
+  // | 'code'
   | 'codeBlock'
-  | 'bold'
-  | 'strikethrough'
-  | 'italic'
+  // | 'bold'
+  // | 'strikethrough'
+  // | 'italic'
   | 'mermaid'
   | 'raw'
-  | 'embed'
+  // | 'embed'
   | 'table';
 
 export const STANDARD_ICON_WIDTH = 32;

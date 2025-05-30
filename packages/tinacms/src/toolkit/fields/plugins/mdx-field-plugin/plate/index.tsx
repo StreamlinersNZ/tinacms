@@ -1,27 +1,27 @@
 import React from 'react';
 import { Components } from './plugins/ui/components';
-import { formattingPlugins, commonPlugins } from './plugins/core';
-import { helpers } from './plugins/core/common';
 import {
-  createMdxBlockPlugin,
-  createMdxInlinePlugin,
-} from './plugins/create-mdx-plugins';
-import createImgPlugin from './plugins/create-img-plugin';
-import { createInvalidMarkdownPlugin } from './plugins/create-invalid-markdown-plugin';
-import { createLinkPlugin } from './plugins/create-link-plugin';
+  // formattingPlugins,
+  commonPlugins,
+} from './plugins/core';
+import { helpers } from './plugins/core/common';
+// import { createMdxBlockPlugin, createMdxInlinePlugin } from './plugins/create-mdx-plugins';
+// import createImgPlugin from './plugins/create-img-plugin';
+// import { createInvalidMarkdownPlugin } from './plugins/create-invalid-markdown-plugin';
+// import { createLinkPlugin } from './plugins/create-link-plugin';
 import { uuid } from './plugins/ui/helpers';
 import type { RichTextType } from '..';
-import { createPlugins, Plate } from '@udecode/plate-common';
-import { Editor } from './components/editor';
-import { FixedToolbar } from './components/plate-ui/fixed-toolbar';
-import { TooltipProvider } from './components/plate-ui/tooltip';
-import FixedToolbarButtons from './components/fixed-toolbar-buttons';
-import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
-import FloatingToolbarButtons from './components/floating-toolbar-buttons';
-import { LinkFloatingToolbar } from './components/plate-ui/link-floating-toolbar';
-import { isUrl } from './transforms/is-url';
-import { ToolbarProvider } from './toolbar/toolbar-provider';
-import { createMermaidPlugin } from './plugins/custom/mermaid-plugin';
+// import { createPlugins, Plate } from '@udecode/plate-common';
+// import { Editor } from './components/editor';
+// import { FixedToolbar } from './components/plate-ui/fixed-toolbar';
+// import { TooltipProvider } from './components/plate-ui/tooltip';
+// import FixedToolbarButtons from './components/fixed-toolbar-buttons';
+// import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
+// import FloatingToolbarButtons from './components/floating-toolbar-buttons';
+// import { LinkFloatingToolbar } from './components/plate-ui/link-floating-toolbar';
+// import { isUrl } from './transforms/is-url';
+// import { ToolbarProvider } from './toolbar/toolbar-provider';
+// import { createMermaidPlugin } from './plugins/custom/mermaid-plugin';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(
@@ -32,31 +32,31 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     []
   );
 
-  const plugins = React.useMemo(
-    () =>
-      createPlugins(
-        [
-          ...formattingPlugins,
-          ...commonPlugins,
-          createMdxBlockPlugin(),
-          createMdxInlinePlugin(),
-          createImgPlugin(),
-          createMermaidPlugin(),
-          createInvalidMarkdownPlugin(),
-          createLinkPlugin({
-            options: {
-              //? NOTE: This is a custom validation function that allows for relative links i.e. /about
-              isUrl: (url: string) => isUrl(url),
-            },
-            renderAfterEditable: LinkFloatingToolbar,
-          }),
-        ],
-        {
-          components: Components(),
-        }
-      ),
-    []
-  );
+  // const plugins = React.useMemo(
+  //   () =>
+  //     // createPlugins(
+  //     //   [
+  //     //     // ...formattingPlugins,
+  //     //     ...commonPlugins,
+  //     //     createMdxBlockPlugin(),
+  //     //     createMdxInlinePlugin(),
+  //     //     createImgPlugin(),
+  //     //     createMermaidPlugin(),
+  //     //     // createInvalidMarkdownPlugin(),
+  //     //     createLinkPlugin({
+  //     //       options: {
+  //     //         //? NOTE: This is a custom validation function that allows for relative links i.e. /about
+  //     //         isUrl: (url: string) => isUrl(url),
+  //     //       },
+  //     //       renderAfterEditable: LinkFloatingToolbar,
+  //     //     }),
+  //     //   ],
+  //     //   {
+  //     //     components: Components(),
+  //     //   }
+  //     // ),
+  //   []
+  // );
 
   // This should be a plugin customization
   const tempId = [tinaForm.id, input.name].join('.');
@@ -68,9 +68,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       setTimeout(() => {
         // Slate/Plate doesn't expose it's underlying element
         // as a ref, so we need to query for it ourselves
-        const plateElement = ref.current?.querySelector(
-          '[role="textbox"]'
-        ) as HTMLElement;
+        const plateElement = ref.current?.querySelector('[role="textbox"]') as HTMLElement;
         if (field.experimental_focusIntent && plateElement) {
           if (plateElement) plateElement.focus();
         }
@@ -81,10 +79,10 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
 
   return (
     <div ref={ref}>
-      <Plate
+      {/* <Plate
         id={id}
         initialValue={initialValue}
-        plugins={plugins}
+        plugins={[]}
         onChange={(value) => {
           input.onChange({
             type: 'root',
@@ -96,9 +94,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
           <ToolbarProvider
             tinaForm={tinaForm}
             templates={field.templates}
-            overrides={
-              field?.toolbarOverride ? field.toolbarOverride : field.overrides
-            }
+            overrides={field?.toolbarOverride ? field.toolbarOverride : field.overrides}
           >
             <FixedToolbar>
               <FixedToolbarButtons />
@@ -111,7 +107,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
           </ToolbarProvider>
           <Editor />
         </TooltipProvider>
-      </Plate>
+      </Plate> */}
     </div>
   );
 };

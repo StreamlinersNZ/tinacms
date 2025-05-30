@@ -1,26 +1,26 @@
-import { isHotkey } from 'is-hotkey';
-import { KEY_SOFT_BREAK } from './create-soft-break-plugin';
-import { getBlockAbove, insertNodes, queryNode } from '@udecode/plate-common';
+// import { isHotkey } from 'is-hotkey';
+// import { KEY_SOFT_BREAK } from './create-soft-break-plugin';
+// import { getBlockAbove, insertNodes, queryNode } from '@udecode/plate-common';
 
-export const onKeyDownSoftBreak =
-  (editor, { options: { rules = [] } }) =>
-  (event) => {
-    const entry = getBlockAbove(editor);
-    if (!entry) return;
+// export const onKeyDownSoftBreak =
+//   (editor, { options: { rules = [] } }) =>
+//   (event) => {
+//     const entry = getBlockAbove(editor);
+//     if (!entry) return;
 
-    rules.forEach(({ hotkey, query }) => {
-      if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
-        event.preventDefault();
-        event.stopPropagation();
+//     rules.forEach(({ hotkey, query }) => {
+//       if (isHotkey(hotkey, event as any) && queryNode(entry, query)) {
+//         event.preventDefault();
+//         event.stopPropagation();
 
-        insertNodes(
-          editor,
-          [
-            { type: KEY_SOFT_BREAK, children: [{ text: '' }] },
-            { type: 'text', text: '' },
-          ],
-          { select: true }
-        );
-      }
-    });
-  };
+//         insertNodes(
+//           editor,
+//           [
+//             { type: KEY_SOFT_BREAK, children: [{ text: '' }] },
+//             { type: 'text', text: '' },
+//           ],
+//           { select: true }
+//         );
+//       }
+//     });
+//   };

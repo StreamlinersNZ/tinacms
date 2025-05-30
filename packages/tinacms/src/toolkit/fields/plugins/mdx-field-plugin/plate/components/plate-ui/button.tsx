@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { Slot } from '@radix-ui/react-slot';
-import { cn, withRef } from '@udecode/cn';
+// import { cn, withRef } from '@udecode/cn';
 import { type VariantProps, cva } from 'class-variance-authority';
 
 export const buttonVariants = cva(
@@ -26,33 +26,36 @@ export const buttonVariants = cva(
       },
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+        destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         inlineLink: 'text-base text-primary underline underline-offset-4',
         link: 'text-primary underline-offset-4 hover:underline',
-        outline:
-          'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
-        secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
       },
     },
   }
 );
 
-export const Button = withRef<
-  'button',
-  {
-    asChild?: boolean;
-  } & VariantProps<typeof buttonVariants>
->(({ asChild = false, className, isMenu, size, variant, ...props }, ref) => {
-  const Comp = asChild ? Slot : 'button';
+// export const Button = withRef<
+//   'button',
+//   {
+//     asChild?: boolean;
+//   } & VariantProps<typeof buttonVariants>
+// >(({ asChild = false, className, isMenu, size, variant, ...props }, ref) => {
+//   const Comp = asChild ? Slot : 'button';
 
-  return (
-    <Comp
-      className={cn(buttonVariants({ className, isMenu, size, variant }))}
-      ref={ref}
-      {...props}
-    />
-  );
-});
+//   return (
+//     <Comp
+//       className={
+//         // cn(buttonVariants({ className, isMenu, size, variant }))
+//       }
+//       ref={ref}
+//       {...props}
+//     />
+//   );
+// });
+
+export const Button = () => {
+  return <div>Tina Button</div>;
+};

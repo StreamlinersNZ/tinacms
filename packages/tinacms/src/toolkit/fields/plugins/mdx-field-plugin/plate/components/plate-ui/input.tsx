@@ -1,4 +1,5 @@
-import { withVariants } from '@udecode/cn';
+// import { withVariants } from '@udecode/cn';
+import React from 'react';
 import { cva } from 'class-variance-authority';
 
 export const inputVariants = cva(
@@ -21,5 +22,9 @@ export const inputVariants = cva(
     },
   }
 );
+//
+// export const Input = withVariants('input', inputVariants, ['variant', 'h']);
 
-export const Input = withVariants('input', inputVariants, ['variant', 'h']);
+export const Input = () => {
+  return <div>Input</div>;
+};
