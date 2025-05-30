@@ -8,20 +8,20 @@ import { helpers } from './plugins/core/common';
 // import { createMdxBlockPlugin, createMdxInlinePlugin } from './plugins/create-mdx-plugins';
 // import createImgPlugin from './plugins/create-img-plugin';
 // import { createInvalidMarkdownPlugin } from './plugins/create-invalid-markdown-plugin';
-import { createLinkPlugin } from './plugins/create-link-plugin';
+// import { createLinkPlugin } from './plugins/create-link-plugin';
 import { uuid } from './plugins/ui/helpers';
 import type { RichTextType } from '..';
 // import { createPlugins, Plate } from '@udecode/plate-common';
-import { Editor } from './components/editor';
-import { FixedToolbar } from './components/plate-ui/fixed-toolbar';
-import { TooltipProvider } from './components/plate-ui/tooltip';
-import FixedToolbarButtons from './components/fixed-toolbar-buttons';
-import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
-import FloatingToolbarButtons from './components/floating-toolbar-buttons';
-import { LinkFloatingToolbar } from './components/plate-ui/link-floating-toolbar';
-import { isUrl } from './transforms/is-url';
-import { ToolbarProvider } from './toolbar/toolbar-provider';
-import { createMermaidPlugin } from './plugins/custom/mermaid-plugin';
+// import { Editor } from './components/editor';
+// import { FixedToolbar } from './components/plate-ui/fixed-toolbar';
+// import { TooltipProvider } from './components/plate-ui/tooltip';
+// import FixedToolbarButtons from './components/fixed-toolbar-buttons';
+// import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
+// import FloatingToolbarButtons from './components/floating-toolbar-buttons';
+// import { LinkFloatingToolbar } from './components/plate-ui/link-floating-toolbar';
+// import { isUrl } from './transforms/is-url';
+// import { ToolbarProvider } from './toolbar/toolbar-provider';
+// import { createMermaidPlugin } from './plugins/custom/mermaid-plugin';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(

@@ -75,6 +75,6 @@ import { PlusIcon } from './icons';
 //   );
 // };
 
-export const TemplatesToolbarButton = () => {
+export default function TemplatesToolbarButton() {
   return <div>TemplatesToolbarButton</div>;
-};
+}

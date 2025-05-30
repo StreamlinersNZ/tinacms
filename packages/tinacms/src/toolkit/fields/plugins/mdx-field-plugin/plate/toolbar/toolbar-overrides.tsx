@@ -1,5 +1,5 @@
 export type ToolbarOverrideType =
-  | 'heading'
+  // | 'heading'
   | 'link'
   | 'image'
   // | 'quote'
@@ -12,7 +12,7 @@ export type ToolbarOverrideType =
   // | 'italic'
   | 'mermaid'
   | 'raw'
-  | 'embed'
+  // | 'embed'
   | 'table';
 
 export const STANDARD_ICON_WIDTH = 32;

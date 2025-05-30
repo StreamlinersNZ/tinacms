@@ -27,8 +27,8 @@ import OverflowMenu from './plate-ui/overflow-menu';
 // import { QuoteToolbarButton } from './plate-ui/quote-toolbar-button';
 import { RawMarkdownToolbarButton } from './plate-ui/raw-markdown-toolbar-button';
 import { TableDropdownMenu } from './plate-ui/table-dropdown-menu';
-import TemplatesToolbarButton from './plate-ui/templates-toolbar-button';
-import { ToolbarGroup } from './plate-ui/toolbar';
+// import TemplatesToolbarButton from './plate-ui/templates-toolbar-button';
+// import { ToolbarGroup } from './plate-ui/toolbar';
 // import {
 //   BoldToolbarButton,
 //   StrikethroughToolbarButton,
@@ -43,16 +43,16 @@ type ToolbarItem = {
 };
 
 const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
-  heading: {
-    label: HEADING_LABEL,
-    width: (paragraphIconExists) =>
-      paragraphIconExists ? HEADING_ICON_WITH_TEXT : HEADING_ICON_ONLY, // Dynamically handle width based on paragraph icon
-    Component: (
-      <ToolbarGroup noSeparator>
-        <HeadingsMenu />
-      </ToolbarGroup>
-    ),
-  },
+  // heading: {
+  //   label: HEADING_LABEL,
+  //   width: (paragraphIconExists) =>
+  //     paragraphIconExists ? HEADING_ICON_WITH_TEXT : HEADING_ICON_ONLY, // Dynamically handle width based on paragraph icon
+  //   Component: (
+  //     <ToolbarGroup noSeparator>
+  //       <HeadingsMenu />
+  //     </ToolbarGroup>
+  //   ),
+  // },
   link: {
     label: 'Link',
     width: () => STANDARD_ICON_WIDTH,
@@ -118,11 +118,11 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
     width: () => STANDARD_ICON_WIDTH,
     Component: <RawMarkdownToolbarButton />,
   },
-  embed: {
-    label: 'Templates',
-    width: () => EMBED_ICON_WIDTH,
-    Component: <TemplatesToolbarButton />,
-  },
+  // embed: {
+  //   label: 'Templates',
+  //   width: () => EMBED_ICON_WIDTH,
+  //   Component: <TemplatesToolbarButton />,
+  // },
 };
 
 export default function FixedToolbarButtons() {

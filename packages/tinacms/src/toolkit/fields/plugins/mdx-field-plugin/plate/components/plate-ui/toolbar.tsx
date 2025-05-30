@@ -166,6 +166,10 @@ import * as React from 'react';
 //     </div>
 //   );
 // });
-export const Toolbar = () => {
+export default function Toolbar() {
   return <div>Toolbar</div>;
+}
+
+export const ToolbarGroup = () => {
+  return <div>ToolbarGroup</div>;
 };

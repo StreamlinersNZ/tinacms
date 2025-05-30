@@ -20,18 +20,18 @@ import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 //   ELEMENT_H6,
 // } from '@udecode/plate-heading';
 // import { ELEMENT_PARAGRAPH } from '@udecode/plate-paragraph';
-import { ToolbarButton } from './plate-ui/toolbar';
-import { helpers, unsupportedItemsInTable } from '../plugins/core/common';
+// import { ToolbarButton } from './plate-ui/toolbar';
+// import { helpers, unsupportedItemsInTable } from '../plugins/core/common';
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-  useOpenState,
-} from './plate-ui/dropdown-menu';
-import { Icons } from './plate-ui/icons';
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuRadioGroup,
+//   DropdownMenuRadioItem,
+//   DropdownMenuTrigger,
+//   useOpenState,
+// } from './plate-ui/dropdown-menu';
+// import { Icons } from './plate-ui/icons';
 // import { ELEMENT_TABLE } from '@udecode/plate-table';
 
 const items = [

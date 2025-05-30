@@ -1,7 +1,7 @@
 import React from 'react';
-import { withRef } from '@udecode/cn';
+// import { withRef } from '@udecode/cn';
 import { Icons } from './icons';
-import { ToolbarButton } from './toolbar';
+// import { ToolbarButton } from './toolbar';
 import { useEditorContext } from '../../editor-context';
 
 const useRawMarkdownToolbarButton = () => {
@@ -19,22 +19,26 @@ const useRawMarkdownToolbarButton = () => {
   };
 };
 
-export const RawMarkdownToolbarButton = withRef<
-  typeof ToolbarButton,
-  {
-    clear?: string | string[];
-  }
->(({ clear, ...rest }, ref) => {
-  const { props } = useRawMarkdownToolbarButton();
-  return (
-    <ToolbarButton
-      ref={ref}
-      tooltip='Raw Markdown'
-      {...rest}
-      {...props}
-      data-testid='markdown-button'
-    >
-      <Icons.raw />
-    </ToolbarButton>
-  );
-});
+// export const RawMarkdownToolbarButton = withRef<
+//   typeof ToolbarButton,
+//   {
+//     clear?: string | string[];
+//   }
+// >(({ clear, ...rest }, ref) => {
+//   const { props } = useRawMarkdownToolbarButton();
+//   return (
+//     <ToolbarButton
+//       ref={ref}
+//       tooltip='Raw Markdown'
+//       {...rest}
+//       {...props}
+//       data-testid='markdown-button'
+//     >
+//       <Icons.raw />
+//     </ToolbarButton>
+//   );
+// });
+
+export const RawMarkdownToolbarButton = () => {
+  return <div>RawMarkdownToolbarButton</div>;
+};
