@@ -231,7 +231,7 @@ export function stringifyProps(
             return;
           } else {
             const stringValue = stringifyMDX(value, field, imageCallback);
-            if (stringValue && typeof stringValue === 'string') {
+            if (stringValue) {
               val = stringValue
                 .trim()
                 .split('\n')

@@ -32,10 +32,7 @@ export const tinaTableTemplate: RichTextTemplate = {
             if (Array.isArray(value.tableCells)) {
               return {
                 label: value.tableCells
-                  .map((cellItem) => {
-                    const cellValue = stringifyCell(cellItem.value);
-                    return typeof cellValue === 'string' ? cellValue.trim() : '';
-                  })
+                  .map((cellItem) => stringifyCell(cellItem.value)?.trim())
                   .join(' | '),
               };
             }
@@ -54,10 +51,7 @@ export const tinaTableTemplate: RichTextTemplate = {
               if (cell) {
                 if (cell.value) {
                   return {
-                    label: (() => {
-                      const cellValue = stringifyCell(cell.value);
-                      return typeof cellValue === 'string' ? cellValue.trim() : '';
-                    })(),
+                    label: stringifyCell(cell.value)?.trim(),
                   };
                 }
               }
