@@ -19,6 +19,7 @@ packages/cli/forestry/.env
 tsconfig.tsbuildinfo
 
 .npmrc
+.pnpm-store
 
 .yarn/*
 !.yarn/cache
