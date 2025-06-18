@@ -55,10 +55,10 @@
 		"yup": "^0.32.11"
 	},
 	"publishConfig": {
-		"registry": "https://registry.npmjs.org"
+		"registry": "https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/"
 	},
 	"repository": {
-		"url": "https://github.com/tinacms/tinacms.git",
+		"url": "https://github.com/StreamlinersNZ/tinacms.git",
 		"directory": "packages/tina-graphql"
 	},
 	"devDependencies": {
