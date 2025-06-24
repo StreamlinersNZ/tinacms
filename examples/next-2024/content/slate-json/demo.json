@@ -42,6 +42,58 @@
             "text": "another paragraph"
           }
         ]
+      },
+      {
+        "type": "p",
+        "id": "yfnc2",
+        "children": [
+          {
+            "text": ""
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "id": "kfnxy",
+        "children": [
+          {
+            "text": "And a content block"
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "id": "4nok5",
+        "children": [
+          {
+            "text": ""
+          }
+        ]
+      },
+      {
+        "type": "p",
+        "id": "4oyj3",
+        "children": [
+          {
+            "text": ""
+          },
+          {
+            "type": "mdxJsxTextElement",
+            "name": "ContentBlock",
+            "children": [
+              {
+                "text": ""
+              }
+            ],
+            "props": {
+              "block": "content/contentBlock/content.md"
+            },
+            "id": "yym5j"
+          },
+          {
+            "text": ""
+          }
+        ]
       }
     ]
   }

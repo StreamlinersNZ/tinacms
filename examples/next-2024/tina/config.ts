@@ -1,5 +1,4 @@
 import { defineConfig } from 'tinacms';
-import PathwaySchema, { contentBlock } from './collection/bugReproduction';
 
 // Your hosting provider likely exposes this as an environment variable
 const branch =
@@ -33,6 +32,11 @@ export default defineConfig({
         name: 'slateJson',
         path: 'content/slate-json',
         format: 'json',
+        ui: {
+          router({ document }) {
+            return `/slateJson/${document._sys.filename}`;
+          },
+        },
         fields: [
           {
             name: 'title',
@@ -58,7 +62,40 @@ export default defineConfig({
                   },
                 ],
               },
+              {
+                name: 'ContentBlock',
+                label: 'Content Block',
+                inline: true,
+                fields: [
+                  {
+                    name: 'block',
+                    label: 'Content Block',
+                    type: 'reference',
+                    collections: ['contentBlock'],
+                    required: true,
+                  },
+                ],
+              }
             ],
+          },
+        ],
+      },
+      {
+        name: 'contentBlock',
+        label: 'Content Block',
+        path: 'content/contentBlock',
+        fields: [
+          {
+            name: 'title',
+            label: 'Title',
+            type: 'string',
+            isTitle: true,
+            required: true,
+          },
+          {
+            name: 'body',
+            label: 'Body',
+            type: 'rich-text',
           },
         ],
       },
