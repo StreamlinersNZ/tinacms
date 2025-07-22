@@ -8,8 +8,8 @@ import * as React from 'react';
 import { BiExit, BiMenu } from 'react-icons/bi';
 import { FiInfo } from 'react-icons/fi';
 import { VscNewFile } from 'react-icons/vsc';
-import { version } from '../../../../package.json';
 import { cn } from '../../../utils/cn';
+import { VersionInfo } from './VersionInfo';
 import { SyncStatusButton, SyncStatusModal } from './sync-status';
 
 interface NavCollection {
@@ -21,6 +21,7 @@ interface NavCollection {
 interface NavProps {
   isLocalMode: boolean;
   showHamburger?: boolean;
+  menuIsOpen: boolean;
   toggleMenu: () => void;
   children?: any;
   className?: string;
@@ -46,6 +47,7 @@ interface NavProps {
 export const Nav = ({
   isLocalMode,
   showHamburger = true,
+  menuIsOpen,
   toggleMenu,
   className = '',
   children,
@@ -97,18 +99,34 @@ export const Nav = ({
 
   return (
     <>
+      <button
+        className={cn(
+          'fixed pointer-events-auto p-4 hover:bg-gray-100 transition-colors duration-150 ease-in-out rounded z-10',
+          menuIsOpen ? 'hidden' : ''
+        )}
+        onClick={() => {
+          toggleMenu();
+        }}
+      >
+        <BiMenu className='h-6 w-auto text-gray-600' />
+      </button>
+
       <div
-        className={`relative z-30 flex flex-col bg-white border-r border-gray-200 w-96 h-full ${className}`}
+        className={cn(
+          `relative z-30 flex flex-col bg-white border-r border-gray-200 w-96 h-full ${className}`,
+          menuIsOpen ? '' : 'hidden'
+        )}
         style={{ maxWidth: `${sidebarWidth}px` }}
         {...props}
       >
         <div className='flex w-full px-4 py-3 justify-between items-center gap-2 border-b border-gray-200'>
           <button
             className={cn(
-              'pointer-events-auto p-2 hover:bg-gray-100 transition-colors duration-150 ease-in-out rounded',
-              showHamburger ? '' : 'md:hidden'
+              'pointer-events-auto p-2 hover:bg-gray-100 transition-colors duration-150 ease-in-out rounded'
             )}
-            onClick={toggleMenu}
+            onClick={() => {
+              toggleMenu();
+            }}
           >
             <BiMenu className='h-6 w-auto text-gray-600' />
           </button>
@@ -237,9 +255,7 @@ export const Nav = ({
             className='text-lg py-2 first:pt-3 last:pb-3 whitespace-nowrap flex items-center opacity-80 text-gray-600 hover:text-blue-400'
             cms={cms}
           />
-          <span className='font-sans font-light text-xs mb-3 mt-4 text-gray-500'>
-            TinaCMS v{version}
-          </span>
+          <VersionInfo />
         </div>
       </div>
 
