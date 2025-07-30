@@ -17,6 +17,8 @@ type BaseComponents = {
   bold?: { children: JSX.Element };
   strikethrough?: { children: JSX.Element };
   underline?: { children: JSX.Element };
+  subscript?: { children: JSX.Element };
+  superscript?: { children: JSX.Element };
   code?: { children: JSX.Element };
   text?: { children: string };
   ul?: { children: JSX.Element };
@@ -83,9 +85,7 @@ export type TinaMarkdownContent = {
   children: TinaMarkdownContent[];
 };
 
-export const TinaMarkdown = <
-  CustomComponents extends { [key: string]: object } = any,
->({
+export const TinaMarkdown = <CustomComponents extends { [key: string]: object } = any>({
   content,
   components = {},
 }: {
@@ -93,9 +93,7 @@ export const TinaMarkdown = <
   components?:
     | Components<{}>
     | Components<{
-        [BK in keyof CustomComponents]: (
-          props: CustomComponents[BK]
-        ) => JSX.Element;
+        [BK in keyof CustomComponents]: (props: CustomComponents[BK]) => JSX.Element;
       }>;
 }) => {
   if (!content) {
@@ -121,10 +119,19 @@ const Leaf = (props: {
   italic?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
+  subscript?: boolean;
+  superscript?: boolean;
   code?: boolean;
   components: Pick<
     BaseComponentSignature,
-    'bold' | 'italic' | 'underline' | 'strikethrough' | 'code' | 'text'
+    | 'bold'
+    | 'italic'
+    | 'underline'
+    | 'strikethrough'
+    | 'code'
+    | 'text'
+    | 'subscript'
+    | 'superscript'
   >;
 }) => {
   if (props.bold) {
@@ -191,6 +198,38 @@ const Leaf = (props: {
       </s>
     );
   }
+  if (props.subscript) {
+    const { subscript, ...rest } = props;
+    if (props.components.subscript) {
+      const Component = props.components.subscript;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
+    return (
+      <sub>
+        <Leaf {...rest} />
+      </sub>
+    );
+  }
+  if (props.superscript) {
+    const { superscript, ...rest } = props;
+    if (props.components.superscript) {
+      const Component = props.components.superscript;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
+    return (
+      <sup>
+        <Leaf {...rest} />
+      </sup>
+    );
+  }
   if (props.code) {
     const { code, ...rest } = props;
     if (props.components.code) {
@@ -222,10 +261,7 @@ const Leaf = (props: {
 // large bodies of text it becomes pretty painful to see as-you-type updates, especially
 // in Safari.
 const MemoNode = (props) => {
-  const MNode = React.useMemo(
-    () => <Node {...props} />,
-    [JSON.stringify(props)]
-  );
+  const MNode = React.useMemo(() => <Node {...props} />, [JSON.stringify(props)]);
   return MNode;
 };
 const Node = ({ components, child }) => {
@@ -297,9 +333,7 @@ const Node = ({ components, child }) => {
       if (Array.isArray(child.children)) {
         codeString = child.children
           .map((line) =>
-            Array.isArray(line.children)
-              ? line.children.map((t) => t.text).join('')
-              : ''
+            Array.isArray(line.children) ? line.children.map((t) => t.text).join('') : ''
           )
           .join('\n');
       } else if (typeof child.value === 'string') {
@@ -352,20 +386,14 @@ const Node = ({ components, child }) => {
               ? child.props?.tableRows.filter((_, i) => i !== 0)
               : child.props?.tableRows) || [];
           const header = child.props?.tableRows?.at(0);
-          const TableComponent =
-            components['table'] || ((props) => <table {...props} />);
-          const TrComponent =
-            components['tr'] || ((props) => <tr {...props} />);
+          const TableComponent = components['table'] || ((props) => <table {...props} />);
+          const TrComponent = components['tr'] || ((props) => <tr {...props} />);
           const ThComponent =
             components['th'] ||
-            ((props) => (
-              <th style={{ textAlign: props?.align || 'auto' }} {...props} />
-            ));
+            ((props) => <th style={{ textAlign: props?.align || 'auto' }} {...props} />);
           const TdComponent =
             components['td'] ||
-            ((props) => (
-              <td style={{ textAlign: props?.align || 'auto' }} {...props} />
-            ));
+            ((props) => <td style={{ textAlign: props?.align || 'auto' }} {...props} />);
           const align = child.props?.align || [];
           return (
             <TableComponent>
@@ -377,9 +405,7 @@ const Node = ({ components, child }) => {
                         <TinaMarkdown
                           key={i}
                           components={{
-                            p: (props) => (
-                              <ThComponent align={align[i]} {...props} />
-                            ),
+                            p: (props) => <ThComponent align={align[i]} {...props} />,
                           }}
                           content={c.value}
                         />
@@ -397,9 +423,7 @@ const Node = ({ components, child }) => {
                           <TinaMarkdown
                             key={i}
                             components={{
-                              p: (props) => (
-                                <TdComponent align={align[i]} {...props} />
-                              ),
+                              p: (props) => <TdComponent align={align[i]} {...props} />,
                             }}
                             content={c.value}
                           />
@@ -424,9 +448,7 @@ const Node = ({ components, child }) => {
       const rows = child.children || [];
       const TableComponent =
         components['table'] ||
-        ((props) => (
-          <table style={{ border: '1px solid #EDECF3' }} {...props} />
-        ));
+        ((props) => <table style={{ border: '1px solid #EDECF3' }} {...props} />);
       const TrComponent = components['tr'] || ((props) => <tr {...props} />);
       const TdComponent =
         components['td'] ||
@@ -452,9 +474,7 @@ const Node = ({ components, child }) => {
                       <TinaMarkdown
                         key={i}
                         components={{
-                          p: (props) => (
-                            <TdComponent align={align[i]} {...props} />
-                          ),
+                          p: (props) => <TdComponent align={align[i]} {...props} />,
                         }}
                         content={cell.children}
                       />

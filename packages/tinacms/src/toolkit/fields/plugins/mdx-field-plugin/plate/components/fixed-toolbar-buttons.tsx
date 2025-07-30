@@ -29,12 +29,11 @@ import {
   CodeToolbarButton,
   ItalicToolbarButton,
   StrikethroughToolbarButton,
+  SubscriptButton,
+  SuperscriptButton,
 } from './plate-ui/mark-toolbar-button';
 import { TablePlugin } from '@udecode/plate-table/react';
-import {
-  BulletedListPlugin,
-  NumberedListPlugin,
-} from '@udecode/plate-list/react';
+import { BulletedListPlugin, NumberedListPlugin } from '@udecode/plate-list/react';
 import { ListToolbarButton } from './plate-ui/indent-list-toolbar-button';
 import { TableDropdownMenu } from './plate-ui/table/table-dropdown-menu';
 import { CodeBlockPlugin } from '@udecode/plate-code-block/react';
@@ -56,6 +55,16 @@ const toolbarItems: { [key in ToolbarOverrideType]: ToolbarItem } = {
         <HeadingsMenu />
       </ToolbarGroup>
     ),
+  },
+  subscript: {
+    label: 'Subscript',
+    width: () => STANDARD_ICON_WIDTH,
+    Component: <SubscriptButton />,
+  },
+  superscript: {
+    label: 'Superscript',
+    width: () => STANDARD_ICON_WIDTH,
+    Component: <SuperscriptButton />,
   },
   link: {
     label: 'Link',
@@ -146,16 +155,12 @@ export default function FixedToolbarButtons() {
     items =
       overrides === undefined
         ? Object.values(toolbarItems)
-        : overrides
-            .map((item) => toolbarItems[item])
-            .filter((item) => item !== undefined);
+        : overrides.map((item) => toolbarItems[item]).filter((item) => item !== undefined);
   } else {
     items =
       overrides?.toolbar === undefined
         ? Object.values(toolbarItems)
-        : overrides.toolbar
-            .map((item) => toolbarItems[item])
-            .filter((item) => item !== undefined);
+        : overrides.toolbar.map((item) => toolbarItems[item]).filter((item) => item !== undefined);
   }
 
   if (!showEmbedButton) {
@@ -181,10 +186,7 @@ export default function FixedToolbarButtons() {
     // Count numbers of buttons can fit into the available width
     const { itemFitCount } = items.reduce(
       (acc, item) => {
-        if (
-          item.label !== HEADING_LABEL &&
-          acc.totalItemsWidth + item.width() <= availableWidth
-        ) {
+        if (item.label !== HEADING_LABEL && acc.totalItemsWidth + item.width() <= availableWidth) {
           return {
             //add 4px to account for additional padding on toolbar buttons
             totalItemsWidth: acc.totalItemsWidth + item.width() + 4,
@@ -210,36 +212,28 @@ export default function FixedToolbarButtons() {
   };
 
   return (
-    <div className='w-full overflow-hidden @container/toolbar' ref={toolbarRef}>
+    <div className="w-full overflow-hidden @container/toolbar" ref={toolbarRef}>
       <div
-        className='flex'
+        className="flex"
         style={{
           transform: 'translateX(calc(-1px))',
         }}
       >
         <>
-          {items
-            .slice(0, items.length > itemsShown ? itemsShown - 1 : itemsShown)
-            .map((item) => (
-              <div
-                className={cn(
-                  'transition duration-500 ease-in-out',
-                  getOpacity(item)
-                )}
-                key={item.label}
-              >
-                {item.Component}
-              </div>
-            ))}
+          {items.slice(0, items.length > itemsShown ? itemsShown - 1 : itemsShown).map((item) => (
+            <div
+              className={cn('transition duration-500 ease-in-out', getOpacity(item))}
+              key={item.label}
+            >
+              {item.Component}
+            </div>
+          ))}
           {items.length > itemsShown && (
-            <div className='w-fit ml-auto'>
+            <div className="w-fit ml-auto">
               <OverflowMenu>
                 {items.slice(itemsShown - 1).flatMap((c) => (
                   <div
-                    className={cn(
-                      'transition duration-500 ease-in-out',
-                      getOpacity(c)
-                    )}
+                    className={cn('transition duration-500 ease-in-out', getOpacity(c))}
                     key={c.label}
                   >
                     {c.Component}

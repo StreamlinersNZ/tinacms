@@ -5,21 +5,15 @@ import {
   ItalicPlugin,
   StrikethroughPlugin,
   UnderlinePlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
-import {
-  CodeBlockPlugin,
-  CodeLinePlugin,
-  CodeSyntaxPlugin,
-} from '@udecode/plate-code-block/react';
+import { CodeBlockPlugin, CodeLinePlugin, CodeSyntaxPlugin } from '@udecode/plate-code-block/react';
 import { HEADING_KEYS } from '@udecode/plate-heading';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import {
-  BulletedListPlugin,
-  ListItemPlugin,
-  NumberedListPlugin,
-} from '@udecode/plate-list/react';
+import { BulletedListPlugin, ListItemPlugin, NumberedListPlugin } from '@udecode/plate-list/react';
 import { SlashInputPlugin } from '@udecode/plate-slash-command/react';
 import {
   TableCellHeaderPlugin,
@@ -60,13 +54,7 @@ const headerClasses = 'font-normal';
 export const Components = () => {
   return {
     [SlashInputPlugin.key]: SlashInputElement,
-    [HEADING_KEYS.h1]: ({
-      attributes,
-      editor,
-      element,
-      className,
-      ...props
-    }) => (
+    [HEADING_KEYS.h1]: ({ attributes, editor, element, className, ...props }) => (
       <h1
         {...attributes}
         {...props}
@@ -78,13 +66,7 @@ export const Components = () => {
         )}
       />
     ),
-    [HEADING_KEYS.h2]: ({
-      attributes,
-      editor,
-      element,
-      className,
-      ...props
-    }) => (
+    [HEADING_KEYS.h2]: ({ attributes, editor, element, className, ...props }) => (
       <h2
         {...attributes}
         {...props}
@@ -96,13 +78,7 @@ export const Components = () => {
         )}
       />
     ),
-    [HEADING_KEYS.h3]: ({
-      attributes,
-      editor,
-      element,
-      className,
-      ...props
-    }) => (
+    [HEADING_KEYS.h3]: ({ attributes, editor, element, className, ...props }) => (
       <h3
         {...attributes}
         {...props}
@@ -114,13 +90,7 @@ export const Components = () => {
         )}
       />
     ),
-    [HEADING_KEYS.h4]: ({
-      attributes,
-      editor,
-      element,
-      className,
-      ...props
-    }) => (
+    [HEADING_KEYS.h4]: ({ attributes, editor, element, className, ...props }) => (
       <h4
         {...attributes}
         {...props}
@@ -133,13 +103,7 @@ export const Components = () => {
       />
     ),
     /** Tailwind prose doesn't style h5 and h6 elements */
-    [HEADING_KEYS.h5]: ({
-      attributes,
-      editor,
-      element,
-      className,
-      ...props
-    }) => (
+    [HEADING_KEYS.h5]: ({ attributes, editor, element, className, ...props }) => (
       <h5
         {...attributes}
         {...props}
@@ -152,13 +116,7 @@ export const Components = () => {
         style={{ fontFamily: "'Libre Baskerville', serif", fontWeight: '400' }}
       />
     ),
-    [HEADING_KEYS.h6]: ({
-      attributes,
-      editor,
-      element,
-      className,
-      ...props
-    }) => (
+    [HEADING_KEYS.h6]: ({ attributes, editor, element, className, ...props }) => (
       <h6
         {...attributes}
         {...props}
@@ -194,10 +152,7 @@ export const Components = () => {
       return (
         <span
           {...attributes}
-          className={classNames(
-            'font-mono bg-green-100 cursor-not-allowed',
-            className
-          )}
+          className={classNames('font-mono bg-green-100 cursor-not-allowed', className)}
         >
           {children}
           {element.value}
@@ -210,6 +165,8 @@ export const Components = () => {
     [LinkPlugin.key]: LinkElement,
     [CodePlugin.key]: CodeLeaf,
     [UnderlinePlugin.key]: withProps(PlateLeaf, { as: 'u' }),
+    [SubscriptPlugin.key]: withProps(PlateLeaf, { as: 'sub' }),
+    [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: 'sup' }),
     [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: 's' }),
     [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),

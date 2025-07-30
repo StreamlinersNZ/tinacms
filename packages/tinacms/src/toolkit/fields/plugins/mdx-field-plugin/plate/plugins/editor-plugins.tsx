@@ -5,6 +5,8 @@ import { AutoformatPlugin } from '@udecode/plate-autoformat/react';
 import {
   BasicMarksPlugin,
   UnderlinePlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
 import { BlockquotePlugin } from '@udecode/plate-block-quote/react';
 import { ExitBreakPlugin, SoftBreakPlugin } from '@udecode/plate-break/react';
@@ -14,11 +16,7 @@ import { HeadingPlugin } from '@udecode/plate-heading/react';
 import { HorizontalRulePlugin } from '@udecode/plate-horizontal-rule/react';
 import { IndentListPlugin } from '@udecode/plate-indent-list/react';
 import { LinkPlugin } from '@udecode/plate-link/react';
-import {
-  BulletedListPlugin,
-  ListPlugin,
-  NumberedListPlugin,
-} from '@udecode/plate-list/react';
+import { BulletedListPlugin, ListPlugin, NumberedListPlugin } from '@udecode/plate-list/react';
 import { NodeIdPlugin } from '@udecode/plate-node-id';
 import { ResetNodePlugin } from '@udecode/plate-reset-node/react';
 import { SlashPlugin } from '@udecode/plate-slash-command/react';
@@ -30,10 +28,7 @@ import { LinkFloatingToolbar } from '../components/plate-ui/link-floating-toolba
 import { isUrl } from '../transforms/is-url';
 import createImgPlugin from './create-img-plugin';
 import { createInvalidMarkdownPlugin } from './create-invalid-markdown-plugin';
-import {
-  createMdxBlockPlugin,
-  createMdxInlinePlugin,
-} from './create-mdx-plugins';
+import { createMdxBlockPlugin, createMdxInlinePlugin } from './create-mdx-plugins';
 import { FloatingToolbarPlugin } from './ui/floating-toolbar-plugin';
 import {
   autoformatArrow,
@@ -90,6 +85,8 @@ const resetBlockTypesCodeBlockRule = {
 export const viewPlugins = [
   BasicMarksPlugin,
   UnderlinePlugin,
+  SubscriptPlugin,
+  SuperscriptPlugin,
   HeadingPlugin.configure({ options: { levels: 6 } }),
   ParagraphPlugin,
   CodeBlockPlugin.configure({
@@ -185,8 +182,7 @@ export const editorPlugins = [
         {
           ...resetBlockTypesCommonRule,
           hotkey: 'Enter',
-          predicate: (editor) =>
-            editor.api.isEmpty(editor.selection, { block: true }),
+          predicate: (editor) => editor.api.isEmpty(editor.selection, { block: true }),
         },
         {
           ...resetBlockTypesCommonRule,

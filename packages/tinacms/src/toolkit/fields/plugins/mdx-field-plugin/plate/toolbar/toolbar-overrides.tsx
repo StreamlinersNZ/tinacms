@@ -14,6 +14,8 @@ export type ToolbarOverrideType =
   | 'raw'
   | 'embed'
   | 'table'
+  | 'subscript'
+  | 'superscript'
   | 'hr';
 
 export const STANDARD_ICON_WIDTH = 32;

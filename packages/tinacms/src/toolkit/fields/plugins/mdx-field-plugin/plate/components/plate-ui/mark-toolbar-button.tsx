@@ -4,15 +4,14 @@ import React from 'react';
 import { withRef } from '@udecode/cn';
 import { Icons } from './icons';
 import { ToolbarButton } from './toolbar';
-import {
-  useMarkToolbarButton,
-  useMarkToolbarButtonState,
-} from '@udecode/plate/react';
+import { useMarkToolbarButton, useMarkToolbarButtonState } from '@udecode/plate/react';
 import {
   BoldPlugin,
   CodePlugin,
   ItalicPlugin,
   StrikethroughPlugin,
+  SuperscriptPlugin,
+  SubscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
 
 const MarkToolbarButton = withRef<
@@ -29,25 +28,37 @@ const MarkToolbarButton = withRef<
 });
 
 export const BoldToolbarButton = () => (
-  <MarkToolbarButton tooltip='Bold (⌘+B)' nodeType={BoldPlugin.key}>
+  <MarkToolbarButton tooltip="Bold (⌘+B)" nodeType={BoldPlugin.key}>
     <Icons.bold />
   </MarkToolbarButton>
 );
 
 export const StrikethroughToolbarButton = () => (
-  <MarkToolbarButton tooltip='Strikethrough' nodeType={StrikethroughPlugin.key}>
+  <MarkToolbarButton tooltip="Strikethrough" nodeType={StrikethroughPlugin.key}>
     <Icons.strikethrough />
   </MarkToolbarButton>
 );
 
 export const ItalicToolbarButton = () => (
-  <MarkToolbarButton tooltip='Italic (⌘+I)' nodeType={ItalicPlugin.key}>
+  <MarkToolbarButton tooltip="Italic (⌘+I)" nodeType={ItalicPlugin.key}>
     <Icons.italic />
   </MarkToolbarButton>
 );
 
 export const CodeToolbarButton = () => (
-  <MarkToolbarButton tooltip='Code (⌘+E)' nodeType={CodePlugin.key}>
+  <MarkToolbarButton tooltip="Code (⌘+E)" nodeType={CodePlugin.key}>
     <Icons.code />
+  </MarkToolbarButton>
+);
+
+export const SuperscriptButton = () => (
+  <MarkToolbarButton tooltip="Superscript" nodeType={SuperscriptPlugin.key}>
+    <Icons.superscript />
+  </MarkToolbarButton>
+);
+
+export const SubscriptButton = () => (
+  <MarkToolbarButton tooltip="Subscript" nodeType={SubscriptPlugin.key}>
+    <Icons.subscript />
   </MarkToolbarButton>
 );
