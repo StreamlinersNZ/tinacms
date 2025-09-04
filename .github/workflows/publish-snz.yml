@@ -86,50 +86,78 @@ jobs:
             echo "Push to streamliners-main detected. Using github.event.before as base: ${BASE_SHA}"
           fi
           if [[ -z "${BASE_SHA}" ]]; then
-            echo "Using origin/streamliners-main as base."
+            echo "Using merge-base against origin/streamliners-main."
             git fetch origin streamliners-main --depth=1 || true
-            BASE_SHA="$(git rev-parse origin/streamliners-main)"
+            BASE_SHA="$(git merge-base "$GITHUB_SHA" "origin/streamliners-main")"
           fi
 
-          # List changed files vs base, then map to package roots under ./packages/**
-          git diff --name-only "${BASE_SHA}..${GITHUB_SHA}" > changed_files.txt || true
+          echo "BASE_SHA=${BASE_SHA}"
 
+          # Files changed vs base
+          git diff --name-only "${BASE_SHA}..${GITHUB_SHA}" > changed_files.txt || true
+          echo "Changed files:"
+          cat changed_files.txt || true
+
+          # List all workspaces (no install required)
+          pnpm -r list --depth=-1 --json > workspace_list.json
+
+          # Map changed files to nearest workspace root by prefix match
           node -e '
             const fs = require("fs");
             const path = require("path");
-            if (!fs.existsSync("changed_files.txt")) process.exit(0);
-            const lines = fs.readFileSync("changed_files.txt","utf8").split("\n").filter(Boolean);
+
+            const repo = process.cwd();
+            const toAbs = p => path.resolve(repo, p);
+
+            const files = fs.existsSync("changed_files.txt")
+              ? fs.readFileSync("changed_files.txt","utf8").split("\n").filter(Boolean).map(toAbs)
+              : [];
+
+            let workspaces = [];
+            try {
+              workspaces = JSON.parse(fs.readFileSync("workspace_list.json","utf8"));
+            } catch {}
+
+            // Normalize workspace list shape between pnpm versions
+            if (!Array.isArray(workspaces)) workspaces = [];
+            workspaces = workspaces
+              .filter(Boolean)
+              .map(w => ({ name: w.name, version: w.version, path: toAbs(w.path || w.dir || ""), private: !!w.private }))
+              .filter(w => w.path && fs.existsSync(w.path));
+
             const roots = new Set();
-            for (const f of lines) {
-              let dir = path.dirname(f);
-              while (dir && dir !== "." && dir !== "/") {
-                const pj = path.join(dir, "package.json");
-                if (fs.existsSync(pj)) { roots.add(dir); break; }
-                const next = path.dirname(dir);
-                if (next === dir) break;
-                dir = next;
+            for (const f of files) {
+              // find all workspaces whose path is a prefix of file path; choose the longest (deepest)
+              const candidates = workspaces.filter(w => f.startsWith(w.path + path.sep));
+              if (candidates.length) {
+                candidates.sort((a,b) => b.path.length - a.path.length);
+                roots.add(candidates[0].path);
               }
             }
-            fs.writeFileSync("changed_paths.txt", Array.from(roots).join("\n") + (roots.size ? "\n" : ""));
-            const list = [];
-            for (const d of roots) {
-              try {
-                const pj = JSON.parse(fs.readFileSync(path.join(d,"package.json"),"utf8"));
-                list.push({ name: pj.name, version: pj.version, path: path.resolve(d), private: !!pj.private });
-              } catch {}
+
+            const rootList = Array.from(roots);
+            // Write changed_paths.txt as repo-relative paths
+            const rels = rootList.map(p => path.relative(repo, p));
+            fs.writeFileSync("changed_paths.txt", rels.join("\n") + (rels.length ? "\n" : ""));
+
+            // Build compact info for summary
+            const info = [];
+            for (const r of rootList) {
+              const ws = workspaces.find(w => w.path === r);
+              if (ws) info.push(ws);
             }
-            fs.writeFileSync("changed_list.json", JSON.stringify(list, null, 2) + "\n");
+            fs.writeFileSync("changed_list.json", JSON.stringify(info));
           '
 
           echo "Changed package paths:"
           cat changed_paths.txt || true
 
           CHANGED_COUNT=$(grep -c . changed_paths.txt || true)
-          echo "CHANGED_COUNT=${CHANGED_COUNT}" | tee -a $GITHUB_ENV
+          echo "CHANGED_COUNT=${CHANGED_COUNT}" | tee -a "$GITHUB_ENV"
 
-          echo "CHANGED_JSON<<EOF" >> $GITHUB_ENV
-          cat changed_list.json >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          # Compact JSON into one line to safely export as env
+          node -e 'const fs=require("fs"); const j=fs.readFileSync("changed_list.json","utf8"); const o=j ? JSON.parse(j) : []; process.stdout.write(JSON.stringify(o));' > changed_list.compact.json
+          echo "CHANGED_JSON=$(cat changed_list.compact.json)" >> "$GITHUB_ENV"
 
       # registry rewrite (safe to run after captured diffs)
       - name: Update all package.json files
@@ -164,12 +192,11 @@ jobs:
           if [[ -f changed_paths.txt ]]; then
             while IFS= read -r p; do
               [[ -z "$p" ]] && continue
-              # Only include non-private packages (checked later too)
               FILTERS="$FILTERS --filter ./$p"
             done < changed_paths.txt
           fi
           echo "FILTERS=${FILTERS}" >> $GITHUB_ENV
-          echo "Filters:$FILTERS"
+          echo "Filters: $FILTERS"
 
       # ------------------------------------- #
       # PREVIEW: non-streamliners-main branches
