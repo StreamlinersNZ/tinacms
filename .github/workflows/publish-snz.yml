@@ -119,7 +119,7 @@ jobs:
                 list.push({ name: pj.name, version: pj.version, path: path.resolve(d), private: !!pj.private });
               } catch {}
             }
-            fs.writeFileSync("changed_list.json", JSON.stringify(list, null, 2));
+            fs.writeFileSync("changed_list.json", JSON.stringify(list, null, 2) + "\n");
           '
 
           echo "Changed package paths:"
