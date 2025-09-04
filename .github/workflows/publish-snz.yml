@@ -217,7 +217,7 @@ jobs:
           ' | tee snz_bump.log
                 
       - name: Publish SNZ prerelease (changed only) to CodeArtifact with tag=snz
-        # if: ${{ github.ref == 'refs/heads/streamliners-main' || (github.event_name == 'workflow_dispatch' && inputs.force_snz == 'true') }}
+        if: ${{ github.ref == 'refs/heads/streamliners-main' || (github.event_name == 'workflow_dispatch' && inputs.force_snz == 'true') }}
         run: |
           set -euo pipefail
           if [[ "${CHANGED_COUNT:-0}" -eq 0 ]]; then
