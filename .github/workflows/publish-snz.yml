@@ -184,6 +184,7 @@ jobs:
       # -> {currentVersion}-snz.{SNAPSHOT_SUFFIX} under tag=snz
       # ------------------------------------- #
       - name: Bump SNZ prerelease versions (CHANGED ONLY)
+        if: ${{ github.ref == 'refs/heads/streamliners-main' || (github.event_name == 'workflow_dispatch' && inputs.force_snz == 'true') }}
         run: |
           set -euo pipefail
           if [[ "${CHANGED_COUNT:-0}" -eq 0 ]]; then
