@@ -102,13 +102,6 @@ jobs:
             const roots = new Set();
             for (const f of lines) {
               let dir = path.dirname(f);
-              if (!dir.startsWith("packages/")) continue;
-              // This is a special case for the monorepo root package
-              if (dir === 'packages') {
-                const pj = path.join(dir, '..', "package.json");
-                if (fs.existsSync(pj)) { roots.add('.'); }
-                continue;
-              }
               while (dir && dir !== "." && dir !== "/") {
                 const pj = path.join(dir, "package.json");
                 if (fs.existsSync(pj)) { roots.add(dir); break; }
