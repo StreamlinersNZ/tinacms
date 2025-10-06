@@ -53,7 +53,7 @@ export const CodeToolbarButton = () => (
     <Icons.code />
   </MarkToolbarButton>
 );
-
+//superscript and subscript buttons
 export const SuperscriptButton = () => (
   <MarkToolbarButton tooltip="Superscript" nodeType={SuperscriptPlugin.key}>
     <Icons.superscript />
@@ -65,3 +65,4 @@ export const SubscriptButton = () => (
     <Icons.subscript />
   </MarkToolbarButton>
 );
+
