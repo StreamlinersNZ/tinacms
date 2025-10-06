@@ -16,6 +16,7 @@ import {
   SuperscriptPlugin,
   SubscriptPlugin,
 } from '@udecode/plate-basic-marks/react';
+import { basename } from 'path';
 
 const MarkToolbarButton = withRef<
   typeof ToolbarButton,
@@ -31,8 +32,8 @@ const MarkToolbarButton = withRef<
 });
 
 export const BoldToolbarButton = () => (
-  <MarkToolbarButton tooltip='Bold (⌘+B)' nodeType={BoldPlugin.key}>
-    <Icons.bold />
+  <MarkToolbarButton tooltip='Bold (⌘+B)' nodeType={BoldPlugin.key} style={{backgroundColor:"red"}}>
+    <Icons.subscript />
   </MarkToolbarButton>
 );
 
@@ -56,13 +57,13 @@ export const CodeToolbarButton = () => (
 //superscript and subscript buttons
 export const SuperscriptButton = () => (
   <MarkToolbarButton tooltip="Superscript" nodeType={SuperscriptPlugin.key}>
-    <Icons.superscript />
+    <Icons.bold />
   </MarkToolbarButton>
 );
 
 export const SubscriptButton = () => (
   <MarkToolbarButton tooltip="Subscript" nodeType={SubscriptPlugin.key}>
-    <Icons.subscript />
+    <Icons.bold />
   </MarkToolbarButton>
 );
 
