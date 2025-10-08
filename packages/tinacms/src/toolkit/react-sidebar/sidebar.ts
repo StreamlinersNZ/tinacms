@@ -32,7 +32,7 @@ export class SidebarState {
   position: SidebarPosition = 'displace';
   renderNav: boolean = true;
   buttons: SidebarButtons = {
-    save: 'Helloz',
+    save: 'Save',
     reset: 'Reset',
   };
 

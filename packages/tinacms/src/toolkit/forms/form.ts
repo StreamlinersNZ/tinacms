@@ -121,7 +121,7 @@ export class Form<S = any, F extends Field = AnyField> implements Plugin {
     this._reset = reset;
     this.actions = actions || [];
     this.buttons = buttons || {
-      save: 'Hello',
+      save: 'Save',
       reset: 'Reset',
     };
     this.updateFields(this.fields);
