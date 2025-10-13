@@ -156,15 +156,15 @@ jobs:
               if (!fs.existsSync(pkgJsonPath)) continue;
               
               const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
-              const allDeps = {
+              // Only check runtime dependencies (NOT devDependencies)
+              const runtimeDeps = {
                 ...pkgJson.dependencies,
-                ...pkgJson.devDependencies,
                 ...pkgJson.peerDependencies
               };
               
-              // Check if this package depends on any changed package
+              // Check if this package depends on any changed package in runtime deps
               for (const changedPkg of directlyChanged) {
-                if (allDeps[changedPkg]) {
+                if (runtimeDeps[changedPkg]) {
                   toPublish.add(ws.name);
                   dependents.push(`${ws.name} (depends on ${changedPkg})`);
                   break;
