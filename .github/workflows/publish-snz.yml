@@ -126,7 +126,10 @@ jobs:
             const directlyChanged = new Set();
 
             for (const f of files) {
-              const candidates = workspaces.filter(w => f.startsWith(w.path + path.sep));
+              const candidates = workspaces.filter(w =>  !w.private && 
+                w.name !== "root" && 
+                f.startsWith(w.path + path.sep)
+              );
               if (candidates.length) {
                 candidates.sort((a,b) => b.path.length - a.path.length);
                 directlyChanged.add(candidates[0].name);
@@ -134,15 +137,20 @@ jobs:
             }
 
             // Save directly changed for bash to echo
-            fs.writeFileSync("directly_changed.txt", Array.from(directlyChanged).join("\n"));
+            const directList = Array.from(directlyChanged);
+            fs.writeFileSync("directly_changed.txt", directList.length > 0 ? directList.join("\n") : "");
+
 
             // Build dependency graph - find all packages that depend on changed ones
             const toPublish = new Set(directlyChanged);
             const dependents = [];
             
-            // Read package.json for each workspace to find dependencies
-            for (const ws of workspaces) {
-              if (ws.private) continue;
+             // Only check non-private packages for dependencies
+            const nonPrivateWorkspaces = workspaces.filter(w => !w.private && w.name !== "root");
+            
+            for (const ws of nonPrivateWorkspaces) {
+              // Skip if already in toPublish (it was directly changed)
+              if (toPublish.has(ws.name)) continue;
               
               const pkgJsonPath = path.join(ws.path, "package.json");
               if (!fs.existsSync(pkgJsonPath)) continue;
@@ -164,20 +172,22 @@ jobs:
               }
             }
 
+            
             // Save dependents for bash to echo
-            fs.writeFileSync("dependents_found.txt", dependents.join("\n"));
-            fs.writeFileSync("all_to_publish.txt", Array.from(toPublish).join("\n"));
+            fs.writeFileSync("dependents_found.txt", dependents.length > 0 ? dependents.join("\n") : "");
+            const publishList = Array.from(toPublish);
+            fs.writeFileSync("all_to_publish.txt", publishList.length > 0 ? publishList.join("\n") : "");
 
-            // Get paths for all packages to publish
+            // Get paths for all packages to publish (only non-private)
             const publishPaths = workspaces
-              .filter(w => toPublish.has(w.name))
+              .filter(w => !w.private && w.name !== "root" && toPublish.has(w.name))
               .map(w => w.path);
 
             const rels = publishPaths.map(p => path.relative(repo, p));
             fs.writeFileSync("changed_paths.txt", rels.join("\n") + (rels.length ? "\n" : ""));
 
-            // Save info
-            const info = workspaces.filter(w => toPublish.has(w.name));
+            // Save info (only non-private packages)
+            const info = workspaces.filter(w => !w.private && w.name !== "root" && toPublish.has(w.name));
             fs.writeFileSync("changed_list.json", JSON.stringify(info));
           '
 
