@@ -15,9 +15,6 @@ on:
         required: false
         default: "true"
 
-env:
-  DRY_RUN_DEFAULT: "true"  # Set to "false" to enable actual publishing by default
-
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -97,17 +94,16 @@ jobs:
       # ------------------------------------- #
       # PREVIEW: feature branches -> tag beta
       # ------------------------------------- #
-      - name: Publish preview to CodeArtifact with tag=beta (Dry Run)
+      - name: Publish preview to CodeArtifact with tag=beta 
         if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
         run: |
           # Determine if this should be a dry run
+          DRY_FLAG=""
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            DRY_RUN="${{ inputs.dry_run }}"
-          else
-            DRY_RUN="${{ env.DRY_RUN_DEFAULT }}"
+            DRY_FLAG="${{ inputs.dry_run }}"
           fi
 
-          if [[ "$DRY_RUN" == "true" ]]; then
+          if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
             pnpm changeset version --snapshot beta
             pnpm changeset publish --tag beta --dry-run
@@ -127,13 +123,12 @@ jobs:
         if: ${{ github.ref == 'refs/heads/streamliners-main' || (github.event_name == 'workflow_dispatch' && inputs.force_snz == 'true') }}
         run: |
           # Determine if this should be a dry run
+          DRY_FLAG=""
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            DRY_RUN="${{ inputs.dry_run }}"
-          else
-            DRY_RUN="${{ env.DRY_RUN_DEFAULT }}"
+            DRY_FLAG="${{ inputs.dry_run }}"
           fi
 
-          if [[ "$DRY_RUN" == "true" ]]; then
+          if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - SNZ"
             pnpm changeset version --snapshot snz
             pnpm changeset publish --tag snz --dry-run
