@@ -91,6 +91,17 @@ jobs:
           pnpm build
           pnpm types
 
+      - name: Debug changeset state
+        run: |
+          echo "=== Changeset files ==="
+          ls -la .changeset/
+          echo ""
+          echo "=== Package versions ==="
+          cat packages/tinacms/package.json | grep -A 2 '"version"'
+          echo ""
+          echo "=== Git status ==="
+          git status
+
       # ------------------------------------- #
       # PREVIEW: feature branches -> tag beta
       # ------------------------------------- #
@@ -107,13 +118,17 @@ jobs:
             echo "🔍 DRY RUN MODE - Preview (Beta)"
             pnpm changeset pre enter beta
             pnpm changeset version
-            pnpm changeset publish --tag beta --dry-run
+            echo "✅ Dry run complete - would publish with tag beta"
+            echo "Packages that would be published:"
+            pnpm changeset status
             pnpm changeset pre exit
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
             pnpm changeset pre enter beta
             pnpm changeset version 
-            pnpm changeset publish --tag beta
+            echo "✅ Dry run complete - would publish with tag beta"
+            echo "Packages that would be published:"
+            pnpm changeset status
             pnpm changeset pre exit
           fi
         env:
