@@ -217,16 +217,51 @@ jobs:
             echo "🔧 Restoring real version numbers with beta timestamp..."
             node -e "
             const fs = require('fs');
-            const semver = require('semver');
             const { execSync } = require('child_process');
+            
+            // Simple semver increment function
+            function incrementVersion(version, type) {
+              const parts = version.split('.');
+              const major = parseInt(parts[0]);
+              const minor = parseInt(parts[1]);
+              const patch = parseInt(parts[2]);
+              
+              if (type === 'major') return \`\${major + 1}.0.0\`;
+              if (type === 'minor') return \`\${major}.\${minor + 1}.0\`;
+              return \`\${major}.\${minor}.\${patch + 1}\`;
+            }
             
             // Load backed up versions
             const originalVersions = JSON.parse(fs.readFileSync('.versions-backup.json', 'utf8'));
             
-            // Get changeset info to see which packages should be bumped
-            const changesetStatus = JSON.parse(
-              execSync('pnpm changeset status --output=.changeset-status.json && cat .changeset-status.json', { encoding: 'utf8' })
-            );
+            // Parse changeset file to determine bump types
+            const changesetFiles = execSync('ls .changeset/*.md 2>/dev/null | grep -v README', { encoding: 'utf8' })
+              .trim()
+              .split('\n')
+              .filter(f => f);
+            
+            const changesetPackages = {};
+            changesetFiles.forEach(file => {
+              try {
+                const content = fs.readFileSync(file, 'utf8');
+                const lines = content.split('\n');
+                let inFrontmatter = false;
+                
+                lines.forEach(line => {
+                  if (line === '---') {
+                    inFrontmatter = !inFrontmatter;
+                    return;
+                  }
+                  
+                  if (inFrontmatter && line.includes(':')) {
+                    const match = line.match(/['\"]([^'\"]+)['\"]:\\s*(major|minor|patch)/);
+                    if (match) {
+                      changesetPackages[match[1]] = match[2];
+                    }
+                  }
+                });
+              } catch(e) {}
+            });
             
             const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
               .trim()
@@ -246,19 +281,18 @@ jobs:
                     const timestampMatch = pkg.version.match(/-beta-(\d+)/);
                     const timestamp = timestampMatch ? timestampMatch[1] : '';
                     
-                    // Determine bump type from changeset status
-                    const release = changesetStatus.releases.find(r => r.name === pkg.name);
-                    const bumpType = release ? release.type : 'patch';
+                    // Determine bump type
+                    const bumpType = changesetPackages[pkg.name] || 'patch';
                     
                     // Calculate new version
-                    let newBaseVersion = semver.inc(originalVersion, bumpType);
+                    const newBaseVersion = incrementVersion(originalVersion, bumpType);
                     
                     // Create final version with beta and timestamp
                     const newVersion = \`\${newBaseVersion}-beta-\${timestamp}\`;
                     
                     pkg.version = newVersion;
                     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-                    console.log(\`  📦 \${pkg.name}: \${originalVersion} → \${newVersion}\`);
+                    console.log(\`  📦 \${pkg.name}: \${originalVersion} → \${newVersion} (\${bumpType})\`);
                   }
                 }
               } catch(e) {
@@ -274,7 +308,7 @@ jobs:
             # pnpm changeset publish --tag beta
             
             # Cleanup
-            rm -f .versions-backup.json .changeset-status.json
+            rm -f .versions-backup.json
             
             echo "✅ Published successfully!"
           fi
