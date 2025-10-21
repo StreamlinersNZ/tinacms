@@ -90,6 +90,48 @@ jobs:
 
           pnpm build
           pnpm types
+      - name: Validate package versions (semver)
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const { globSync } = require('glob');
+          const semver = require('semver');
+
+          const pkgs = globSync('{packages,apps,libs,tools}/**/package.json', { ignore: ['**/node_modules/**'] });
+          const bad = [];
+          for (const p of pkgs) {
+            const j = JSON.parse(fs.readFileSync(p, 'utf8'));
+            const v = j.version;
+            const why = !v ? 'missing'
+            : typeof v !== 'string' ? ('type ' + typeof v)
+            : (v.startsWith('workspace:') ? 'workspace protocol'
+            : (!semver.valid(v) ? 'not valid semver' : null));
+            if (why) bad.push({ p, v, why });
+          }
+          if (bad.length) {
+          console.error('❌ Invalid/missing versions:');
+          for (const b of bad) console.error(`- ${b.p} -> ${JSON.stringify(b.v)} (${b.why})`);
+          process.exit(1);
+          }
+          console.log('✅ All package.json versions are valid semver');
+          <<- 'NODE'
+
+      - name: Debug changeset state
+        run: |
+          echo "=== Changeset files ==="
+          ls -la .changeset/ || echo "No .changeset dir"
+          echo ""
+          echo "=== Changeset file content ==="
+          cat .changeset/*.md | head -20 || echo "No changeset files"
+          echo ""
+          echo "=== Pre.json if exists ==="
+          cat .changeset/pre.json || echo "No pre.json file yet"
+          echo ""
+          echo "=== Sample package.json content ==="
+          cat packages/tinacms/package.json | head -30 || true
+          echo ""
+          echo "=== Git status ==="
+          git status
 
       # ------------------------------------- #
       # PREVIEW: feature branches -> tag beta
@@ -114,9 +156,10 @@ jobs:
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
             pnpm changeset pre enter beta
+            pnpm changeset status --verbose || true
             pnpm changeset version 
             git add .
-            git commit -m "Version packages"
+            git diff --cached --quiet || git commit -m "Version packages"
             pnpm changeset publish 
             git push --follow-tags
             pnpm changeset pre exit
