@@ -133,7 +133,7 @@ jobs:
           git status
 
       # ------------------------------------- #
-      # PREVIEW: feature branches -> tag beta
+      # PREVIEW: feature branches -> tag snz
       # ------------------------------------- #
       - name: Publish preview to CodeArtifact with tag=beta 
         if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
@@ -182,7 +182,7 @@ jobs:
             echo "📦 Packages status:"
             pnpm changeset status
           else
-            echo "🚀 PUBLISHING - Preview (Beta with real version numbers + timestamp ${TIMESTAMP})"
+            echo "🚀 PUBLISHING - Preview (Snz with real version numbers + timestamp ${TIMESTAMP})"
             
             # Step 1: Store original versions
             echo "📋 Storing original versions..."
@@ -210,11 +210,11 @@ jobs:
             # Step 2: Use snapshot to get timestamp
             echo ""
             echo "🔄 Running snapshot version..."
-            pnpm changeset version --snapshot beta
+            pnpm changeset version --snapshot snz
             
             # Step 3: Replace 0.0.0 with actual version numbers
             echo ""
-            echo "🔧 Restoring real version numbers with beta timestamp..."
+            echo "🔧 Restoring real version numbers with snz timestamp..."
             node -e "
             const fs = require('fs');
             const path = require('path');
@@ -282,12 +282,12 @@ jobs:
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
                 
                 // Only process packages that were versioned with snapshot
-                if (pkg.version && pkg.version.includes('-beta-')) {
+                if (pkg.version && pkg.version.includes('-snz-')) {
                   const originalVersion = originalVersions[pkg.name];
                   
                   if (originalVersion) {
-                    // Extract the timestamp from snapshot version (0.0.0-beta-TIMESTAMP)
-                    const timestampMatch = pkg.version.match(/-beta-(\d+)/);
+                    // Extract the timestamp from snapshot version (0.0.0-snz-TIMESTAMP)
+                    const timestampMatch = pkg.version.match(/-snz-(\d+)/);
                     const timestamp = timestampMatch ? timestampMatch[1] : '';
                     
                     // Determine bump type (default to patch for dependencies)
@@ -296,8 +296,8 @@ jobs:
                     // Calculate new version
                     const newBaseVersion = incrementVersion(originalVersion, bumpType);
                     
-                    // Create final version with beta and timestamp
-                    const newVersion = \`\${newBaseVersion}-beta-\${timestamp}\`;
+                    // Create final version with snz and timestamp
+                    const newVersion = \`\${newBaseVersion}-snz-\${timestamp}\`;
                     
                     pkg.version = newVersion;
                     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
@@ -311,10 +311,10 @@ jobs:
             "
             
             echo ""
-            echo "📦 Publishing packages with tag beta..."
+            echo "📦 Publishing packages with tag snz..."
             
             # Uncomment when ready to publish
-            # pnpm changeset publish --tag beta
+            pnpm changeset publish --tag snz
             
             # Cleanup
             rm -f .versions-backup.json
