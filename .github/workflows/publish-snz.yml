@@ -152,15 +152,11 @@ jobs:
             # pnpm changeset publish 
             pnpm changeset pre exit
           else
-            echo "🚀 PUBLISHING - Preview (Beta)"
-            pnpm changeset pre enter beta
+            echo "🚀 PUBLISHING SNAPSHOT - SNZ (snz)"
             pnpm changeset status --verbose || true
-            pnpm changeset version 
-            git add .
-            git diff --cached --quiet || git commit -m "Version packages"
-            pnpm changeset publish 
-            git push --follow-tags
-            pnpm changeset pre exit
+            pnpm changeset version --snapshot snz
+            pnpm changeset publish --tag snz
+            git checkout -- . || true
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
