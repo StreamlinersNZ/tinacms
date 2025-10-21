@@ -135,7 +135,7 @@ jobs:
       # ------------------------------------- #
       # PREVIEW: feature branches -> tag snz
       # ------------------------------------- #
-      - name: Publish preview to CodeArtifact with tag=beta 
+      - name: Publish preview to CodeArtifact with tag=snz 
         if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
         run: |
           # Determine if this should be a dry run
@@ -184,10 +184,11 @@ jobs:
           else
             echo "🚀 PUBLISHING - Preview (Snz with real version numbers + timestamp ${TIMESTAMP})"
             
-            # Step 1: Store original versions
-            echo "📋 Storing original versions..."
+            # Step 1: Store original versions AND parse changesets BEFORE snapshot
+            echo "📋 Storing original versions and parsing changesets..."
             node -e "
             const fs = require('fs');
+            const path = require('path');
             const { execSync } = require('child_process');
             
             const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
@@ -203,44 +204,15 @@ jobs:
               } catch(e) {}
             });
             
-            fs.writeFileSync('.versions-backup.json', JSON.stringify(versions, null, 2));
-            console.log('✅ Stored', Object.keys(versions).length, 'package versions');
-            "
-            
-            # Step 2: Use snapshot to get timestamp
-            echo ""
-            echo "🔄 Running snapshot version..."
-            pnpm changeset version --snapshot snz
-            
-            # Step 3: Replace 0.0.0 with actual version numbers
-            echo ""
-            echo "🔧 Restoring real version numbers with snz timestamp..."
-            node -e "
-            const fs = require('fs');
-            const path = require('path');
-            
-            // Simple semver increment function
-            function incrementVersion(version, type) {
-              const parts = version.split('.');
-              const major = parseInt(parts[0]);
-              const minor = parseInt(parts[1]);
-              const patch = parseInt(parts[2]);
-              
-              if (type === 'major') return \`\${major + 1}.0.0\`;
-              if (type === 'minor') return \`\${major}.\${minor + 1}.0\`;
-              return \`\${major}.\${minor}.\${patch + 1}\`;
-            }
-            
-            // Load backed up versions
-            const originalVersions = JSON.parse(fs.readFileSync('.versions-backup.json', 'utf8'));
-            
-            // Parse changeset files to determine bump types
+            // Parse changeset files to determine bump types (BEFORE snapshot deletes them)
             const changesetDir = '.changeset';
             const changesetPackages = {};
             
             try {
               const files = fs.readdirSync(changesetDir);
               const mdFiles = files.filter(f => f.endsWith('.md') && f !== 'README.md');
+              
+              console.log('📝 Found', mdFiles.length, 'changeset file(s)');
               
               mdFiles.forEach(file => {
                 try {
@@ -258,17 +230,52 @@ jobs:
                       const match = line.match(/['\"]([^'\"]+)['\"]:\\s*(major|minor|patch)/);
                       if (match) {
                         changesetPackages[match[1]] = match[2];
-                        console.log(\`Found changeset: \${match[1]} → \${match[2]}\`);
+                        console.log(\`  Found changeset: \${match[1]} → \${match[2]}\`);
                       }
                     }
                   });
                 } catch(e) {
-                  console.error(\`Error reading changeset file \${file}:\`, e.message);
+                  console.error(\`  Error reading changeset file \${file}:\`, e.message);
                 }
               });
             } catch(e) {
               console.error('Error reading changeset directory:', e.message);
             }
+            
+            // Save both versions and changesets
+            fs.writeFileSync('.versions-backup.json', JSON.stringify(versions, null, 2));
+            fs.writeFileSync('.changesets-backup.json', JSON.stringify(changesetPackages, null, 2));
+            
+            console.log('✅ Stored', Object.keys(versions).length, 'package versions');
+            console.log('✅ Stored', Object.keys(changesetPackages).length, 'changeset bump types');
+            " 
+            
+            # Step 2: Use snapshot to get timestamp
+            echo ""
+            echo "🔄 Running snapshot version..."
+            pnpm changeset version --snapshot snz
+            
+            # Step 3: Replace 0.0.0 with actual version numbers
+            echo ""
+            echo "🔧 Restoring real version numbers with snz timestamp..."
+            node -e "
+            const fs = require('fs');
+            
+            // Simple semver increment function
+            function incrementVersion(version, type) {
+              const parts = version.split('.');
+              const major = parseInt(parts[0]);
+              const minor = parseInt(parts[1]);
+              const patch = parseInt(parts[2]);
+              
+              if (type === 'major') return \`\${major + 1}.0.0\`;
+              if (type === 'minor') return \`\${major}.\${minor + 1}.0\`;
+              return \`\${major}.\${minor}.\${patch + 1}\`;
+            }
+            
+            // Load backed up versions and changesets
+            const originalVersions = JSON.parse(fs.readFileSync('.versions-backup.json', 'utf8'));
+            const changesetPackages = JSON.parse(fs.readFileSync('.changesets-backup.json', 'utf8'));
             
             // Process all package.json files
             const { execSync } = require('child_process');
@@ -314,10 +321,10 @@ jobs:
             echo "📦 Publishing packages with tag snz..."
             
             # Uncomment when ready to publish
-            pnpm changeset publish --tag snz
+            # pnpm changeset publish --tag snz
             
             # Cleanup
-            rm -f .versions-backup.json
+            rm -f .versions-backup.json .changesets-backup.json
             
             echo "✅ Published successfully!"
           fi
@@ -365,7 +372,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/streamliners-main" ]]; then
             echo "**Published to:** SNZ (tag: snz)" >> $GITHUB_STEP_SUMMARY
           else
-            echo "**Published to:** Beta Preview (tag: beta)" >> $GITHUB_STEP_SUMMARY
+            echo "**Published to:** SNZ Preview (tag: snz)" >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Changesets handled version management and publishing." >> $GITHUB_STEP_SUMMARY
