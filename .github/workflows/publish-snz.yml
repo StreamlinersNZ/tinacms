@@ -90,29 +90,28 @@ jobs:
 
           pnpm build
           pnpm types
-      - name: Validate package versions (semver)
+      - name: Validate package versions (no deps)
+        shell: bash
         run: |
-          node -e "const fs=require('fs'); const path=require('path'); const semver=require('semver');
-          function walk(dir){let results=[]; for(const file of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,file.name);
-            if(file.isDirectory()){ if(file.name==='node_modules') continue; results=results.concat(walk(full)); }
-            else if(file.name==='package.json'){ results.push(full); } } return results;}
-          const roots=['packages','apps','libs','tools'].filter(d=>fs.existsSync(d));
-          const pkgs=roots.flatMap(r=>walk(r));
-          const bad=[];
-          for(const p of pkgs){
-            const j=JSON.parse(fs.readFileSync(p,'utf8')); const v=j.version;
-            const why=!v?'missing'
-              : (typeof v!=='string' ? ('type '+typeof v)
-              : (v.startsWith('workspace:')?'workspace protocol'
-              : (!semver.valid(v)?'not valid semver':null)));
-            if(why) bad.push({p,v,why});
-          }
-          if(bad.length){
-            console.error('❌ Invalid/missing versions:');
-            for(const b of bad) console.error('- '+b.p+' -> '+JSON.stringify(b.v)+' ('+b.why+')');
-            process.exit(1);
-          }
-          console.log('✅ All package.json versions are valid semver');"
+          set -euo pipefail
+          SEMVER_RE='^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+          ERR=0
+          while IFS= read -r f; do
+            ver_type=$(jq -r 'if has("version") then (.version|type) else "missing" end' "$f")
+            ver_val=$(jq -r '.version // empty' "$f")
+            if [[ "$ver_type" == "missing" ]]; then
+              echo "❌ $f -> version missing"; ERR=1
+            elif [[ "$ver_type" != "string" ]]; then
+              echo "❌ $f -> version has type: $ver_type"; ERR=1
+            elif [[ "$ver_val" == workspace:* ]]; then
+              echo "❌ $f -> \"$ver_val\" (workspace protocol)"; ERR=1
+            elif ! [[ "$ver_val" =~ $SEMVER_RE ]]; then
+              echo "❌ $f -> \"$ver_val\" (not valid semver)"; ERR=1
+            fi
+          done < <(git ls-files '**/package.json' | grep -v node_modules)
+          if [[ $ERR -ne 0 ]]; then exit 1; fi
+          echo "✅ All package.json versions are valid semver"
+
   
       - name: Debug changeset state
         run: |
