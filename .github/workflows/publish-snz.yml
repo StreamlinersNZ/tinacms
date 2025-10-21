@@ -73,6 +73,7 @@ jobs:
       - name: Update all package.json files
         run: |
           node scripts/update-package-jsons.js
+          git add .
           git commit -m "chore: update package.json for SNZ registry" || echo "No changes to commit"
 
       - name: Install dependencies
