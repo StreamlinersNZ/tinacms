@@ -149,7 +149,7 @@ jobs:
 
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
-            echo " todo : implement dry run with timestamp ${TIMESTAMP} changed"
+            
             # Use snapshot to get the timestamp format
             pnpm changeset version --snapshot beta
             
@@ -217,7 +217,7 @@ jobs:
             echo "🔧 Restoring real version numbers with beta timestamp..."
             node -e "
             const fs = require('fs');
-            const { execSync } = require('child_process');
+            const path = require('path');
             
             // Simple semver increment function
             function incrementVersion(version, type) {
@@ -234,35 +234,44 @@ jobs:
             // Load backed up versions
             const originalVersions = JSON.parse(fs.readFileSync('.versions-backup.json', 'utf8'));
             
-            // Parse changeset file to determine bump types
-            const changesetFiles = execSync('ls .changeset/*.md 2>/dev/null | grep -v README', { encoding: 'utf8' })
-              .trim()
-              .split('\n')
-              .filter(f => f);
-            
+            // Parse changeset files to determine bump types
+            const changesetDir = '.changeset';
             const changesetPackages = {};
-            changesetFiles.forEach(file => {
-              try {
-                const content = fs.readFileSync(file, 'utf8');
-                const lines = content.split('\n');
-                let inFrontmatter = false;
-                
-                lines.forEach(line => {
-                  if (line === '---') {
-                    inFrontmatter = !inFrontmatter;
-                    return;
-                  }
-                  
-                  if (inFrontmatter && line.includes(':')) {
-                    const match = line.match(/['\"]([^'\"]+)['\"]:\\s*(major|minor|patch)/);
-                    if (match) {
-                      changesetPackages[match[1]] = match[2];
-                    }
-                  }
-                });
-              } catch(e) {}
-            });
             
+            try {
+              const files = fs.readdirSync(changesetDir);
+              const mdFiles = files.filter(f => f.endsWith('.md') && f !== 'README.md');
+              
+              mdFiles.forEach(file => {
+                try {
+                  const content = fs.readFileSync(path.join(changesetDir, file), 'utf8');
+                  const lines = content.split('\n');
+                  let inFrontmatter = false;
+                  
+                  lines.forEach(line => {
+                    if (line === '---') {
+                      inFrontmatter = !inFrontmatter;
+                      return;
+                    }
+                    
+                    if (inFrontmatter && line.includes(':')) {
+                      const match = line.match(/['\"]([^'\"]+)['\"]:\\s*(major|minor|patch)/);
+                      if (match) {
+                        changesetPackages[match[1]] = match[2];
+                        console.log(\`Found changeset: \${match[1]} → \${match[2]}\`);
+                      }
+                    }
+                  });
+                } catch(e) {
+                  console.error(\`Error reading changeset file \${file}:\`, e.message);
+                }
+              });
+            } catch(e) {
+              console.error('Error reading changeset directory:', e.message);
+            }
+            
+            // Process all package.json files
+            const { execSync } = require('child_process');
             const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
               .trim()
               .split('\n')
@@ -281,7 +290,7 @@ jobs:
                     const timestampMatch = pkg.version.match(/-beta-(\d+)/);
                     const timestamp = timestampMatch ? timestampMatch[1] : '';
                     
-                    // Determine bump type
+                    // Determine bump type (default to patch for dependencies)
                     const bumpType = changesetPackages[pkg.name] || 'patch';
                     
                     // Calculate new version
