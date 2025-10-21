@@ -99,8 +99,11 @@ jobs:
           echo "=== Changeset files ==="
           ls -la .changeset/
           echo ""
-          echo "=== Package versions ==="
-          cat packages/tinacms/package.json | grep -A 2 '"version"'
+          echo "=== Sample package.json content ==="
+          cat packages/tinacms/package.json | head -30
+          echo ""
+          echo "=== Check for null/invalid versions ==="
+          find packages -name "package.json" -exec sh -c 'echo "File: $1"; grep -A 1 "\"version\"" "$1" || echo "NO VERSION FOUND"' _ {} \; | head -50
           echo ""
           echo "=== Git status ==="
           git status
