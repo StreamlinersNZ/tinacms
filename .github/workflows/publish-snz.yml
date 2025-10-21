@@ -99,6 +99,11 @@ jobs:
           echo "=== Changeset files ==="
           ls -la .changeset/
           echo ""
+          echo "=== Changeset file content ==="
+          cat .changeset/add-dup-dub-changeset.md
+          echo ""
+          echo "=== Pre.json if exists==="
+          cat .changeset/pre.json || echo "No pre.json file yet"
           echo "=== Sample package.json content ==="
           cat packages/tinacms/package.json | head -30
           echo ""
