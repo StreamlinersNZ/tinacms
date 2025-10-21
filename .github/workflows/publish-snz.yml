@@ -92,8 +92,12 @@ jobs:
           pnpm types
       - name: Validate package versions (semver)
         run: |
-          node -e "const fs=require('fs'); const {globSync}=require('glob'); const semver=require('semver');
-          const pkgs=globSync('{packages,apps,libs,tools}/**/package.json',{ignore:['**/node_modules/**']});
+          node -e "const fs=require('fs'); const path=require('path'); const semver=require('semver');
+          function walk(dir){let results=[]; for(const file of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,file.name);
+            if(file.isDirectory()){ if(file.name==='node_modules') continue; results=results.concat(walk(full)); }
+            else if(file.name==='package.json'){ results.push(full); } } return results;}
+          const roots=['packages','apps','libs','tools'].filter(d=>fs.existsSync(d));
+          const pkgs=roots.flatMap(r=>walk(r));
           const bad=[];
           for(const p of pkgs){
             const j=JSON.parse(fs.readFileSync(p,'utf8')); const v=j.version;
