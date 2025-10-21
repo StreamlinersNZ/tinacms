@@ -105,12 +105,16 @@ jobs:
 
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
-            pnpm changeset version --snapshot beta
+            pnpm changeset pre enter beta
+            pnpm changeset version
             pnpm changeset publish --tag beta --dry-run
+            pnpm changeset pre exit
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
-            pnpm changeset version --snapshot beta
+            pnpm changeset pre enter beta
+            pnpm changeset version 
             pnpm changeset publish --tag beta
+            pnpm changeset pre exit
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
