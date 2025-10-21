@@ -71,7 +71,9 @@ jobs:
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> ~/.npmrc
 
       - name: Update all package.json files
-        run: node scripts/update-package-jsons.js
+        run: |
+          node scripts/update-package-jsons.js
+          git commit -m "chore: update package.json for SNZ registry" || echo "No changes to commit"
 
       - name: Install dependencies
         run: |
