@@ -14,7 +14,8 @@ on:
         description: "Do a dry run (no actual publish)"
         required: false
         default: "true"
-
+permissions:
+  contents: write
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
@@ -23,7 +24,6 @@ jobs:
     env:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      GITHUB_TOKEN: ${{ secrets.NPM_TOKEN }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
@@ -71,10 +71,7 @@ jobs:
           echo "//streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/:_authToken=${CODEARTIFACT_TOKEN}" >> ~/.npmrc
 
       - name: Update all package.json files
-        run: |
-          node scripts/update-package-jsons.js
-          git add .
-          git commit -m "chore: update package.json for SNZ registry" || echo "No changes to commit"
+        run: node scripts/update-package-jsons.js
 
       - name: Install dependencies
         run: |
@@ -94,48 +91,10 @@ jobs:
           pnpm build
           pnpm types
 
-      - name: Validate package versions
-        run: |
-          echo "🔍 Validating all package versions..."
-          
-          # Find packages with problematic versions
-          find packages -name "package.json" -not -path "*/node_modules/*" | while read file; do
-            NAME=$(node -p "try { require('./$file').name } catch(e) { 'ERROR' }")
-            VERSION=$(node -p "try { const v = require('./$file').version; v === undefined ? 'MISSING' : v === null ? 'NULL' : v } catch(e) { 'ERROR' }")
-            
-            if [[ "$VERSION" == "NULL" ]] || [[ "$VERSION" == "MISSING" ]] || [[ "$VERSION" == "ERROR" ]]; then
-              echo "❌ PROBLEM: $NAME in $file has version: $VERSION"
-              cat "$file" | head -20
-              exit 1
-            else
-              echo "✅ $NAME: $VERSION"
-            fi
-          done
-          
-          echo ""
-          echo "✅ All package versions are valid"
-
-      - name: Debug changeset state
-        run: |
-          echo "=== Changeset files ==="
-          ls -la .changeset/
-          echo ""
-          echo "=== Changeset file content ==="
-          cat .changeset/*.md | head -20 || echo "No changeset files"
-          echo ""
-          echo "=== Pre.json if exists ==="
-          cat .changeset/pre.json || echo "No pre.json file yet"
-          echo ""
-          echo "=== Sample package.json content ==="
-          cat packages/tinacms/package.json | head -30
-          echo ""
-          echo "=== Git status ==="
-          git status
-
       # ------------------------------------- #
-      # PREVIEW: feature branches -> tag snz
+      # PREVIEW: feature branches -> tag beta
       # ------------------------------------- #
-      - name: Publish preview to CodeArtifact with tag=snz 
+      - name: Publish preview to CodeArtifact with tag=beta 
         if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
         run: |
           # Determine if this should be a dry run
@@ -144,189 +103,23 @@ jobs:
             DRY_FLAG="${{ inputs.dry_run }}"
           fi
 
-          # Create timestamp for version
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
-            
-            # Use snapshot to get the timestamp format
-            pnpm changeset version --snapshot beta
-            
-            echo ""
-            echo "📦 Snapshot versions created (0.0.0 base):"
-            node -e "
-            const fs = require('fs');
-            const { execSync } = require('child_process');
-            
-            const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
-              .trim()
-              .split('\n')
-              .filter(p => p);
-            
-            packageFiles.forEach(pkgPath => {
-              try {
-                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                if (pkg.version && pkg.version.includes('-beta-')) {
-                  console.log(\`  📦 \${pkg.name}: \${pkg.version}\`);
-                }
-              } catch(e) {
-                console.error(\`Error reading \${pkgPath}:\`, e.message);
-              }
-            });
-            "
-            
-            echo ""
-            echo "✅ Dry run complete"
-            echo ""
-            echo "📦 Packages status:"
-            pnpm changeset status
+            pnpm changeset pre enter beta
+            pnpm changeset version
+            git add .
+            git commit -m "Version packages"
+            # pnpm changeset publish 
+            pnpm changeset pre exit
           else
-            echo "🚀 PUBLISHING - Preview (Snz with real version numbers + timestamp ${TIMESTAMP})"
-            
-            # Step 1: Store original versions AND parse changesets BEFORE snapshot
-            echo "📋 Storing original versions and parsing changesets..."
-            node -e "
-            const fs = require('fs');
-            const path = require('path');
-            const { execSync } = require('child_process');
-            
-            const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
-              .trim()
-              .split('\n')
-              .filter(p => p);
-            
-            const versions = {};
-            packageFiles.forEach(pkgPath => {
-              try {
-                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                versions[pkg.name] = pkg.version;
-              } catch(e) {}
-            });
-            
-            // Parse changeset files to determine bump types (BEFORE snapshot deletes them)
-            const changesetDir = '.changeset';
-            const changesetPackages = {};
-            
-            try {
-              const files = fs.readdirSync(changesetDir);
-              const mdFiles = files.filter(f => f.endsWith('.md') && f !== 'README.md');
-              
-              console.log('📝 Found', mdFiles.length, 'changeset file(s)');
-              
-              mdFiles.forEach(file => {
-                try {
-                  const content = fs.readFileSync(path.join(changesetDir, file), 'utf8');
-                  const lines = content.split('\n');
-                  let inFrontmatter = false;
-                  
-                  lines.forEach(line => {
-                    if (line === '---') {
-                      inFrontmatter = !inFrontmatter;
-                      return;
-                    }
-                    
-                    if (inFrontmatter && line.includes(':')) {
-                      const match = line.match(/['\"]([^'\"]+)['\"]:\\s*(major|minor|patch)/);
-                      if (match) {
-                        changesetPackages[match[1]] = match[2];
-                        console.log(\`  Found changeset: \${match[1]} → \${match[2]}\`);
-                      }
-                    }
-                  });
-                } catch(e) {
-                  console.error(\`  Error reading changeset file \${file}:\`, e.message);
-                }
-              });
-            } catch(e) {
-              console.error('Error reading changeset directory:', e.message);
-            }
-            
-            // Save both versions and changesets
-            fs.writeFileSync('.versions-backup.json', JSON.stringify(versions, null, 2));
-            fs.writeFileSync('.changesets-backup.json', JSON.stringify(changesetPackages, null, 2));
-            
-            console.log('✅ Stored', Object.keys(versions).length, 'package versions');
-            console.log('✅ Stored', Object.keys(changesetPackages).length, 'changeset bump types');
-            " 
-            
-            # Step 2: Use snapshot to get timestamp
-            echo ""
-            echo "🔄 Running snapshot version..."
-            pnpm changeset version --snapshot snz
-            
-            # Step 3: Replace 0.0.0 with actual version numbers
-            echo ""
-            echo "🔧 Restoring real version numbers with snz timestamp..."
-            node -e "
-            const fs = require('fs');
-            
-            // Simple semver increment function
-            function incrementVersion(version, type) {
-              const parts = version.split('.');
-              const major = parseInt(parts[0]);
-              const minor = parseInt(parts[1]);
-              const patch = parseInt(parts[2]);
-              
-              if (type === 'major') return \`\${major + 1}.0.0\`;
-              if (type === 'minor') return \`\${major}.\${minor + 1}.0\`;
-              return \`\${major}.\${minor}.\${patch + 1}\`;
-            }
-            
-            // Load backed up versions and changesets
-            const originalVersions = JSON.parse(fs.readFileSync('.versions-backup.json', 'utf8'));
-            const changesetPackages = JSON.parse(fs.readFileSync('.changesets-backup.json', 'utf8'));
-            
-            // Process all package.json files
-            const { execSync } = require('child_process');
-            const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
-              .trim()
-              .split('\n')
-              .filter(p => p);
-            
-            packageFiles.forEach(pkgPath => {
-              try {
-                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                
-                // Only process packages that were versioned with snapshot
-                if (pkg.version && pkg.version.includes('-snz-')) {
-                  const originalVersion = originalVersions[pkg.name];
-                  
-                  if (originalVersion) {
-                    // Extract the timestamp from snapshot version (0.0.0-snz-TIMESTAMP)
-                    const timestampMatch = pkg.version.match(/-snz-(\d+)/);
-                    const timestamp = timestampMatch ? timestampMatch[1] : '';
-                    
-                    // Determine bump type (default to patch for dependencies)
-                    const bumpType = changesetPackages[pkg.name] || 'patch';
-                    
-                    // Calculate new version
-                    const newBaseVersion = incrementVersion(originalVersion, bumpType);
-                    
-                    // Create final version with snz and timestamp
-                    const newVersion = \`\${newBaseVersion}-snz-\${timestamp}\`;
-                    
-                    pkg.version = newVersion;
-                    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-                    console.log(\`  📦 \${pkg.name}: \${originalVersion} → \${newVersion} (\${bumpType})\`);
-                  }
-                }
-              } catch(e) {
-                console.error(\`Error processing \${pkgPath}:\`, e.message);
-              }
-            });
-            "
-            
-            echo ""
-            echo "📦 Publishing packages with tag snz..."
-            
-            # Uncomment when ready to publish
-            # pnpm changeset publish --tag snz
-            
-            # Cleanup
-            rm -f .versions-backup.json .changesets-backup.json
-            
-            echo "✅ Published successfully!"
+            echo "🚀 PUBLISHING - Preview (Beta)"
+            pnpm changeset pre enter beta
+            pnpm changeset version 
+            git add .
+            git commit -m "Version packages"
+            pnpm changeset publish 
+            git push --follow-tags
+            pnpm changeset pre exit
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -347,18 +140,11 @@ jobs:
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - SNZ"
             pnpm changeset version --snapshot snz
-            echo ""
-            echo "✅ Dry run complete - would publish with tag snz"
-            echo ""
-            echo "📦 Packages that would be published:"
-            pnpm changeset status
+           # pnpm changeset publish --tag snz --dry-run
           else
             echo "🚀 PUBLISHING - SNZ"
             pnpm changeset version --snapshot snz
-            echo ""
-            echo "📦 Publishing packages with tag snz..."
             pnpm changeset publish --tag snz
-            echo "✅ Published successfully!"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -368,11 +154,5 @@ jobs:
         if: always()
         run: |
           echo "📝 Build completed. Branch: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ github.ref }}" == "refs/heads/streamliners-main" ]]; then
-            echo "**Published to:** SNZ (tag: snz)" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "**Published to:** SNZ Preview (tag: snz)" >> $GITHUB_STEP_SUMMARY
-          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Changesets handled version management and publishing." >> $GITHUB_STEP_SUMMARY
