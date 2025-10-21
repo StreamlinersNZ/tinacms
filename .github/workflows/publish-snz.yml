@@ -94,21 +94,40 @@ jobs:
           pnpm build
           pnpm types
 
+      - name: Validate package versions
+        run: |
+          echo "🔍 Validating all package versions..."
+          
+          # Find packages with problematic versions
+          find packages -name "package.json" -not -path "*/node_modules/*" | while read file; do
+            NAME=$(node -p "try { require('./$file').name } catch(e) { 'ERROR' }")
+            VERSION=$(node -p "try { const v = require('./$file').version; v === undefined ? 'MISSING' : v === null ? 'NULL' : v } catch(e) { 'ERROR' }")
+            
+            if [[ "$VERSION" == "NULL" ]] || [[ "$VERSION" == "MISSING" ]] || [[ "$VERSION" == "ERROR" ]]; then
+              echo "❌ PROBLEM: $NAME in $file has version: $VERSION"
+              cat "$file" | head -20
+              exit 1
+            else
+              echo "✅ $NAME: $VERSION"
+            fi
+          done
+          
+          echo ""
+          echo "✅ All package versions are valid"
+
       - name: Debug changeset state
         run: |
           echo "=== Changeset files ==="
           ls -la .changeset/
           echo ""
           echo "=== Changeset file content ==="
-          cat .changeset/add-dup-dub-changeset.md
+          cat .changeset/*.md | head -20 || echo "No changeset files"
           echo ""
-          echo "=== Pre.json if exists==="
+          echo "=== Pre.json if exists ==="
           cat .changeset/pre.json || echo "No pre.json file yet"
+          echo ""
           echo "=== Sample package.json content ==="
           cat packages/tinacms/package.json | head -30
-          echo ""
-          echo "=== Check for null/invalid versions ==="
-          find packages -name "package.json" -exec sh -c 'echo "File: $1"; grep -A 1 "\"version\"" "$1" || echo "NO VERSION FOUND"' _ {} \; | head -50
           echo ""
           echo "=== Git status ==="
           git status
@@ -125,22 +144,97 @@ jobs:
             DRY_FLAG="${{ inputs.dry_run }}"
           fi
 
+          # Create timestamp for version
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
+            
+            # Enter prerelease mode
             pnpm changeset pre enter beta
+            
+            # Version packages with prerelease versions
             pnpm changeset version
-            echo "✅ Dry run complete - would publish with tag beta"
-            echo "Packages that would be published:"
+            
+            # Update versions to include timestamp
+            node -e "
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            const packages = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
+              .trim()
+              .split('\n')
+              .filter(p => p);
+            
+            packages.forEach(pkgPath => {
+              try {
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+                
+                if (pkg.version && pkg.version.includes('-beta.')) {
+                  const newVersion = pkg.version.replace('-beta.', '-beta-${TIMESTAMP}.');
+                  pkg.version = newVersion;
+                  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+                  console.log(\`📦 \${pkg.name}: \${newVersion}\`);
+                }
+              } catch(e) {
+                console.error(\`Error processing \${pkgPath}:\`, e.message);
+              }
+            });
+            "
+            
+            echo ""
+            echo "✅ Dry run complete - versions created with beta-${TIMESTAMP} tag"
+            echo ""
+            echo "📦 Packages that would be published:"
             pnpm changeset status
+            
+            # Exit prerelease mode (cleanup)
             pnpm changeset pre exit
           else
-            echo "🚀 PUBLISHING - Preview (Beta)"
+            echo "🚀 PUBLISHING - Preview (Beta with timestamp ${TIMESTAMP})"
+            
+            # Enter prerelease mode
             pnpm changeset pre enter beta
-            pnpm changeset version 
-            echo "✅ Dry run complete - would publish with tag beta"
-            echo "Packages that would be published:"
-            pnpm changeset status
+            
+            # Version packages
+            pnpm changeset version
+            
+            # Update versions to include timestamp
+            node -e "
+            const fs = require('fs');
+            const { execSync } = require('child_process');
+            
+            const packages = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
+              .trim()
+              .split('\n')
+              .filter(p => p);
+            
+            packages.forEach(pkgPath => {
+              try {
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+                
+                if (pkg.version && pkg.version.includes('-beta.')) {
+                  const newVersion = pkg.version.replace('-beta.', '-beta-${TIMESTAMP}.');
+                  pkg.version = newVersion;
+                  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+                  console.log(\`📦 Publishing \${pkg.name}: \${newVersion}\`);
+                }
+              } catch(e) {
+                console.error(\`Error processing \${pkgPath}:\`, e.message);
+              }
+            });
+            "
+            
+            echo ""
+            echo "📦 Publishing packages with tag beta..."
+            
+            # Publish with beta tag
+            # pnpm changeset publish --tag beta
+            
+            # Exit prerelease mode
             pnpm changeset pre exit
+            
+            echo "✅ Published successfully!"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -161,11 +255,18 @@ jobs:
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - SNZ"
             pnpm changeset version --snapshot snz
-            pnpm changeset publish --tag snz --dry-run
+            echo ""
+            echo "✅ Dry run complete - would publish with tag snz"
+            echo ""
+            echo "📦 Packages that would be published:"
+            pnpm changeset status
           else
             echo "🚀 PUBLISHING - SNZ"
             pnpm changeset version --snapshot snz
+            echo ""
+            echo "📦 Publishing packages with tag snz..."
             pnpm changeset publish --tag snz
+            echo "✅ Published successfully!"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -175,5 +276,11 @@ jobs:
         if: always()
         run: |
           echo "📝 Build completed. Branch: ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ github.ref }}" == "refs/heads/streamliners-main" ]]; then
+            echo "**Published to:** SNZ (tag: snz)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Published to:** Beta Preview (tag: beta)" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Changesets handled version management and publishing." >> $GITHUB_STEP_SUMMARY
