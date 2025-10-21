@@ -191,48 +191,38 @@ jobs:
             # Exit prerelease mode (cleanup)
             pnpm changeset pre exit
           else
-            echo "🚀 PUBLISHING - Preview (Beta with timestamp ${TIMESTAMP})"
+            echo "🚀 PUBLISHING - Preview (Beta with timestamp ${TIMESTAMP} changed)"
             
-            # Enter prerelease mode
-            pnpm changeset pre enter beta
+            # Use snapshot versioning with beta tag
+            pnpm changeset version --snapshot beta
             
-            # Version packages
-            pnpm changeset version
-            
-            # Update versions to include timestamp
+            echo ""
+            echo "📦 Versioned packages:"
             node -e "
             const fs = require('fs');
             const { execSync } = require('child_process');
             
-            const packages = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
+            const packageFiles = execSync('find packages -name package.json -not -path \"*/node_modules/*\"', { encoding: 'utf8' })
               .trim()
               .split('\n')
               .filter(p => p);
             
-            packages.forEach(pkgPath => {
+            packageFiles.forEach(pkgPath => {
               try {
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-                
-                if (pkg.version && pkg.version.includes('-beta.')) {
-                  const newVersion = pkg.version.replace('-beta.', '-beta-${TIMESTAMP}.');
-                  pkg.version = newVersion;
-                  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-                  console.log(\`📦 Publishing \${pkg.name}: \${newVersion}\`);
+                if (pkg.version && pkg.version.includes('-beta-')) {
+                  console.log(\`  📦 \${pkg.name}: \${pkg.version}\`);
                 }
               } catch(e) {
-                console.error(\`Error processing \${pkgPath}:\`, e.message);
+                console.error(\`Error reading \${pkgPath}:\`, e.message);
               }
             });
             "
-            
             echo ""
             echo "📦 Publishing packages with tag beta..."
             
-            # Publish with beta tag
+            # Uncomment when ready to publish
             # pnpm changeset publish --tag beta
-            
-            # Exit prerelease mode
-            pnpm changeset pre exit
             
             echo "✅ Published successfully!"
           fi
