@@ -90,13 +90,15 @@ jobs:
 
           pnpm build
           pnpm types
-      - name: Validate package versions (no deps)
+      - name: Validate package versions (skip private)
         shell: bash
         run: |
           set -euo pipefail
           SEMVER_RE='^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
           ERR=0
           while IFS= read -r f; do
+            is_private=$(jq -r '.private // false' "$f")
+            [[ "$is_private" == "true" ]] && continue  # 🔹 ignore private packages
             ver_type=$(jq -r 'if has("version") then (.version|type) else "missing" end' "$f")
             ver_val=$(jq -r '.version // empty' "$f")
             if [[ "$ver_type" == "missing" ]]; then
@@ -110,7 +112,7 @@ jobs:
             fi
           done < <(git ls-files '**/package.json' | grep -v node_modules)
           if [[ $ERR -ne 0 ]]; then exit 1; fi
-          echo "✅ All package.json versions are valid semver"
+          echo "✅ All non-private packages have valid semver"
 
   
       - name: Debug changeset state
