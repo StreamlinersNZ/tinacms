@@ -134,11 +134,11 @@ jobs:
       - name: Publish preview to CodeArtifact with tag=beta 
         if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
         run: |
-          run: |
           set -euo pipefail
 
           echo "🔍 DRY DISPLAY - SNZ prerelease (no commits, no publish, no push)"
-
+          # Make sure the base ref exists locally and remotely so 'status' can diff cleanly
+          git fetch origin streamliners-main:streamliners-main || true
           # Enter prerelease mode so changesets compute snz prerelease versions (e.g., 2.9.0-snz.0)
           pnpm changeset pre enter snz
 
