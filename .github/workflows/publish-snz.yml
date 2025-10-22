@@ -171,6 +171,16 @@ jobs:
             pnpm changeset pre exit
             git add .
             git commit -m "Exit prerelease mode" || true
+            
+            # clean up the consumed changesets
+            git rm .changeset/*.md 2>/dev/null || true
+            git checkout HEAD -- .changeset/config.json .changeset/README.md 2>/dev/null || true
+    
+            if git diff --cached --quiet; then
+              echo "No changesets to clean up"
+            else
+              git commit -m "chore: remove consumed changesets [skip ci]"
+            fi
             git push
           fi
         env:
