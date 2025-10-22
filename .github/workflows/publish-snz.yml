@@ -145,7 +145,7 @@ jobs:
             
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
-            pnpm changeset pre enter beta
+            pnpm changeset pre enter snz
             echo "=== Contents of pre.json ==="
             cat .changeset/pre.json | python3 -m json.tool
             echo "==========================="
@@ -158,13 +158,13 @@ jobs:
             git add .changeset/pre.json
             git commit -m "Enter prerelease mode" || true
       
-            # Version packages (creates 2.9.0-beta.0)
+            # Version packages (creates 2.9.0-snz.0)
             pnpm changeset version
             git add .
             git commit -m "Version packages" || true
       
             # Publish
-            pnpm changeset publish --tag beta
+            pnpm changeset publish 
             git push --follow-tags
       
             # Exit pre-release mode
