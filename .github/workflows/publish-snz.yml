@@ -72,24 +72,33 @@ jobs:
 
       - name: Update all package.json files
         run: node scripts/update-package-jsons.js
-        
+
       - name: Fix invalid semver versions
         run: |
-          # Find and fix any invalid semver versions (like "0.1" -> "0.1.0")
-          find packages examples experimental-examples -name "package.json" -not -path "*/node_modules/*" -exec sh -c '
-            version=$(jq -r .version "$1")
-            # Check if version is just X.Y without patch (e.g., "0.1")
-            if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
-              echo "Fixing invalid semver in $1: $version -> $version.0"
-              jq ".version = \"$version.0\"" "$1" > "$1.tmp" && mv "$1.tmp" "$1"
+          echo "=== Fixing invalid semver versions ==="
+          # Find all package.json files and fix invalid semver
+          find . -name "package.json" -not -path "*/node_modules/*" -not -path "*/.git/*" | while read file; do
+            if [ -f "$file" ]; then
+              version=$(jq -r '.version // empty' "$file")
+              if [ -n "$version" ]; then
+                # Check if version matches X.Y pattern (missing patch)
+                if echo "$version" | grep -qE '^[0-9]+\.[0-9]+$'; then
+                  new_version="${version}.0"
+                  echo "Fixing $file: $version -> $new_version"
+                  jq --arg v "$new_version" '.version = $v' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+                fi
+              fi
             fi
-          ' _ {} \;
+          done
+    
           echo "=== After fix - checking versions ==="
-          find examples experimental-examples -name "package.json" -not -path "*/node_modules/*" -exec sh -c '
-            name=$(jq -r .name "$1")
-            version=$(jq -r .version "$1")
-            echo "Package: $name, Version: $version"
-          ' _ {} \;
+          find examples experimental-examples -name "package.json" -not -path "*/node_modules/*" 2>/dev/null | while read file; do
+            if [ -f "$file" ]; then
+              name=$(jq -r '.name // "unknown"' "$file")
+              version=$(jq -r '.version // "no-version"' "$file")
+              echo "Package: $name, Version: $version"
+            fi
+          done
 
       - name: Install dependencies
         run: |
