@@ -108,13 +108,24 @@ jobs:
             
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
-            cp -r .changeset .changeset-backup
+            pnpm changeset pre enter beta
+            git add .changeset/pre.json
+            git commit -m "Enter prerelease mode" || true
+      
+            # Version packages (creates 2.9.0-beta.0)
             pnpm changeset version
-            rm -rf .changeset
-            mv .changeset-backup .changeset
-            pnpm changeset version --snapshot beta-${SHORT_SHA}
-            pnpm publish -r --tag beta --no-git-checks
+            git add .
+            git commit -m "Version packages" || true
+      
+            # Publish
+            pnpm changeset publish --tag beta
             git push --follow-tags
+      
+            # Exit pre-release mode
+            pnpm changeset pre exit
+            git add .
+            git commit -m "Exit prerelease mode" || true
+            git push
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
