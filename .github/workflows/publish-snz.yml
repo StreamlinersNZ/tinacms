@@ -112,16 +112,10 @@ jobs:
             # pnpm changeset publish 
             pnpm changeset pre exit
           else
-            echo "🚀 PUBLISHING - Preview (Beta) Temporarily SNZ"
-            pnpm changeset pre enter beta
-            git add .changeset/pre.json
-            git commit -m "Enter prerelease mode" || true
-            pnpm changeset version 
-            git add .
-            git commit -m "Version packages" || true
-            pnpm changeset publish --tag beta 
+            echo "🚀 PUBLISHING - Preview (Beta)"
+            pnpm changeset version --snapshot beta
+            pnpm publish -r --tag beta --no-git-checks
             git push --follow-tags
-            pnpm changeset pre exit
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
