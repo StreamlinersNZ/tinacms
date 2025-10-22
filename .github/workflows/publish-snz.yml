@@ -113,6 +113,7 @@ jobs:
             pnpm changeset pre exit
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
+            pnpm changeset version
             pnpm changeset version --snapshot beta
             pnpm publish -r --tag beta --no-git-checks
             git push --follow-tags
