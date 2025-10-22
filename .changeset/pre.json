@@ -32,6 +32,6 @@
     "tinacms-gitprovider-github": "3.0.2-snz.0"
   },
   "changesets": [
-    "add-dup-dub-changeset"
+    "add-sup-sub-changeset"
   ]
 }
