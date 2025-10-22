@@ -90,7 +90,14 @@ jobs:
 
           pnpm build
           pnpm types
-       
+      - name: Debug package versions before changeset
+        run: |
+          echo "=== Checking all package versions ==="
+          find packages -name "package.json" -not -path "*/node_modules/*" -exec sh -c '
+            name=$(jq -r .name "$1")
+            version=$(jq -r .version "$1")
+            echo "Package: $name, Version: $version"
+          ' _ {} \;
       # ------------------------------------- #
       # PREVIEW: feature branches -> tag beta
       # ------------------------------------- #
