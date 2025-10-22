@@ -1,0 +1,37 @@
+{
+  "mode": "exit",
+  "tag": "snz",
+  "initialVersions": {
+    "@examples/starter-basic-iframe": "0.1.0",
+    "@examples/starter-empty": "0.0.31",
+    "@examples/e2e-next": "0.1.99",
+    "@examples/next-2024": "0.1.27",
+    "@examples/self-hosted-starter": "0.1.83",
+    "@experimental-examples/kitchen-sink-starter": "0.1.0",
+    "@experimental-examples/starter": "0.1.64",
+    "@tinacms/app": "2.3.2",
+    "@tinacms/auth": "1.1.0",
+    "@tinacms/cli": "1.10.2",
+    "@tinacms/datalayer": "1.4.1",
+    "@tinacms/graphql": "1.6.1",
+    "@tinacms/mdx": "1.8.1",
+    "@tinacms/metrics": "1.1.0",
+    "@tinacms/schema-tools": "1.9.1",
+    "@tinacms/scripts": "1.4.0",
+    "@tinacms/search": "1.1.1",
+    "@tinacms/vercel-previews": "0.1.2",
+    "@tinacms/webpack-helpers": "1.0.5",
+    "create-tina-app": "1.5.2",
+    "next-tinacms-azure": "2.0.2",
+    "next-tinacms-cloudinary": "14.0.2",
+    "next-tinacms-dos": "11.0.2",
+    "next-tinacms-s3": "11.0.2",
+    "tinacms": "2.8.2",
+    "tinacms-authjs": "11.0.2",
+    "tinacms-clerk": "11.0.2",
+    "tinacms-gitprovider-github": "3.0.1"
+  },
+  "changesets": [
+    "add-dup-dub-changeset"
+  ]
+}
