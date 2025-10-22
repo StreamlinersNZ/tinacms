@@ -116,6 +116,15 @@ jobs:
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
             pnpm changeset pre enter beta
+            echo "=== Contents of pre.json ==="
+            cat .changeset/pre.json | python3 -m json.tool
+            echo "==========================="
+      
+            # Check if any initialVersions are null
+            echo "=== Checking for null versions ==="
+            cat .changeset/pre.json | python3 -c "import sys, json; data=json.load(sys.stdin); nulls=[k for k,v in data.get('initialVersions',{}).items() if v is None]; print('Packages with null versions:', nulls if nulls else 'None')"
+            echo "==========================="
+
             git add .changeset/pre.json
             git commit -m "Enter prerelease mode" || true
       
