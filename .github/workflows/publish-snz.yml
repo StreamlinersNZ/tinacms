@@ -105,14 +105,13 @@ jobs:
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
-            pnpm changeset pre enter beta
-            pnpm changeset version
-            git add .
-            git commit -m "Version packages"
-            # pnpm changeset publish 
-            pnpm changeset pre exit
+            
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
+            cp -r .changeset .changeset-backup
+            pnpm changeset version
+            rm -rf .changeset
+            mv .changeset-backup .changeset
             pnpm changeset version --snapshot beta-${SHORT_SHA}
             pnpm publish -r --tag beta --no-git-checks
             git push --follow-tags
