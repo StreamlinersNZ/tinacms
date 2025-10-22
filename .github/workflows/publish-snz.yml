@@ -90,6 +90,18 @@ jobs:
 
           pnpm build
           pnpm types
+      - name: Fix invalid semver versions
+        run: |
+          # Find and fix any invalid semver versions (like "0.1" -> "0.1.0")
+          find packages examples experimental-examples -name "package.json" -not -path "*/node_modules/*" -exec sh -c '
+            version=$(jq -r .version "$1")
+            # Check if version is just X.Y without patch (e.g., "0.1")
+            if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
+              echo "Fixing invalid semver in $1: $version -> $version.0"
+              jq ".version = \"$version.0\"" "$1" > "$1.tmp" && mv "$1.tmp" "$1"
+            fi
+          ' _ {} \;
+
       - name: Debug package versions before changeset
         run: |
           echo "=== Checking all package versions ==="
