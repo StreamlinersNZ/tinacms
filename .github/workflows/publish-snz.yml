@@ -102,7 +102,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             DRY_FLAG="${{ inputs.dry_run }}"
           fi
-
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           if [[ "$DRY_FLAG" == "true" ]]; then
             echo "🔍 DRY RUN MODE - Preview (Beta)"
             pnpm changeset pre enter beta
@@ -113,8 +113,7 @@ jobs:
             pnpm changeset pre exit
           else
             echo "🚀 PUBLISHING - Preview (Beta)"
-            pnpm changeset version
-            pnpm changeset version --snapshot beta
+            pnpm changeset version --snapshot beta-${SHORT_SHA}
             pnpm publish -r --tag beta --no-git-checks
             git push --follow-tags
           fi
