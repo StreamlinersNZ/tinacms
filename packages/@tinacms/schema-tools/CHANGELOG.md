@@ -1,5 +1,11 @@
 # @tinacms/schema-tools
 
+## 1.10.0-snz.0
+
+### Minor Changes
+
+- [#32](https://github.com/StreamlinersNZ/tinacms/pull/32) [`4ed490b`](https://github.com/StreamlinersNZ/tinacms/commit/4ed490b185886924f71dd2ee8fdef272ce669d43) Thanks [@Afea13](https://github.com/Afea13)! - added sub and sup plugins to the tina editor
+
 ## 1.9.1
 
 ### Patch Changes

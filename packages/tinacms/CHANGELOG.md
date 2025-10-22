@@ -1,5 +1,18 @@
 # tinacms
 
+## 2.9.0-snz.0
+
+### Minor Changes
+
+- [#32](https://github.com/StreamlinersNZ/tinacms/pull/32) [`4ed490b`](https://github.com/StreamlinersNZ/tinacms/commit/4ed490b185886924f71dd2ee8fdef272ce669d43) Thanks [@Afea13](https://github.com/Afea13)! - added sub and sup plugins to the tina editor
+
+### Patch Changes
+
+- Updated dependencies [[`4ed490b`](https://github.com/StreamlinersNZ/tinacms/commit/4ed490b185886924f71dd2ee8fdef272ce669d43)]:
+  - @tinacms/schema-tools@1.10.0-snz.0
+  - @tinacms/mdx@1.8.2-snz.0
+  - @tinacms/search@1.1.2-snz.0
+
 ## 2.8.2
 
 ### Patch Changes

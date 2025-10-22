@@ -31,5 +31,7 @@
     "tinacms-clerk": "11.0.2",
     "tinacms-gitprovider-github": "3.0.1"
   },
-  "changesets": []
+  "changesets": [
+    "add-dup-dub-changeset"
+  ]
 }
