@@ -142,8 +142,12 @@ jobs:
           # Enter prerelease mode so changesets compute snz prerelease versions (e.g., 2.9.0-snz.0)
           pnpm changeset pre enter snz
 
-          # Show planned releases in a readable table
-          pnpm changeset status --verbose || true
+          # Only run 'status' if the base exists; otherwise skip quietly.
+          if git show-ref --verify --quiet refs/remotes/origin/streamliners-main; then
+            pnpm changeset status --verbose || true
+          else
+            echo "ℹ️ Skipping 'changeset status' (origin/streamliners-main not found)."
+          fi
 
           # Materialize the version bump locally (still uncommitted) so we can print exact package@version
           pnpm changeset version
