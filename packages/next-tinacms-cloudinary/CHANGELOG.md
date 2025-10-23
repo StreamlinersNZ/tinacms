@@ -1,19 +1,5 @@
 # next-tinacms-cloudinary
 
-## 15.0.0-snz.1
-
-### Patch Changes
-
-- Updated dependencies [[`6076c33`](https://github.com/StreamlinersNZ/tinacms/commit/6076c331fc93318b450ee84da4c1b9663fa90e7a)]:
-  - tinacms@2.9.0-snz.1
-
-## 15.0.0-snz.0
-
-### Patch Changes
-
-- Updated dependencies [[`4ed490b`](https://github.com/StreamlinersNZ/tinacms/commit/4ed490b185886924f71dd2ee8fdef272ce669d43)]:
-  - tinacms@2.9.0-snz.0
-
 ## 14.0.2
 
 ### Patch Changes
