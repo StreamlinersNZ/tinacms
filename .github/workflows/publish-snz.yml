@@ -131,34 +131,34 @@ jobs:
       # ------------------------------------- #
       # PREVIEW: feature branches -> tag beta
       # ------------------------------------- #
-      # - name: Publish preview to CodeArtifact with tag=beta 
-      #   if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
-      #   run: |
-      #     # Determine if this should be a dry run
-      #     DRY_FLAG=""
-      #     if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-      #       DRY_FLAG="${{ inputs.dry_run }}"
-      #     fi
+      - name: Publish preview to CodeArtifact with tag=beta 
+        if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
+        run: |
+          # Determine if this should be a dry run
+          DRY_FLAG=""
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            DRY_FLAG="${{ inputs.dry_run }}"
+          fi
           
-      #     if [[ "$DRY_FLAG" == "true" ]]; then
-      #       echo "🔍 DRY RUN MODE - Preview (Beta)- suffix {0.0.0-}"
-      #       pnpm changeset version --snapshot beta
+          if [[ "$DRY_FLAG" == "true" ]]; then
+            echo "🔍 DRY RUN MODE - Preview (Beta)- suffix {0.0.0-}"
+            pnpm changeset version --snapshot beta
             
-      #     else
-      #       echo "🚀 PUBLISHING - Preview (Beta) - suffix {0.0.0-}"
-      #       pnpm changeset version --snapshot beta
-      #       pnpm changeset publish --tag beta
+          else
+            echo "🚀 PUBLISHING - Preview (Beta) - suffix {0.0.0-}"
+            pnpm changeset version --snapshot beta
+            pnpm changeset publish --tag beta
             
-      #     fi
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     NPM_TOKEN: ${{ env.CODEARTIFACT_TOKEN }}
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ env.CODEARTIFACT_TOKEN }}
 
       # ------------------------------------- #
       # STABLE-INTERNAL (SNZ): streamliners-main or forced
       # ------------------------------------- #
       - name: Publish SNZ prerelease to CodeArtifact with tag=snz
-        if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
+        if: ${{ github.ref == 'refs/heads/streamliners-main' && (github.event_name == 'workflow_dispatch' || inputs.force_snz == 'true') }}
         run: |
           # Determine if this should be a dry run
           DRY_FLAG=""
