@@ -1,5 +1,11 @@
 # @tinacms/schema-tools
 
+## 1.9.2-snz.2
+
+### Patch Changes
+
+- [#34](https://github.com/StreamlinersNZ/tinacms/pull/34) [`a48d418`](https://github.com/StreamlinersNZ/tinacms/commit/a48d418c677a17f6cecf705cf693062d1e456660) Thanks [@Afea13](https://github.com/Afea13)! - testing from new branch pr
+
 ## 1.9.2-snz.1
 
 ### Patch Changes

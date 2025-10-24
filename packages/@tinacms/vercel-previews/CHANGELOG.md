@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.1.3-snz.2
+
+### Patch Changes
+
+- Updated dependencies [[`a48d418`](https://github.com/StreamlinersNZ/tinacms/commit/a48d418c677a17f6cecf705cf693062d1e456660)]:
+  - tinacms@2.8.3-snz.2
+
 ## 0.1.3-snz.1
 
 ### Patch Changes
