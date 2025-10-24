@@ -254,7 +254,7 @@ jobs:
                 if [ -n "$name" ] && [ -n "$version" ] && [ "$name" != "null" ] && [ "$version" != "null" ]; then
                   echo "  📦 $name@$version"
                   # Uncomment below to actually apply the tag:
-                  # npm dist-tag add "$name@$version" latest --registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/ || echo "⚠️  Failed to tag $name@$version (might not be published)"
+                  npm dist-tag add "$name@$version" latest --registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/ || echo "⚠️  Failed to tag $name@$version (might not be published)"
                 fi
               fi
             done
