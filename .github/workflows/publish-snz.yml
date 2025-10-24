@@ -239,9 +239,28 @@ jobs:
             git add .
             git commit -m "Version packages" || true
       
-            # Publish
+            # Publish Packages
             pnpm changeset publish  
+            
             git push --follow-tags
+            # Display packages that will get the 'latest' tag
+            echo "🏷️  Packages that will receive 'latest' tag:"
+            echo "=============================================="
+            # Get list of package.json files that were modified in the version commit
+            git diff HEAD~1 HEAD --name-only | grep 'package\.json$' | grep -v node_modules | while read file; do
+              if [ -f "$file" ]; then
+                name=$(jq -r '.name // empty' "$file")
+                version=$(jq -r '.version // empty' "$file")
+                if [ -n "$name" ] && [ -n "$version" ] && [ "$name" != "null" ] && [ "$version" != "null" ]; then
+                  echo "  📦 $name@$version"
+                  # Uncomment below to actually apply the tag:
+                  # npm dist-tag add "$name@$version" latest --registry=https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/ || echo "⚠️  Failed to tag $name@$version (might not be published)"
+                fi
+              fi
+            done
+            echo "=============================================="
+            echo "✅ Display complete. Uncomment the npm dist-tag command to actually apply tags."
+      
       
             # # Exit pre-release mode
             # pnpm changeset pre exit
