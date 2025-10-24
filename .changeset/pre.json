@@ -32,6 +32,7 @@
     "tinacms-gitprovider-github": "3.0.1"
   },
   "changesets": [
-    "five-chairs-tickle"
+    "five-chairs-tickle",
+    "nice-games-hope"
   ]
 }

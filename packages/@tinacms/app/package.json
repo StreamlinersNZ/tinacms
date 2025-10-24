@@ -1,6 +1,6 @@
 {
   "name": "@tinacms/app",
-  "version": "2.3.3-snz.0",
+  "version": "2.3.3-snz.1",
   "main": "src/main.tsx",
   "license": "Apache-2.0",
   "devDependencies": {
@@ -33,6 +33,7 @@
     "registry": "https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/"
   },
   "repository": {
-    "url": "https://github.com/StreamlinersNZ/tinacms.git"
+    "url": "https://github.com/StreamlinersNZ/tinacms.git",
+    "directory": "packages/@tinacms/app"
   }
 }

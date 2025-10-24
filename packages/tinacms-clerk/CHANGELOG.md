@@ -1,5 +1,12 @@
 # tinacms-clerk
 
+## 11.0.3-snz.1
+
+### Patch Changes
+
+- Updated dependencies [[`b9dc86d`](https://github.com/StreamlinersNZ/tinacms/commit/b9dc86d4e405b351b3d80c41555e5c4c78fa1646)]:
+  - tinacms@2.8.3-snz.1
+
 ## 11.0.3-snz.0
 
 ### Patch Changes

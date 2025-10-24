@@ -1,5 +1,16 @@
 # tinacms-cli
 
+## 1.10.3-snz.1
+
+### Patch Changes
+
+- Updated dependencies [[`b9dc86d`](https://github.com/StreamlinersNZ/tinacms/commit/b9dc86d4e405b351b3d80c41555e5c4c78fa1646)]:
+  - @tinacms/schema-tools@1.9.2-snz.1
+  - tinacms@2.8.3-snz.1
+  - @tinacms/graphql@1.6.2-snz.1
+  - @tinacms/search@1.1.2-snz.1
+  - @tinacms/app@2.3.3-snz.1
+
 ## 1.10.3-snz.0
 
 ### Patch Changes
