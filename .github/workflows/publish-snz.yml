@@ -240,7 +240,7 @@ jobs:
             git commit -m "Version packages" || true
       
             # Publish
-            pnpm changeset publish  --tag snz
+            pnpm changeset publish  
             git push --follow-tags
       
             # # Exit pre-release mode
