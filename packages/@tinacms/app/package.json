@@ -1,32 +1,38 @@
 {
-	"name": "@tinacms/app",
-	"version": "2.3.2",
-	"main": "src/main.tsx",
-	"license": "Apache-2.0",
-	"devDependencies": {
-		"@types/react": "^18.3.18",
-		"@types/react-dom": "^18.3.5",
-		"typescript": "^5.7.3"
-	},
-	"peerDependencies": {
-		"react": ">=18.3.1 <20.0.0",
-		"react-dom": ">=18.3.1 <20.0.0"
-	},
-	"dependencies": {
-		"@graphiql/toolkit": "catalog:",
-		"@headlessui/react": "2.1.8",
-		"@heroicons/react": "^1.0.6",
-		"@monaco-editor/react": "catalog:",
-		"@tinacms/mdx": "workspace:*",
-		"final-form": "catalog:",
-		"graphiql": "catalog:",
-		"graphql": "15.8.0",
-		"monaco-editor": "catalog:",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"react-router-dom": "catalog:",
-		"tinacms": "workspace:*",
-		"typescript": "^5.7.3",
-		"zod": "^3.24.2"
-	}
+  "name": "@tinacms/app",
+  "version": "2.3.3-snz.0",
+  "main": "src/main.tsx",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.7.3"
+  },
+  "peerDependencies": {
+    "react": ">=18.3.1 <20.0.0",
+    "react-dom": ">=18.3.1 <20.0.0"
+  },
+  "dependencies": {
+    "@graphiql/toolkit": "catalog:",
+    "@headlessui/react": "2.1.8",
+    "@heroicons/react": "^1.0.6",
+    "@monaco-editor/react": "catalog:",
+    "@tinacms/mdx": "workspace:*",
+    "final-form": "catalog:",
+    "graphiql": "catalog:",
+    "graphql": "15.8.0",
+    "monaco-editor": "catalog:",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "catalog:",
+    "tinacms": "workspace:*",
+    "typescript": "^5.7.3",
+    "zod": "^3.24.2"
+  },
+  "publishConfig": {
+    "registry": "https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/"
+  },
+  "repository": {
+    "url": "https://github.com/StreamlinersNZ/tinacms.git"
+  }
 }

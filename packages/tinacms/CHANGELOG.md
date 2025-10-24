@@ -1,5 +1,16 @@
 # tinacms
 
+## 2.8.3-snz.0
+
+### Patch Changes
+
+- [#32](https://github.com/StreamlinersNZ/tinacms/pull/32) [`7631b6a`](https://github.com/StreamlinersNZ/tinacms/commit/7631b6ac5219f30870c5e0f7f8b35213351fb602) Thanks [@Afea13](https://github.com/Afea13)! - patch changes for schema-tools and tinacms
+
+- Updated dependencies [[`7631b6a`](https://github.com/StreamlinersNZ/tinacms/commit/7631b6ac5219f30870c5e0f7f8b35213351fb602)]:
+  - @tinacms/schema-tools@1.9.2-snz.0
+  - @tinacms/mdx@1.8.2-snz.0
+  - @tinacms/search@1.1.2-snz.0
+
 ## 2.8.2
 
 ### Patch Changes
