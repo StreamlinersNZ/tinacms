@@ -1,5 +1,13 @@
 # tinacms-authjs
 
+## 11.0.3-snz.3
+
+### Patch Changes
+
+- Updated dependencies [[`e2d72bb`](https://github.com/StreamlinersNZ/tinacms/commit/e2d72bb0ea628d827f2bad7bf9a304de99955410)]:
+  - @tinacms/schema-tools@1.9.2-snz.3
+  - tinacms@2.8.3-snz.3
+
 ## 11.0.3-snz.2
 
 ### Patch Changes
