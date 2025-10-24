@@ -1,5 +1,12 @@
 # next-tinacms-cloudinary
 
+## 11.0.3-snz.4
+
+### Patch Changes
+
+- Updated dependencies [[`62a68a7`](https://github.com/StreamlinersNZ/tinacms/commit/62a68a7a8070616761d415abad6170ddcc190174)]:
+  - tinacms@2.8.3-snz.4
+
 ## 11.0.3-snz.3
 
 ### Patch Changes

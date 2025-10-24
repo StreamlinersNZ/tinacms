@@ -1,5 +1,13 @@
 # @tinacms/search
 
+## 1.1.2-snz.4
+
+### Patch Changes
+
+- Updated dependencies [[`62a68a7`](https://github.com/StreamlinersNZ/tinacms/commit/62a68a7a8070616761d415abad6170ddcc190174)]:
+  - @tinacms/schema-tools@1.9.2-snz.4
+  - @tinacms/graphql@1.6.2-snz.4
+
 ## 1.1.2-snz.3
 
 ### Patch Changes

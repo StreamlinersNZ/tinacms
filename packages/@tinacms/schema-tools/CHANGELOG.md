@@ -1,5 +1,11 @@
 # @tinacms/schema-tools
 
+## 1.9.2-snz.4
+
+### Patch Changes
+
+- [#33](https://github.com/StreamlinersNZ/tinacms/pull/33) [`62a68a7`](https://github.com/StreamlinersNZ/tinacms/commit/62a68a7a8070616761d415abad6170ddcc190174) Thanks [@Afea13](https://github.com/Afea13)! - applying the latest tag to only changes packages with snz tag
+
 ## 1.9.2-snz.3
 
 ### Patch Changes
