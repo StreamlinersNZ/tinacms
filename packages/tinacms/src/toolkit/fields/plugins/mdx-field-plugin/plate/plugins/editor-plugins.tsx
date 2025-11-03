@@ -64,6 +64,7 @@ import {
   createHTMLInlinePlugin,
 } from './create-html-block';
 import { createHTMLBlockPlugin } from './create-html-block';
+import { commentPlugin } from '../../../discussion-plugin/comment-plugin';
 
 // Define block types that support MDX embedding
 export const HANDLES_MDX = [
@@ -135,7 +136,7 @@ export const editorPlugins = [
   TrailingBlockPlugin, //makes sure there's always a blank paragraph at the end of the editor.
   createBreakPlugin,
   FloatingToolbarPlugin,
-
+  commentPlugin,
   AutoformatPlugin.configure({
     options: {
       enableUndoOnDelete: true,

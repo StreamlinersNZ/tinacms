@@ -12,6 +12,8 @@ import { useCreateEditor } from './hooks/use-create-editor';
 import { editorPlugins } from './plugins/editor-plugins';
 import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
+import { CommentPopover } from '../../discussion-plugin/comment-popover';
+import { CommentStateSynchronizer } from '../../discussion-plugin/comment-state-synchronizer';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(() => {
@@ -68,6 +70,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
           });
         }}
       >
+        <CommentStateSynchronizer />
         <EditorContainer>
           <TooltipProvider>
             <ToolbarProvider
@@ -85,6 +88,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
                   <FloatingToolbarButtons />
                 </FloatingToolbar>
               ) : null}
+              <CommentPopover />
             </ToolbarProvider>
             <Editor />
           </TooltipProvider>

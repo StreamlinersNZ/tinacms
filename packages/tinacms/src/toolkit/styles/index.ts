@@ -3,3 +3,4 @@ export * from './font-loader';
 export * from './overflow-menu';
 export * from './message';
 export * from './dropdown-button';
+export * from './comment-highlight-styles';
