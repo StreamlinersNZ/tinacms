@@ -114,6 +114,7 @@
 		"@udecode/plate-resizable": "catalog:",
 		"@udecode/plate-selection": "catalog:",
 		"@udecode/plate-slash-command": "catalog:",
+		"@udecode/plate-suggestion": "^48.0.0",
 		"@udecode/plate-table": "catalog:",
 		"@udecode/plate-trailing-block": "catalog:",
 		"add": "catalog:",

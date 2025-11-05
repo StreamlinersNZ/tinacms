@@ -65,7 +65,7 @@ import {
 } from './create-html-block';
 import { createHTMLBlockPlugin } from './create-html-block';
 import { commentPlugin } from '../../../discussion-plugin/comment-plugin';
-
+import { suggestionPlugin } from '../../../suggestion-plugin/suggestion-plugin';
 // Define block types that support MDX embedding
 export const HANDLES_MDX = [
   HEADING_KEYS.h1,
@@ -137,6 +137,7 @@ export const editorPlugins = [
   createBreakPlugin,
   FloatingToolbarPlugin,
   commentPlugin,
+  suggestionPlugin,
   AutoformatPlugin.configure({
     options: {
       enableUndoOnDelete: true,

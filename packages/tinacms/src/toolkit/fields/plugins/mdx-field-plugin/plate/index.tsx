@@ -14,6 +14,7 @@ import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
 import { CommentPopover } from '../../discussion-plugin/comment-popover';
 import { CommentStateSynchronizer } from '../../discussion-plugin/comment-state-synchronizer';
+import { SuggestionPopover } from '../../suggestion-plugin';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(() => {
@@ -89,6 +90,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
                 </FloatingToolbar>
               ) : null}
               <CommentPopover />
+              <SuggestionPopover />
             </ToolbarProvider>
             <Editor />
           </TooltipProvider>
