@@ -26,6 +26,7 @@ import {
   formatTimestamp,
 } from './annotation-util';
 import { suggestionPlugin } from '../suggestion-plugin/suggestion-plugin';
+import { useAnnotationsStore } from './annotations-store';
 
 type CurrentUser = { id?: string; name?: string } | null;
 
@@ -46,11 +47,8 @@ export function AnnotationPopover() {
   const suggestionActiveId = usePluginOption(suggestionPlugin, 'activeId') as
     | string
     | null;
-  const comments =
-    (usePluginOption(commentPlugin, 'comments') as Record<
-      string,
-      CommentThread
-    >) ?? {};
+  const { annotations, setComments } = useAnnotationsStore();
+  const comments = annotations.comments;
   const draftState = usePluginOption(commentPlugin, 'draft');
 
   const [currentUser, setCurrentUser] = React.useState<CurrentUser>(null);
@@ -75,6 +73,15 @@ export function AnnotationPopover() {
 
   const isDraft = commentActiveId === DRAFT_COMMENT_KEY;
 
+  React.useEffect(() => {
+    console.log('[AnnotationPopover] state change', {
+      commentActiveId,
+      suggestionActiveId,
+      commentThreadCount: Object.keys(comments).length,
+      isDraft,
+    });
+  }, [commentActiveId, suggestionActiveId, comments, isDraft]);
+
   const anchorIds = React.useMemo(() => {
     const ids: string[] = [];
     if (commentActiveId) ids.push(commentActiveId);
@@ -86,6 +93,7 @@ export function AnnotationPopover() {
 
   React.useEffect(() => {
     if (!anchorIds.length) {
+      console.log('[AnnotationPopover] no anchor ids, hiding popover');
       setPosition(null);
       return;
     }
@@ -106,12 +114,16 @@ export function AnnotationPopover() {
     });
 
     if (!anchorElement) {
+      console.log('[AnnotationPopover] anchor element not found', {
+        selectors,
+      });
       setPosition(null);
       return;
     }
 
     const update = () => {
       const rect = anchorElement!.getBoundingClientRect();
+      console.log('[AnnotationPopover] updating position', rect);
       setPosition({
         top: window.scrollY + rect.bottom + 8,
         left: window.scrollX + rect.left,
@@ -192,26 +204,16 @@ export function AnnotationPopover() {
 
   const commitThreadUpdate = React.useCallback(
     (nextThread: CommentThread) => {
-      const commentEntries =
-        commentApi.comment.nodes?.({ id: nextThread.id }) ?? [];
-
-      editor.tf.withoutNormalizing(() => {
-        commentEntries.forEach(([, path]) => {
-          editor.tf.setNodes(
-            {
-              [getCommentKey(nextThread.id)]: nextThread,
-            },
-            { at: path }
-          );
-        });
+      console.log('[AnnotationPopover] commitThreadUpdate', {
+        threadId: nextThread.id,
+        messageCount: nextThread.messages?.length ?? 0,
       });
-
-      setCommentOption('comments', {
-        ...comments,
+      setComments((previous) => ({
+        ...previous,
         [nextThread.id]: nextThread,
-      });
+      }));
     },
-    [commentApi.comment, editor.tf, setCommentOption, comments]
+    [setComments]
   );
 
   const handleSubmitDraft = () => {
@@ -246,7 +248,9 @@ export function AnnotationPopover() {
       draftEntries.forEach(([, path]) => {
         editor.tf.setNodes(
           {
-            [getCommentKey(threadId)]: nextThread,
+            comment: true,
+            [getCommentKey(threadId)]: true,
+            [BaseCommentsPlugin.key]: true,
           },
           { at: path }
         );
@@ -254,9 +258,13 @@ export function AnnotationPopover() {
       });
     });
 
-    setCommentOption('comments', {
-      ...comments,
+    setComments((previous) => ({
+      ...previous,
       [threadId]: nextThread,
+    }));
+    console.log('[AnnotationPopover] handleSubmitDraft created thread', {
+      threadId,
+      discussionSubject,
     });
     setCommentOption('draft', null);
     setCommentOption('activeId', threadId);
@@ -290,10 +298,14 @@ export function AnnotationPopover() {
     });
 
     if (!thread) {
-      ensureCommentMark(editor, threadId, updatedThread);
+      ensureCommentMark(editor, threadId);
     }
 
     commitThreadUpdate(updatedThread);
+    console.log('[AnnotationPopover] handleReplySubmit appended reply', {
+      threadId,
+      replyLength: updatedThread.messages?.length ?? 0,
+    });
     setReplyValue('');
   };
 
@@ -320,7 +332,7 @@ export function AnnotationPopover() {
       id: threadId,
     });
     const { [threadId]: _removed, ...rest } = comments;
-    setCommentOption('comments', rest);
+    setComments(rest);
     if (suggestionDiff && suggestionTargetId === threadId) {
       clearCommentThread(editor, threadId);
       setSuggestionOption('activeId', null);
@@ -374,7 +386,7 @@ export function AnnotationPopover() {
 
     if (comments[suggestionTargetId]) {
       const { [suggestionTargetId]: _removed, ...rest } = comments;
-      setCommentOption('comments', rest);
+      setComments(rest);
     }
     clearCommentThread(editor, suggestionTargetId);
     setSuggestionOption('activeId', null);
@@ -394,7 +406,7 @@ export function AnnotationPopover() {
 
     if (comments[suggestionTargetId]) {
       const { [suggestionTargetId]: _removed, ...rest } = comments;
-      setCommentOption('comments', rest);
+      setComments(rest);
     }
     clearCommentThread(editor, suggestionTargetId);
     setSuggestionOption('activeId', null);

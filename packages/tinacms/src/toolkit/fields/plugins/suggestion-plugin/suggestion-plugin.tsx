@@ -63,9 +63,6 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionPluginConfig>(
 
               break;
             }
-            console.log('[suggestionPlugin] suggestion span clicked', {
-              leaf,
-            });
             const [node] = suggestionEntry as [TSuggestionText, Path];
             const id = api.suggestion!.nodeId(node);
             setOption('activeId', id ?? null);
@@ -76,11 +73,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionPluginConfig>(
 
           leaf = leaf.parentElement;
         }
-
         if (!isSet) unsetActiveSuggestion();
-        console.log('[suggestionPlugin] click handled', {
-          isSet,
-        });
       },
     },
     options: {

@@ -15,12 +15,7 @@ export function SuggestionToolbarButton() {
   const isSuggesting = usePluginOption(suggestionPlugin, 'isSuggesting');
 
   const handleClick = React.useCallback(() => {
-    const next = !isSuggesting;
-    console.log('[SuggestionToolbarButton] toggle', {
-      previous: isSuggesting,
-      next,
-    });
-    setOption('isSuggesting', next);
+    setOption('isSuggesting', !isSuggesting);
   }, [isSuggesting, setOption]);
 
   return (

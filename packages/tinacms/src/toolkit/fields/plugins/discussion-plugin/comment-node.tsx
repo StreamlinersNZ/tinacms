@@ -36,16 +36,6 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
     ? hoverId === resolvedId
     : hoverId === currentId;
 
-  React.useEffect(() => {
-    if (isActive) {
-      console.log('[CommentLeaf] active leaf render', {
-        resolvedId,
-        isDraft,
-        isOverlapping,
-      });
-    }
-  }, [isActive, isDraft, isOverlapping, resolvedId]);
-
   return (
     <PlateLeaf
      

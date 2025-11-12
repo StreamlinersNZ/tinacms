@@ -41,6 +41,7 @@ type CommentPluginConfig = ExtendConfig<
     comments: Record<string, CommentThread>;
     draft: CommentDraftState | null;
     commentingBlock?: Path | null;
+    uniquePathMap: Map<string, Path>;
   }
 >;
 
@@ -57,17 +58,20 @@ export const commentPlugin = toTPlatePlugin<CommentPluginConfig>(
     commentTransforms.setDraft = (options) => {
       if (!editor.selection) return;
 
+      let blockEntry = editor.api.block();
+
       if (editor.api.isCollapsed()) {
-        const blockEntry = editor.api.block();
         if (blockEntry) {
           editor.tf.select(blockEntry[1]);
         }
+        blockEntry = editor.api.block() ?? blockEntry;
       }
 
       originalSetDraft?.(options);
       editor.tf.collapse();
       setOption('draft', { text: '' });
       setOption('activeId', getDraftCommentKey());
+      setOption('commentingBlock', blockEntry ? blockEntry[1] : null);
     };
 
     const options: CommentPluginConfig['options'] = {
@@ -76,6 +80,7 @@ export const commentPlugin = toTPlatePlugin<CommentPluginConfig>(
       comments: {},
       draft: null,
       commentingBlock: null,
+      uniquePathMap: new Map(),
     };
 
     return {

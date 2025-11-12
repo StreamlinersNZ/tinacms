@@ -65,8 +65,7 @@ export const collectHighlightedSubject = (entries: Array<[any, Path]>) => {
 
 export const ensureCommentMark = (
   editor: PlateEditor,
-  suggestionId: string,
-  thread: CommentThread
+  suggestionId: string
 ) => {
   const suggestionKey = getSuggestionKey(suggestionId);
   const commentKey = getCommentKey(suggestionId);
@@ -82,7 +81,7 @@ export const ensureCommentMark = (
       editor.tf.setNodes(
         {
           comment: true,
-          [commentKey]: thread,
+          [commentKey]: true,
           [BaseCommentsPlugin.key]: true,
         },
         { at: path }

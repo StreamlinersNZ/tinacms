@@ -12,8 +12,22 @@ import { useCreateEditor } from './hooks/use-create-editor';
 import { editorPlugins } from './plugins/editor-plugins';
 import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
-import { AnnotationPopover } from '../../discussion-plugin/annotation-popover';
 import { CommentStateSynchronizer } from '../../discussion-plugin/comment-state-synchronizer';
+import { SuggestionStateSynchronizer } from '../../suggestion-plugin/suggestion-state-synchronizer';
+import {
+  AnnotationsProvider,
+  createEmptyAnnotationState,
+  normalizeAnnotations,
+  areAnnotationStatesEqual,
+  areSuggestionMapsEqual,
+  type AnnotationState,
+  type CommentsUpdater,
+  type SuggestionsUpdater,
+} from '../../discussion-plugin/annotations-store';
+import { areCommentMapsEqual } from '../../discussion-plugin/comment-annotations';
+import { AnnotationPluginBridge } from '../../discussion-plugin/annotation-plugin-bridge';
+import { DiscussionPluginBridge } from '../../discussion-plugin/discussion-plugin-bridge';
+import { DiscussionUserSynchronizer } from '../../discussion-plugin/discussion-user-synchronizer';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(() => {
@@ -27,6 +41,98 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     }
   }, []);
 
+  const initialAnnotationsRef = React.useRef<AnnotationState | null>(null);
+  if (!initialAnnotationsRef.current) {
+    if (input.value?.annotations) {
+      initialAnnotationsRef.current = normalizeAnnotations(
+        input.value.annotations as AnnotationState
+      );
+    } else {
+      initialAnnotationsRef.current = createEmptyAnnotationState();
+    }
+  }
+
+  const [annotations, setAnnotations] = React.useState<AnnotationState>(
+    initialAnnotationsRef.current
+  );
+
+  const setComments = React.useCallback(
+    (updater: CommentsUpdater) => {
+      setAnnotations((previous) => {
+        const nextComments =
+          typeof updater === 'function'
+            ? updater(previous.comments)
+            : updater;
+        if (
+          previous.comments === nextComments ||
+          areCommentMapsEqual(previous.comments, nextComments)
+        ) {
+          return previous;
+        }
+        return {
+          ...previous,
+          comments: nextComments,
+        };
+      });
+    },
+    []
+  );
+
+  const setSuggestions = React.useCallback(
+    (updater: SuggestionsUpdater) => {
+      setAnnotations((previous) => {
+        const nextSuggestions =
+          typeof updater === 'function'
+            ? updater(previous.suggestions)
+            : updater;
+        if (
+          previous.suggestions === nextSuggestions ||
+          areSuggestionMapsEqual(previous.suggestions, nextSuggestions)
+        ) {
+          return previous;
+        }
+        return {
+          ...previous,
+          suggestions: nextSuggestions,
+        };
+      });
+    },
+    []
+  );
+
+  const annotationsRef = React.useRef(annotations);
+  React.useEffect(() => {
+    annotationsRef.current = annotations;
+  }, [annotations]);
+
+  const lastEmissionRef = React.useRef<{
+    childrenHash: string;
+    annotationsHash: string;
+  } | null>(null);
+
+  const emitChange = React.useCallback(
+    (children: any[]) => {
+      const normalized = children.map(normalizeLinksInCodeBlocks);
+      const childrenHash = JSON.stringify(normalized);
+      const annotationsHash = JSON.stringify(annotationsRef.current);
+      const last = lastEmissionRef.current;
+      if (
+        last &&
+        last.childrenHash === childrenHash &&
+        last.annotationsHash === annotationsHash
+      ) {
+        return;
+      }
+      lastEmissionRef.current = { childrenHash, annotationsHash };
+      input.onChange({
+        type: 'root',
+        children: normalized,
+        annotations: annotationsRef.current,
+      });
+    },
+    [input]
+  );
+
   //TODO try with a wrapper?
   const editor = useCreateEditor({
     plugins: [...editorPlugins],
@@ -34,6 +140,10 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     components: Components(),
   });
 
+  React.useEffect(() => {
+    if (!editor) return;
+    emitChange(editor.children as any[]);
+  }, [annotations, editor, emitChange]);
   // This should be a plugin customization
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -55,24 +165,22 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   //
   return (
     <div ref={ref}>
-      <Plate
-        editor={editor}
-        onChange={(value) => {
-          // Normalize links in code blocks before saving (we dont want type: 'a' inside code blocks, this will break the mdx parser)
-          // Ideal Solution: let code block provider to have a option for exclude certain plugins
-          const normalized = (value.value as any[]).map(
-            normalizeLinksInCodeBlocks
-          );
-
-          input.onChange({
-            type: 'root',
-            children: normalized,
-          });
-        }}
+      <AnnotationsProvider
+        value={{ annotations, setComments, setSuggestions }}
       >
-        <CommentStateSynchronizer />
-        <EditorContainer>
-          <TooltipProvider>
+        <Plate
+          editor={editor}
+          onChange={(value) => {
+            emitChange(value.value as any[]);
+          }}
+        >
+          <DiscussionPluginBridge />
+          <DiscussionUserSynchronizer />
+          <AnnotationPluginBridge />
+          <CommentStateSynchronizer />
+          <SuggestionStateSynchronizer />
+          <EditorContainer>
+            <TooltipProvider>
             <ToolbarProvider
               tinaForm={tinaForm}
               templates={field.templates}
@@ -88,12 +196,12 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
                   <FloatingToolbarButtons />
                 </FloatingToolbar>
               ) : null}
-              <AnnotationPopover />
             </ToolbarProvider>
             <Editor />
-          </TooltipProvider>
-        </EditorContainer>
-      </Plate>
+            </TooltipProvider>
+          </EditorContainer>
+        </Plate>
+      </AnnotationsProvider>
     </div>
   );
 };

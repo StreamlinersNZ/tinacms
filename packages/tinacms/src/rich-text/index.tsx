@@ -48,6 +48,7 @@ type BaseComponents = {
   // Provide a fallback when a JSX component wasn't provided
   component_missing?: { name: string };
   comment?: { children: JSX.Element };
+  suggestion?: { children: JSX.Element };
 };
 
 type BaseComponentSignature = {
@@ -132,9 +133,10 @@ const Leaf = (props: {
   superscript?: boolean;
   code?: boolean;
   comment?: boolean;
+  suggestion?: boolean;
   components: Pick<
     BaseComponentSignature,
-    'bold' | 'italic' | 'underline' | 'strikethrough' | 'code' | 'text' | 'subscript' | 'superscript' | 'comment'
+    'bold' | 'italic' | 'underline' | 'strikethrough' | 'code' | 'text' | 'subscript' | 'superscript' | 'comment' | 'suggestion'
   >;
 }) => {
   if (props.bold) {
@@ -257,6 +259,17 @@ const Leaf = (props: {
     const { comment, ...rest } = props;
     if (props.components.comment) {
       const Component = props.components.comment;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
+  }
+  if (props.suggestion) {
+    const { suggestion, ...rest } = props;
+    if (props.components.suggestion) {
+      const Component = props.components.suggestion;
       return (
         <Component>
           <Leaf {...rest} />
