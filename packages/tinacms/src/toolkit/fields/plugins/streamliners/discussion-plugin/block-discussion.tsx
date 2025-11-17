@@ -11,7 +11,6 @@ import {
   type TElement,
   TextApi,
 } from '@udecode/plate';
-import { getDraftCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 import {
   PlateElementProps,
@@ -28,22 +27,21 @@ import {
   PencilLineIcon,
 } from 'lucide-react';
 
-import { Button } from '../mdx-field-plugin/plate/components/plate-ui/button';
+import { Button } from '../../mdx-field-plugin/plate/components/plate-ui/button';
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
-} from '../mdx-field-plugin/plate/components/plate-ui/popover';
+} from '../../mdx-field-plugin/plate/components/plate-ui/popover';
 import { suggestionPlugin } from '../suggestion-plugin/suggestion-plugin';
-import { CommentCard } from './comment-card';
-import { CommentCreateForm } from './comment-create-form';
 import { commentPlugin } from './comment-plugin';
-import { useAnnotationsStore, type StoredSuggestion } from './annotations-store';
-import { discussionPlugin } from './discussion-plugin';
-import { SuggestionCard } from './suggestion-card';
+import { getCommentIdsFromNode } from './comment-ids';
+import { type StoredSuggestion } from './annotations-store';
+import { BlockThreadView } from './BlockThreadView';
 import type { TCommentText } from './comment-node';
 import type { TDiscussion } from './types';
+import { useCMS } from '@toolkit/react-core';
 
 type ResolvedSuggestion = {
   suggestionId: string;
@@ -56,6 +54,8 @@ const isResolvedSuggestion = (
   item: TDiscussion | ResolvedSuggestion
 ): item is ResolvedSuggestion => 'suggestionId' in item;
 
+const isDevEnv = process.env.NODE_ENV !== 'production';
+
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
   const commentsApi = editor.getApi(CommentsPlugin).comment;
@@ -63,7 +63,6 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
 
   if (!blockPath) return;
 
-  const draftCommentNode = commentsApi.node({ at: blockPath, isDraft: true });
   const commentNodes = [
     ...commentsApi.nodes({ at: blockPath }),
   ] as NodeEntry<TCommentText>[];
@@ -71,11 +70,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
     ...editor.getApi(SuggestionPluginType).suggestion.nodes({ at: blockPath }),
   ];
 
-  if (
-    commentNodes.length === 0 &&
-    suggestionNodes.length === 0 &&
-    !draftCommentNode
-  ) {
+  if (commentNodes.length === 0 && suggestionNodes.length === 0) {
     return null;
   }
 
@@ -83,7 +78,6 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
     <BlockDiscussionContent
       blockPath={blockPath}
       commentNodes={commentNodes}
-      draftCommentNode={draftCommentNode as NodeEntry<TCommentText> | undefined}
       suggestionNodes={suggestionNodes}
       {...props}
     />
@@ -94,20 +88,22 @@ const BlockDiscussionContent = ({
   blockPath,
   children,
   commentNodes,
-  draftCommentNode,
   suggestionNodes,
 }: PlateElementProps & {
   blockPath: Path;
   commentNodes: NodeEntry<TCommentText>[];
-  draftCommentNode: NodeEntry<TCommentText> | undefined;
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
   const editor = useEditorRef();
-  const { annotations } = useAnnotationsStore();
+
+  // Get data directly from plugin options (single source of truth)
+  const commentThreads = (editor.getOption(commentPlugin, 'threads') || {}) as Record<string, any>;
+  const suggestionMetadata = (editor.getOption(suggestionPlugin, 'metadata') || {}) as Record<string, StoredSuggestion>;
+
   const resolvedSuggestions = useResolvedSuggestions(
     suggestionNodes,
     blockPath,
-    annotations.suggestions
+    suggestionMetadata
   );
   const resolvedDiscussions = useResolvedDiscussions(commentNodes, blockPath);
 
@@ -117,14 +113,9 @@ const BlockDiscussionContent = ({
 
   const { setOption: setCommentOption } = useEditorPlugin(commentPlugin);
   const { setOption: setSuggestionOption } = useEditorPlugin(suggestionPlugin);
-  const commentingBlock = usePluginOption(commentPlugin, 'commentingBlock');
   const blockPathKey = React.useMemo(() => blockPath.join('.'), [blockPath]);
-  const commentingBlockKey = commentingBlock
-    ? commentingBlock.join('.')
-    : null;
   const activeCommentId = usePluginOption(commentPlugin, 'activeId');
   const activeSuggestionId = usePluginOption(suggestionPlugin, 'activeId');
-  const isCommenting = activeCommentId === getDraftCommentKey();
 
   const activeSuggestion = activeSuggestionId
     ? resolvedSuggestions.find(
@@ -149,79 +140,80 @@ const BlockDiscussionContent = ({
     [resolvedDiscussions, resolvedSuggestions]
   );
 
-  const commentingCurrent =
-    !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
-
   const selected =
     resolvedDiscussions.some((discussion) => discussion.id === activeCommentId) ||
     resolvedSuggestions.some(
       (suggestion) => suggestion.suggestionId === activeSuggestionId
     );
 
-  const [internalOpen, setInternalOpen] = React.useState(selected);
-  const open =
-    internalOpen ||
-    selected ||
-    (isCommenting && !!draftCommentNode && commentingCurrent);
+  const [internalOpen, setInternalOpen] = React.useState<boolean>(false);
+  const [forceListView, setForceListView] = React.useState(false);
+  const pendingCloseRef = React.useRef(false);
+  const pendingCloseHandleRef = React.useRef<number | null>(null);
+  const annotationActive =
+    Boolean(activeCommentId) || Boolean(activeSuggestionId);
+  const allowAutoOpen = selected;
+  const open = annotationActive ? false : internalOpen || allowAutoOpen;
 
-  const closePopover = React.useCallback(() => {
-    setInternalOpen(false);
-    setCommentOption('activeId', null);
-    setCommentOption('commentingBlock', null);
-    setCommentOption('draft', null);
-    setSuggestionOption('activeId', null);
+  const closePopover = React.useCallback(
+    (options?: { preserveState?: boolean }) => {
+      const preserveState = Boolean(options?.preserveState);
 
-    if (draftCommentNode) {
-      editor.tf.unsetNodes(getDraftCommentKey(), {
-        at: [],
-        mode: 'lowest',
-        match: (node) => Boolean((node as any)[getDraftCommentKey()]),
-      });
-    }
+      setInternalOpen(false);
+      setForceListView(false);
 
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[BlockDiscussion] popover closed', {
+      if (!preserveState) {
+        setCommentOption('activeId', null);
+        setSuggestionOption('activeId', null);
+      }
+
+      if (isDevEnv) {
+        console.debug('[BlockDiscussion] popover closed', {
+          blockPath: blockPathKey,
+          preserveState,
+        });
+      }
+    },
+    [
+      blockPathKey,
+      setCommentOption,
+      setSuggestionOption,
+    ]
+  );
+
+  const showAllThreads = forceListView || noneActive;
+  const prevOpenRef = React.useRef(open);
+
+  React.useEffect(() => {
+    if (!isDevEnv) return;
+    if (prevOpenRef.current !== open) {
+      console.debug('[BlockDiscussion] popover open change', {
         blockPath: blockPathKey,
+        prev: prevOpenRef.current,
+        next: open,
+        internalOpen,
+        selected,
       });
+      prevOpenRef.current = open;
     }
-  }, [
-    blockPathKey,
-    draftCommentNode,
-    editor,
-    setCommentOption,
-    setSuggestionOption,
-  ]);
+  }, [open, blockPathKey, internalOpen, selected]);
 
   React.useEffect(() => {
-    if (isCommenting) {
-      setInternalOpen(true);
+    if (forceListView && (activeCommentId || activeSuggestionId)) {
+      setForceListView(false);
     }
-  }, [isCommenting]);
+  }, [forceListView, activeCommentId, activeSuggestionId]);
 
   React.useEffect(() => {
-    if (!isCommenting || !draftCommentNode) return;
-    if (commentingBlockKey === blockPathKey) return;
-    setCommentOption('commentingBlock', blockPath);
-  }, [
-    blockPath,
-    blockPathKey,
-    commentingBlockKey,
-    draftCommentNode,
-    isCommenting,
-    setCommentOption,
-  ]);
+    return () => {
+      if (pendingCloseHandleRef.current !== null) {
+        cancelAnimationFrame(pendingCloseHandleRef.current);
+        pendingCloseHandleRef.current = null;
+      }
+      pendingCloseRef.current = false;
+    };
+  }, []);
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[BlockDiscussion] state snapshot', {
-      blockPath: blockPathKey,
-      totalCount,
-      isCommenting,
-      commentingCurrent,
-      hasDraft: Boolean(draftCommentNode),
-      activeCommentId,
-      activeSuggestionId,
-    });
-  }
 
   const anchorElement = React.useMemo(() => {
     let activeEntry: NodeEntry | undefined;
@@ -237,14 +229,9 @@ const BlockDiscussionContent = ({
     }
 
     if (activeCommentId) {
-      if (activeCommentId === getDraftCommentKey()) {
-        activeEntry = draftCommentNode;
-      } else {
-        activeEntry = commentNodes.find(([node]) => {
-          const id = editor.getApi(CommentsPlugin).comment.nodeId(node);
-          return id === activeCommentId;
-        });
-      }
+      activeEntry = commentNodes.find(([node]) =>
+        getCommentIdsFromNode(node).includes(activeCommentId)
+      );
     }
 
     const toDomNode = (entry?: NodeEntry) => {
@@ -265,28 +252,92 @@ const BlockDiscussionContent = ({
     activeCommentId,
     activeSuggestion,
     commentNodes,
-    draftCommentNode,
     editor,
     suggestionNodes,
+    blockPath,
   ]);
 
-  if (totalCount === 0 && !draftCommentNode && !isCommenting) {
+  if (totalCount === 0) {
     return <div className="w-full">{children}</div>;
   }
 
   return (
-    <div className="flex w-full justify-between">
+    <div className="w-full">
       <Popover
         open={open}
         onOpenChange={(next) => {
+          if (annotationActive) {
+            if (!next && internalOpen) {
+              setInternalOpen(false);
+            }
+            return;
+          }
+
           if (next) {
             setInternalOpen(true);
-          } else {
-            closePopover();
+            pendingCloseRef.current = false;
+            if (pendingCloseHandleRef.current !== null) {
+              cancelAnimationFrame(pendingCloseHandleRef.current);
+              pendingCloseHandleRef.current = null;
+            }
+            return;
           }
+
+          pendingCloseRef.current = true;
+          if (pendingCloseHandleRef.current !== null) {
+            cancelAnimationFrame(pendingCloseHandleRef.current);
+          }
+
+          pendingCloseHandleRef.current = requestAnimationFrame(() => {
+            pendingCloseHandleRef.current = null;
+            if (!pendingCloseRef.current) return;
+            pendingCloseRef.current = false;
+            closePopover();
+          });
         }}
       >
-        <div className="w-full">{children}</div>
+        <div className="flex w-full items-start gap-2">
+          <div className="w-full">{children}</div>
+
+          {totalCount > 0 && (
+            <div className="flex-shrink-0 select-none pt-1">
+              <PopoverTrigger
+                asChild
+                onClick={() => {
+                  if (isDevEnv) {
+                    console.debug('[BlockDiscussion] block button clicked', {
+                      blockPath: blockPathKey,
+                      discussionsCount,
+                      suggestionsCount,
+                    });
+                  }
+                  setForceListView(true);
+                }}
+              >
+                <Button
+                  variant="ghost"
+                  className="mt-1 flex h-6 gap-1 pr-1.5 pl-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
+                  data-active={open}
+                  contentEditable={false}
+                >
+                  {suggestionsCount > 0 && discussionsCount === 0 && (
+                    <PencilLineIcon className="size-4 shrink-0" />
+                  )}
+
+                  {suggestionsCount === 0 && discussionsCount > 0 && (
+                    <MessageSquareTextIcon className="size-4 shrink-0 " />
+                  )}
+
+                  {suggestionsCount > 0 && discussionsCount > 0 && (
+                    <MessagesSquareIcon className="size-4 shrink-0" />
+                  )}
+
+                  <span className="text-xs font-semibold">{totalCount}</span>
+                </Button>
+              </PopoverTrigger>
+            </div>
+          )}
+        </div>
         {anchorElement && (
           <PopoverAnchor
             asChild
@@ -304,99 +355,80 @@ const BlockDiscussionContent = ({
           data-comment-popover="true"
           data-comment-block-path={blockPath.join('.')}
         >
-          {isCommenting ? (
-            <div className="p-4">
-              <CommentCreateForm autoFocus placeholder="Comment…" />
-            </div>
+          {showAllThreads ? (
+            sortedMergedData.length ? (
+              sortedMergedData.map((item, index) =>
+                isResolvedSuggestion(item) ? (
+                  <BlockSuggestion
+                    key={item.suggestionId}
+                    suggestionId={item.suggestionId}
+                    isLast={index === sortedMergedData.length - 1}
+                  />
+                ) : (
+                  <BlockComment
+                    key={item.id}
+                    threadId={item.id}
+                    isLast={index === sortedMergedData.length - 1}
+                  />
+                )
+              )
+            ) : (
+              <div className="p-4 text-sm text-muted-foreground">
+                No comments or suggestions attached to this block.
+              </div>
+            )
           ) : (
             <React.Fragment>
-              {noneActive ? (
-                sortedMergedData.map((item, index) =>
-                  isResolvedSuggestion(item) ? (
-                    <SuggestionCard
-                      key={item.suggestionId}
-                      suggestionId={item.suggestionId}
-                    />
-                  ) : (
-                    <BlockComment
-                      key={item.id}
-                      discussion={item}
-                      isLast={index === sortedMergedData.length - 1}
-                    />
-                  )
-                )
-              ) : (
-                <React.Fragment>
-                  {activeSuggestion && (
-                    <SuggestionCard suggestionId={activeSuggestion.suggestionId} />
-                  )}
-
-                  {activeDiscussion && (
-                    <BlockComment discussion={activeDiscussion} isLast />
-                  )}
-                </React.Fragment>
+              {activeSuggestion && (
+                <BlockSuggestion
+                  suggestionId={activeSuggestion.suggestionId}
+                  isLast
+                />
               )}
 
-              {!sortedMergedData.length && !draftCommentNode && (
+              {activeDiscussion && (
+                <BlockComment threadId={activeDiscussion.id} isLast />
+              )}
+
+              {!activeSuggestion && !activeDiscussion && (
                 <div className="p-4 text-sm text-muted-foreground">
-                  No comments or suggestions attached to this block.
+                  Select text and run "Add comment" to start a new thread.
                 </div>
               )}
             </React.Fragment>
           )}
         </PopoverContent>
 
-        {totalCount > 0 && (
-          <div className="relative left-0 size-0 select-none">
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                className="mt-1 ml-1 flex h-6 gap-1 px-1.5 py-0 text-muted-foreground/80 hover:text-muted-foreground/80 data-[active=true]:bg-muted"
-                data-active={open}
-                contentEditable={false}
-              >
-                {suggestionsCount > 0 && discussionsCount === 0 && (
-                  <PencilLineIcon className="size-4 shrink-0" />
-                )}
-
-                {suggestionsCount === 0 && discussionsCount > 0 && (
-                  <MessageSquareTextIcon className="size-4 shrink-0" />
-                )}
-
-                {suggestionsCount > 0 && discussionsCount > 0 && (
-                  <MessagesSquareIcon className="size-4 shrink-0" />
-                )}
-
-                <span className="text-xs font-semibold">{totalCount}</span>
-              </Button>
-            </PopoverTrigger>
-          </div>
-        )}
       </Popover>
     </div>
   );
 };
 
 const BlockComment = ({
-  discussion,
+  threadId,
   isLast,
 }: {
-  discussion: TDiscussion;
+  threadId: string;
   isLast: boolean;
 }) => {
   return (
     <React.Fragment>
-      <div className="p-4">
-        {discussion.discussionSubject && (
-          <div className="mb-2 text-xs text-muted-foreground">
-            {discussion.discussionSubject}
-          </div>
-        )}
-        {discussion.comments.map((comment) => (
-          <CommentCard key={comment.id} comment={comment} />
-        ))}
-        <CommentCreateForm discussionId={discussion.id} placeholder="Reply…" />
-      </div>
+      <BlockThreadView threadId={threadId} />
+      {!isLast && <div className="h-px w-full bg-muted" />}
+    </React.Fragment>
+  );
+};
+
+const BlockSuggestion = ({
+  suggestionId,
+  isLast,
+}: {
+  suggestionId: string;
+  isLast: boolean;
+}) => {
+  return (
+    <React.Fragment>
+      <BlockThreadView threadId={suggestionId} isSuggestion />
       {!isLast && <div className="h-px w-full bg-muted" />}
     </React.Fragment>
   );
@@ -407,32 +439,31 @@ const useResolvedDiscussions = (
   blockPath: Path
 ) => {
   const { api, getOption, setOption } = useEditorPlugin(commentPlugin);
-  const discussions =
-    (usePluginOption(discussionPlugin, 'discussions') as TDiscussion[]) ?? [];
+  const threads = (getOption('threads') || {}) as Record<string, any>;
   const uniquePathMap = getOption('uniquePathMap');
 
   const pendingMap = React.useMemo(() => {
     let nextMap: Map<string, Path> | null = null;
 
     commentNodes.forEach(([node]) => {
-      const id = api.comment.nodeId(node);
-      if (!id) return;
+      const ids = getCommentIdsFromNode(node);
+      ids.forEach((id) => {
+        const previousPath = uniquePathMap.get(id);
 
-      const previousPath = uniquePathMap.get(id);
+        if (PathApi.isPath(previousPath)) {
+          const nodes = api.comment.node({ id, at: previousPath });
 
-      if (PathApi.isPath(previousPath)) {
-        const nodes = api.comment.node({ id, at: previousPath });
+          if (!nodes) {
+            if (!nextMap) nextMap = new Map(uniquePathMap);
+            nextMap.set(id, blockPath);
+          }
 
-        if (!nodes) {
-          if (!nextMap) nextMap = new Map(uniquePathMap);
-          nextMap.set(id, blockPath);
+          return;
         }
 
-        return;
-      }
-
-      if (!nextMap) nextMap = new Map(uniquePathMap);
-      nextMap.set(id, blockPath);
+        if (!nextMap) nextMap = new Map(uniquePathMap);
+        nextMap.set(id, blockPath);
+      });
     });
 
     return nextMap;
@@ -448,16 +479,23 @@ const useResolvedDiscussions = (
 
   const commentIds = new Set(
     commentNodes
-      .map(([node]) => api.comment.nodeId(node))
+      .flatMap(([node]) => getCommentIdsFromNode(node))
       .filter((id): id is string => Boolean(id))
   );
 
-  return discussions
-    .map((discussion) => ({
-      ...discussion,
-      createdAt: new Date(discussion.createdAt),
+  // Convert threads to discussion format for compatibility
+  return Object.values(threads)
+    .map((thread: any) => ({
+      id: thread.id,
+      comments: thread.messages || [],
+      createdAt: new Date(thread.createdAt),
+      updatedAt: thread.updatedAt ? new Date(thread.updatedAt) : undefined,
+      isResolved: Boolean(thread.isResolved),
+      userId: thread.messages?.[0]?.authorId ?? 'anonymous',
+      documentContent: thread.documentContent,
+      discussionSubject: thread.discussionSubject,
     }))
-    .filter((discussion) => {
+    .filter((discussion: any) => {
       const firstBlockPath = mapToUse.get(discussion.id);
 
       if (!firstBlockPath) return false;

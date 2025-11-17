@@ -5,11 +5,13 @@ import * as React from 'react';
 import type { TText } from '@udecode/plate';
 import type { PlateLeafProps } from '@udecode/plate/react';
 
-import { getCommentCount, getDraftCommentKey } from '@udecode/plate-comments';
+import { getDraftCommentKey } from '@udecode/plate-comments';
 import { PlateLeaf, useEditorPlugin, usePluginOption } from '@udecode/plate/react';
+
 
 import clsx from 'clsx';
 
+import { getCommentIdsFromNode } from './comment-ids';
 import { commentPlugin } from './comment-plugin';
 
 export interface TCommentText extends TText {
@@ -19,13 +21,14 @@ export interface TCommentText extends TText {
 export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const { children, leaf } = props;
 
-  const { api, setOption } = useEditorPlugin(commentPlugin);
+  const { setOption } = useEditorPlugin(commentPlugin);
   const hoverId = usePluginOption(commentPlugin, 'hoverId');
   const activeId = usePluginOption(commentPlugin, 'activeId');
 
   const isDraft = Boolean(leaf[getDraftCommentKey()]);
-  const isOverlapping = getCommentCount(leaf) > 1;
-  const currentId = api.comment.nodeId(leaf);
+  const commentIds = React.useMemo(() => getCommentIdsFromNode(leaf), [leaf]);
+  const isOverlapping = commentIds.length > 1;
+  const currentId = commentIds.at(-1) ?? null;
   const draftKey = getDraftCommentKey();
   const resolvedId = isDraft ? draftKey : currentId ?? null;
 
@@ -36,9 +39,25 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
     ? hoverId === resolvedId
     : hoverId === currentId;
 
+  const handleClick = () => {
+    const nextId = resolvedId ?? currentId ?? null;
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[CommentLeaf] click', {
+        nextId,
+        isDraft,
+        blockState: props.leaf,
+      });
+    }
+    if (commentIds.length > 1) {
+      setOption('overlappingIds', commentIds);
+    } else {
+      setOption('overlappingIds', null);
+    }
+    setOption('activeId', nextId);
+  };
+
   return (
     <PlateLeaf
-     
       {...props}
       className={clsx(
         'tina-comment-leaf',
@@ -59,7 +78,7 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
           ? 'hover'
           : 'idle',
         'data-comment-overlap': isOverlapping ? 'true' : 'false',
-        onClick: () => setOption('activeId', resolvedId ?? currentId ?? null),
+        onClick: handleClick,
         onMouseEnter: () => setOption('hoverId', resolvedId ?? currentId ?? null),
         onMouseLeave: () => setOption('hoverId', null),
       }}

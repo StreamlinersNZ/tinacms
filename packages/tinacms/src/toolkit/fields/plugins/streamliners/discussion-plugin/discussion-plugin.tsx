@@ -4,6 +4,7 @@ import { createPlatePlugin } from '@udecode/plate/react';
 
 import type { DiscussionUser, TDiscussion } from './types';
 import { BlockDiscussion } from './block-discussion';
+import { AnnotationPopover } from './annotation-popover';
 
 export interface DiscussionPluginOptions {
   discussions: TDiscussion[];
@@ -12,19 +13,19 @@ export interface DiscussionPluginOptions {
 }
 
 export const discussionPlugin = createPlatePlugin({
-  key: 'discussion',
+  key: 'discussion',  
   options: {
     currentUserId: 'anonymous',
     discussions: [],
     users: {},
   } satisfies DiscussionPluginOptions,
-})
-  .configure({
+
+}).configure({
+  // Renders the "Block discussion icon" above the nodes
     render: { aboveNodes: BlockDiscussion },
-  })
-  .extendSelectors(({ getOption }) => ({
-    currentUser: () => getOption('users')[getOption('currentUserId')],
-    user: (id: string) => getOption('users')[id],
-  }));
+  }).extendSelectors(({ getOption }) => ({
+  currentUser: () => getOption('users')[getOption('currentUserId')],
+  user: (id: string) => getOption('users')[id],
+}));
 
 export type DiscussionPlugin = typeof discussionPlugin;

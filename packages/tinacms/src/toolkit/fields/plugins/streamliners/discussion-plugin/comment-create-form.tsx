@@ -3,24 +3,19 @@
 import React from 'react';
 
 import { nanoid } from '@udecode/plate';
-
 import { cn } from '@udecode/cn';
-import { getCommentKey, getDraftCommentKey } from '@udecode/plate-comments';
-import { CommentsPlugin } from '@udecode/plate-comments/react';
+
 import {
   useEditorPlugin,
-  useEditorRef,
   usePluginOption,
 } from '@udecode/plate/react';
 
-import { Button } from '../mdx-field-plugin/plate/components/plate-ui/button';
+import { Button } from '../../mdx-field-plugin/plate/components/plate-ui/button';
 import { commentPlugin } from './comment-plugin';
 import { discussionPlugin } from './discussion-plugin';
-import { useAnnotationsStore } from './annotations-store';
 import {
   discussionsToCommentThreads,
   textToValue,
-  valueToPlainText,
 } from './discussion-adapter';
 import type { TComment, TDiscussion } from './types';
 
@@ -36,16 +31,13 @@ export function CommentCreateForm({
   autoFocus?: boolean;
 }) {
   const [value, setValue] = React.useState('');
+  const { editor: commentEditor, setOption: setCommentOption } = useEditorPlugin(commentPlugin);
   const { setOption: setDiscussionOption } = useEditorPlugin(discussionPlugin);
-  const { setOption: setCommentOption } = useEditorPlugin(commentPlugin);
-  const { setComments } = useAnnotationsStore();
   const discussions =
     (usePluginOption(discussionPlugin, 'discussions') as TDiscussion[]) ?? [];
   const currentUserId =
     (usePluginOption(discussionPlugin, 'currentUserId') as string) ??
     'anonymous';
-  const editor = useEditorRef();
-  const commentsApi = editor.getApi(CommentsPlugin).comment;
 
   const submit = () => {
     const body = value.trim();
@@ -60,50 +52,26 @@ export function CommentCreateForm({
       userId: currentUserId,
     };
 
-    let nextDiscussions: TDiscussion[];
+    // Threads are now created immediately by the toolbar button,
+    // so this form is only used for adding messages to existing threads
+    if (!discussionId) return;
 
-    if (discussionId) {
-      nextDiscussions = discussions.map((discussion) =>
-        discussion.id === discussionId
-          ? {
-              ...discussion,
-              comments: [...discussion.comments, nextComment],
-              updatedAt: new Date(),
-            }
-          : discussion
-      );
-    } else {
-      const draftEntries = commentsApi.nodes({ at: [], isDraft: true });
-      if (!draftEntries.length) return;
-      const documentContent = draftEntries
-        .map(([node]) => valueToPlainText({ children: [node], type: 'p' }))
-        .join(' ');
-      const newDiscussionId = nextComment.discussionId;
-      draftEntries.forEach(([, path]) => {
-        editor.tf.setNodes(
-          { [getCommentKey(newDiscussionId)]: true },
-          { at: path, split: true }
-        );
-        editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
-      });
-      nextDiscussions = [
-        ...discussions,
-        {
-          id: newDiscussionId,
-          comments: [nextComment],
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          isResolved: false,
-          userId: currentUserId,
-          documentContent,
-        },
-      ];
-    }
+    const nextDiscussions = discussions.map((discussion) =>
+      discussion.id === discussionId
+        ? {
+            ...discussion,
+            comments: [...discussion.comments, nextComment],
+            updatedAt: new Date(),
+          }
+        : discussion
+    );
 
     setDiscussionOption('discussions', nextDiscussions);
-    setComments(discussionsToCommentThreads(nextDiscussions));
-    setCommentOption('commentingBlock', null);
-    setCommentOption('draft', null);
+
+    // Update comment threads directly in plugin options
+    const nextThreads = discussionsToCommentThreads(nextDiscussions);
+    commentEditor.setOption(commentPlugin, 'threads', nextThreads);
+
     setCommentOption('activeId', nextComment.discussionId);
     if (isDev) {
       console.debug('[CommentCreateForm] submitted comment', {

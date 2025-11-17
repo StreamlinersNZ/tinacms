@@ -14,7 +14,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '../mdx-field-plugin/plate/components/plate-ui/avatar';
+} from '../../mdx-field-plugin/plate/components/plate-ui/avatar';
 
 export function CommentCard({
   comment,

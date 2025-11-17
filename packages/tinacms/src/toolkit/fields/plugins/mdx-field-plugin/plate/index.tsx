@@ -12,24 +12,23 @@ import { useCreateEditor } from './hooks/use-create-editor';
 import { editorPlugins } from './plugins/editor-plugins';
 import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
-import { CommentStateSynchronizer } from '../../discussion-plugin/comment-state-synchronizer';
-import { SuggestionStateSynchronizer } from '../../suggestion-plugin/suggestion-state-synchronizer';
 import {
-  AnnotationsProvider,
-  createEmptyAnnotationState,
-  normalizeAnnotations,
-  areAnnotationStatesEqual,
-  areSuggestionMapsEqual,
-  type AnnotationState,
-  type CommentsUpdater,
-  type SuggestionsUpdater,
-} from '../../discussion-plugin/annotations-store';
-import { areCommentMapsEqual } from '../../discussion-plugin/comment-annotations';
-import { AnnotationPluginBridge } from '../../discussion-plugin/annotation-plugin-bridge';
-import { DiscussionPluginBridge } from '../../discussion-plugin/discussion-plugin-bridge';
-import { DiscussionUserSynchronizer } from '../../discussion-plugin/discussion-user-synchronizer';
+  loadAnnotations,
+  saveAnnotations,
+} from '../../streamliners/discussion-plugin/tina-integration';
+import type { AnnotationState } from '../../streamliners/discussion-plugin/annotations-store';
+import { normalizeAnnotations, createEmptyAnnotationState } from '../../streamliners/discussion-plugin/annotations-store';
+
+const isAnnotationStateEmpty = (state: AnnotationState) =>
+  Object.keys(state.comments).length === 0 &&
+  Object.keys(state.suggestions).length === 0;
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
+  const annotationsKey = React.useMemo(
+    () => input.name ?? field.name ?? 'rich-text',
+    [input.name, field.name]
+  );
+
   const initialValue = React.useMemo(() => {
     if (field?.parser?.type === 'slatejson') {
       return input.value.children;
@@ -42,68 +41,93 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   }, []);
 
   const initialAnnotationsRef = React.useRef<AnnotationState | null>(null);
-  if (!initialAnnotationsRef.current) {
-    if (input.value?.annotations) {
-      initialAnnotationsRef.current = normalizeAnnotations(
-        input.value.annotations as AnnotationState
-      );
-    } else {
-      initialAnnotationsRef.current = createEmptyAnnotationState();
+  const formValues =
+    (tinaForm?.values as Record<string, any> | undefined) ??
+    tinaForm?.finalForm?.getState().values;
+  const annotationsRaw =
+    typeof formValues?.annotations?.raw === 'string'
+      ? formValues.annotations.raw
+      : undefined;
+
+  const globalAnnotationsMap = React.useMemo<
+    Record<string, AnnotationState>
+  >(() => {
+    if (!annotationsRaw) return {};
+    try {
+      return JSON.parse(annotationsRaw) as Record<string, AnnotationState>;
+    } catch {
+      return {};
     }
+  }, [annotationsRaw]);
+
+  const existingFieldAnnotations = globalAnnotationsMap[annotationsKey];
+  const legacyFieldAnnotations = input.value
+    ?.annotations as AnnotationState | undefined;
+
+  if (!initialAnnotationsRef.current) {
+    const sourceAnnotations =
+      existingFieldAnnotations ?? legacyFieldAnnotations;
+
+    initialAnnotationsRef.current = sourceAnnotations
+      ? normalizeAnnotations(sourceAnnotations)
+      : createEmptyAnnotationState();
   }
 
-  const [annotations, setAnnotations] = React.useState<AnnotationState>(
-    initialAnnotationsRef.current
-  );
+  // No longer need React state - annotations live in plugin options
 
-  const setComments = React.useCallback(
-    (updater: CommentsUpdater) => {
-      setAnnotations((previous) => {
-        const nextComments =
-          typeof updater === 'function'
-            ? updater(previous.comments)
-            : updater;
-        if (
-          previous.comments === nextComments ||
-          areCommentMapsEqual(previous.comments, nextComments)
-        ) {
-          return previous;
-        }
-        return {
-          ...previous,
-          comments: nextComments,
-        };
+  //TODO try with a wrapper?
+  const editor = useCreateEditor({
+    plugins: [...editorPlugins],
+    value: initialValue,
+    components: Components(),
+  });
+
+  const syncAnnotationsToForm = React.useCallback(() => {
+    if (!tinaForm || !editor) return;
+
+    // Get current annotations from plugin options
+    const currentState = saveAnnotations(editor);
+
+    const values =
+      (tinaForm.values as Record<string, any> | undefined) ??
+      tinaForm.finalForm?.getState().values;
+    const raw =
+      typeof values?.annotations?.raw === 'string'
+        ? values.annotations.raw
+        : undefined;
+    let annotationsMap: Record<string, AnnotationState> = {};
+
+    if (raw) {
+      try {
+        annotationsMap = JSON.parse(raw) as Record<string, AnnotationState>;
+      } catch {
+        annotationsMap = {};
+      }
+    }
+
+    const currentIsEmpty = isAnnotationStateEmpty(currentState);
+
+    if (!currentIsEmpty || annotationsMap[annotationsKey]) {
+      const nextAnnotations: Record<string, AnnotationState> = {
+        ...annotationsMap,
+      };
+
+      if (currentIsEmpty) {
+        delete nextAnnotations[annotationsKey];
+      } else {
+        nextAnnotations[annotationsKey] = currentState;
+      }
+
+      const hasEntries = Object.keys(nextAnnotations).length > 0;
+      const serialized = hasEntries ? JSON.stringify(nextAnnotations) : undefined;
+      console.log('[RichEditor] syncAnnotationsToForm', {
+        annotationsKey,
+        currentState,
+        serialized: serialized?.substring(0, 200),
       });
-    },
-    []
-  );
-
-  const setSuggestions = React.useCallback(
-    (updater: SuggestionsUpdater) => {
-      setAnnotations((previous) => {
-        const nextSuggestions =
-          typeof updater === 'function'
-            ? updater(previous.suggestions)
-            : updater;
-        if (
-          previous.suggestions === nextSuggestions ||
-          areSuggestionMapsEqual(previous.suggestions, nextSuggestions)
-        ) {
-          return previous;
-        }
-        return {
-          ...previous,
-          suggestions: nextSuggestions,
-        };
-      });
-    },
-    []
-  );
-
-  const annotationsRef = React.useRef(annotations);
-  React.useEffect(() => {
-    annotationsRef.current = annotations;
-  }, [annotations]);
+      tinaForm.change('annotations.raw' as any, serialized);
+    }
+  }, [annotationsKey, tinaForm, editor]);
 
   const lastEmissionRef = React.useRef<{
     childrenHash: string;
@@ -112,9 +136,15 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
 
   const emitChange = React.useCallback(
     (children: any[]) => {
+      if (!editor) return;
+
       const normalized = children.map(normalizeLinksInCodeBlocks);
       const childrenHash = JSON.stringify(normalized);
-      const annotationsHash = JSON.stringify(annotationsRef.current);
+
+      // Get annotations from plugin options
+      const currentAnnotations = saveAnnotations(editor);
+      const annotationsHash = JSON.stringify(currentAnnotations);
+
       const last = lastEmissionRef.current;
       if (
         last &&
@@ -127,23 +157,23 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       input.onChange({
         type: 'root',
         children: normalized,
-        annotations: annotationsRef.current,
       });
+      syncAnnotationsToForm();
     },
-    [input]
+    [input, syncAnnotationsToForm, editor]
   );
 
-  //TODO try with a wrapper?
-  const editor = useCreateEditor({
-    plugins: [...editorPlugins],
-    value: initialValue,
-    components: Components(),
-  });
+  // Load annotations into plugin options on mount
+  React.useEffect(() => {
+    if (!editor || !initialAnnotationsRef.current) return;
+    loadAnnotations(editor, initialAnnotationsRef.current);
+  }, [editor]);
 
+  // Trigger initial emit when editor is ready
   React.useEffect(() => {
     if (!editor) return;
     emitChange(editor.children as any[]);
-  }, [annotations, editor, emitChange]);
+  }, [editor, emitChange]);
   // This should be a plugin customization
   const ref = React.useRef<HTMLDivElement>(null);
 
@@ -165,43 +195,34 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   //
   return (
     <div ref={ref}>
-      <AnnotationsProvider
-        value={{ annotations, setComments, setSuggestions }}
+      <Plate
+        editor={editor}
+        onChange={(value) => {
+          emitChange(value.value as any[]);
+        }}
       >
-        <Plate
-          editor={editor}
-          onChange={(value) => {
-            emitChange(value.value as any[]);
-          }}
-        >
-          <DiscussionPluginBridge />
-          <DiscussionUserSynchronizer />
-          <AnnotationPluginBridge />
-          <CommentStateSynchronizer />
-          <SuggestionStateSynchronizer />
-          <EditorContainer>
-            <TooltipProvider>
-            <ToolbarProvider
-              tinaForm={tinaForm}
-              templates={field.templates}
-              overrides={
-                field?.toolbarOverride ? field.toolbarOverride : field.overrides
-              }
-            >
-              <FixedToolbar>
-                <FixedToolbarButtons />
-              </FixedToolbar>
-              {field?.overrides?.showFloatingToolbar !== false ? (
-                <FloatingToolbar>
-                  <FloatingToolbarButtons />
-                </FloatingToolbar>
-              ) : null}
-            </ToolbarProvider>
-            <Editor />
-            </TooltipProvider>
-          </EditorContainer>
-        </Plate>
-      </AnnotationsProvider>
+        <EditorContainer>
+          <TooltipProvider>
+          <ToolbarProvider
+            tinaForm={tinaForm}
+            templates={field.templates}
+            overrides={
+              field?.toolbarOverride ? field.toolbarOverride : field.overrides
+            }
+          >
+            <FixedToolbar>
+              <FixedToolbarButtons />
+            </FixedToolbar>
+            {field?.overrides?.showFloatingToolbar !== false ? (
+              <FloatingToolbar>
+                <FloatingToolbarButtons />
+              </FloatingToolbar>
+            ) : null}
+          </ToolbarProvider>
+          <Editor />
+          </TooltipProvider>
+        </EditorContainer>
+      </Plate>
     </div>
   );
 };

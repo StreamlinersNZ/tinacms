@@ -16,6 +16,7 @@ import type { SlatePlugin } from '@udecode/plate';
 import type { TSuggestionText } from '@udecode/plate-suggestion';
 
 import { SuggestionLeaf } from './suggestion-leaf';
+import type { StoredSuggestion } from '../discussion-plugin/annotations-store';
 
 export type SuggestionDiff = {
   insertedText?: string;
@@ -30,6 +31,7 @@ export type SuggestionPluginConfig = ExtendConfig<
     hoverId: string | null;
     uniquePathMap: Map<string, Path>;
     isSuggesting: boolean;
+    metadata: Record<string, StoredSuggestion>; // Single source of truth for suggestion metadata
   }
 >;
 
@@ -82,6 +84,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionPluginConfig>(
       uniquePathMap: new Map(),
       isSuggesting: false,
       currentUserId: 'anonymous',
+      metadata: {}, // Single source of truth - loaded from TinaCMS
     },
     render: {
       leaf: SuggestionLeaf,

@@ -64,9 +64,10 @@ import {
   createHTMLInlinePlugin,
 } from './create-html-block';
 import { createHTMLBlockPlugin } from './create-html-block';
-import { commentPlugin } from '../../../discussion-plugin/comment-plugin';
-import { discussionPlugin } from '../../../discussion-plugin/discussion-plugin';
-import { suggestionPlugin } from '../../../suggestion-plugin/suggestion-plugin';
+import { commentPlugin } from '../../../streamliners/discussion-plugin/comment-plugin';
+import { discussionPlugin } from '../../../streamliners/discussion-plugin/discussion-plugin';
+import { suggestionPlugin } from '../../../streamliners/suggestion-plugin/suggestion-plugin';
+import { AnnotationPopover } from '../../../streamliners/discussion-plugin/annotation-popover';
 // Define block types that support MDX embedding
 export const HANDLES_MDX = [
   HEADING_KEYS.h1,
@@ -138,7 +139,9 @@ export const editorPlugins = [
   createBreakPlugin,
   FloatingToolbarPlugin,
   discussionPlugin,
-  commentPlugin,
+  commentPlugin.configure({
+    render: { afterEditable: () => <AnnotationPopover /> },
+  }),
   suggestionPlugin,
   AutoformatPlugin.configure({
     options: {

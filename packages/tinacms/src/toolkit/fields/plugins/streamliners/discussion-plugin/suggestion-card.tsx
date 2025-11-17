@@ -14,7 +14,7 @@ import {
   getSuggestionDiff,
   rejectActiveSuggestion,
 } from './annotation-util';
-import { Button } from '../mdx-field-plugin/plate/components/plate-ui/button';
+import { Button } from '../../mdx-field-plugin/plate/components/plate-ui/button';
 import { discussionPlugin } from './discussion-plugin';
 import type { TDiscussion } from './types';
 
