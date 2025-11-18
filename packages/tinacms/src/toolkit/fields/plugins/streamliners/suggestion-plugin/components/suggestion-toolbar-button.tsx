@@ -7,8 +7,8 @@ import { PencilLine } from 'lucide-react';
 
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
-import { ToolbarButton } from '../../mdx-field-plugin/plate/components/plate-ui/toolbar';
-import { suggestionPlugin } from './suggestion-plugin';
+import { ToolbarButton } from '../../../mdx-field-plugin/plate/components/plate-ui/toolbar';
+import { suggestionPlugin } from '../suggestion-plugin';
 
 export function SuggestionToolbarButton() {
   const { setOption } = useEditorPlugin(suggestionPlugin);

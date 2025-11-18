@@ -10,14 +10,16 @@ import {
   usePluginOption,
 } from '@udecode/plate/react';
 
-import { Button } from '../../mdx-field-plugin/plate/components/plate-ui/button';
-import { commentPlugin } from './comment-plugin';
-import { discussionPlugin } from './discussion-plugin';
+import { Button } from '../../../mdx-field-plugin/plate/components/plate-ui/button';
+import { commentPlugin, type CommentThread } from '../plugins/comment-plugin';
+import { discussionPlugin } from '../plugins/discussion-plugin';
+import { textToValue } from '../plugins/discussion-adapter';
+import type { TComment, TDiscussion } from '../types';
 import {
-  discussionsToCommentThreads,
-  textToValue,
-} from './discussion-adapter';
-import type { TComment, TDiscussion } from './types';
+  useAnnotationThreads,
+  useAnnotationUser,
+} from '../hooks/use-annotation-state';
+import { appendMessageToThread } from '../utils/annotation-util';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -31,8 +33,10 @@ export function CommentCreateForm({
   autoFocus?: boolean;
 }) {
   const [value, setValue] = React.useState('');
-  const { editor: commentEditor, setOption: setCommentOption } = useEditorPlugin(commentPlugin);
+  const { setOption: setCommentOption } = useEditorPlugin(commentPlugin);
   const { setOption: setDiscussionOption } = useEditorPlugin(discussionPlugin);
+  const currentUser = useAnnotationUser();
+  const { getThreads, commitThread } = useAnnotationThreads();
   const discussions =
     (usePluginOption(discussionPlugin, 'discussions') as TDiscussion[]) ?? [];
   const currentUserId =
@@ -68,9 +72,25 @@ export function CommentCreateForm({
 
     setDiscussionOption('discussions', nextDiscussions);
 
-    // Update comment threads directly in plugin options
-    const nextThreads = discussionsToCommentThreads(nextDiscussions);
-    commentEditor.setOption(commentPlugin, 'threads', nextThreads);
+    const threads = getThreads();
+    const discussion = nextDiscussions.find((item) => item.id === discussionId);
+    const fallbackSubject = discussion?.discussionSubject ?? discussion?.documentContent ?? '';
+    const baseThread: CommentThread =
+      threads[discussionId] ?? {
+        id: discussionId,
+        createdAt: new Date().toISOString(),
+        messages: [],
+        discussionSubject: fallbackSubject,
+        documentContent: fallbackSubject,
+      };
+
+    commitThread(
+      appendMessageToThread({
+        thread: baseThread,
+        body,
+        author: currentUser ?? { id: currentUserId, name: currentUserId },
+      })
+    );
 
     setCommentOption('activeId', nextComment.discussionId);
     if (isDev) {

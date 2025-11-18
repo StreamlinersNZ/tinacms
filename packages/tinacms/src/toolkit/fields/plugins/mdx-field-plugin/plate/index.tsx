@@ -15,9 +15,9 @@ import FloatingToolbarButtons from './components/floating-toolbar-buttons';
 import {
   loadAnnotations,
   saveAnnotations,
-} from '../../streamliners/discussion-plugin/tina-integration';
-import type { AnnotationState } from '../../streamliners/discussion-plugin/annotations-store';
-import { normalizeAnnotations, createEmptyAnnotationState } from '../../streamliners/discussion-plugin/annotations-store';
+} from '../../streamliners/discussion-plugin/utils/tina-integration';
+import type { AnnotationState } from '../../streamliners/discussion-plugin/utils/annotations-store';
+import { normalizeAnnotations, createEmptyAnnotationState } from '../../streamliners/discussion-plugin/utils/annotations-store';
 
 const isAnnotationStateEmpty = (state: AnnotationState) =>
   Object.keys(state.comments).length === 0 &&

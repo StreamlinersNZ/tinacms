@@ -6,10 +6,10 @@ import { TextApi } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
 import { useEditorPlugin } from '@udecode/plate/react';
 
-import { suggestionPlugin } from './suggestion-plugin';
-import { useAnnotationsStore } from '../discussion-plugin/annotations-store';
-import { areSuggestionMapsEqual } from '../discussion-plugin/annotations-store';
-import type { StoredSuggestion } from '../discussion-plugin/annotations-store';
+import { suggestionPlugin } from '../suggestion-plugin';
+import { useAnnotationsStore } from '../../discussion-plugin/utils/annotations-store';
+import { areSuggestionMapsEqual } from '../../discussion-plugin/utils/annotations-store';
+import type { StoredSuggestion } from '../../discussion-plugin/utils/annotations-store';
 
 const SUGGESTION_PREFIX = 'suggestion_';
 

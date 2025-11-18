@@ -64,10 +64,10 @@ import {
   createHTMLInlinePlugin,
 } from './create-html-block';
 import { createHTMLBlockPlugin } from './create-html-block';
-import { commentPlugin } from '../../../streamliners/discussion-plugin/comment-plugin';
-import { discussionPlugin } from '../../../streamliners/discussion-plugin/discussion-plugin';
+import { commentPlugin } from '../../../streamliners/discussion-plugin/plugins/comment-plugin';
+import { discussionPlugin } from '../../../streamliners/discussion-plugin/plugins/discussion-plugin';
 import { suggestionPlugin } from '../../../streamliners/suggestion-plugin/suggestion-plugin';
-import { AnnotationPopover } from '../../../streamliners/discussion-plugin/annotation-popover';
+import { AnnotationPopover } from '../../../streamliners/discussion-plugin/components/annotation-popover';
 // Define block types that support MDX embedding
 export const HANDLES_MDX = [
   HEADING_KEYS.h1,

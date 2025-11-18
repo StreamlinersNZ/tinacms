@@ -7,7 +7,7 @@ import type { TSuggestionText } from '@udecode/plate-suggestion';
 import { cn } from '@udecode/cn';
 import { type PlateLeafProps, PlateLeaf, useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
-import { suggestionPlugin } from './suggestion-plugin';
+import { suggestionPlugin } from '../suggestion-plugin';
 
 export function SuggestionLeaf(props: PlateLeafProps) {
   const { children, className, leaf } = props;
@@ -28,7 +28,7 @@ export function SuggestionLeaf(props: PlateLeafProps) {
   return (
     <PlateLeaf
       {...props}
-      as={Component as keyof JSX.IntrinsicElements}
+      as={Component as keyof HTMLElementTagNameMap}
       className={cn(
         className,
         'bg-emerald-100 text-emerald-800 no-underline transition-colors duration-150',

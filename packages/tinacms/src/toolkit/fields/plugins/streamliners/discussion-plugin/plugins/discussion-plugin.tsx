@@ -2,9 +2,9 @@
 
 import { createPlatePlugin } from '@udecode/plate/react';
 
-import type { DiscussionUser, TDiscussion } from './types';
-import { BlockDiscussion } from './block-discussion';
-import { AnnotationPopover } from './annotation-popover';
+import type { DiscussionUser, TDiscussion } from '../types';
+import { BlockDiscussion } from '../components/block-discussion';
+import { AnnotationPopover } from '../components/annotation-popover';
 
 export interface DiscussionPluginOptions {
   discussions: TDiscussion[];

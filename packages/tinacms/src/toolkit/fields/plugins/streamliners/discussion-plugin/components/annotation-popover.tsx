@@ -5,13 +5,12 @@ import React from 'react';
 import { PortalBody, cn } from '@udecode/cn';
 import { BaseCommentsPlugin, getCommentKey } from '@udecode/plate-comments';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
-import { useCMS } from '@toolkit/react-core';
 
 import {
   commentPlugin,
   type CommentMessage,
   type CommentThread,
-} from './comment-plugin';
+} from '../plugins/comment-plugin';
 import {
   appendMessageToThread,
   ensureCommentMark,
@@ -20,23 +19,35 @@ import {
   createAnnotationId,
   acceptActiveSuggestion,
   rejectActiveSuggestion,
-  formatTimestamp,
-} from './annotation-util';
-import { suggestionPlugin } from '../suggestion-plugin/suggestion-plugin';
-import { CommentMessage as SharedCommentMessage, SuggestionDiff, CommentInput } from './shared';
-
-type CurrentUser = { id?: string; name?: string } | null;
+} from '../utils/annotation-util';
+import { suggestionPlugin } from '../../suggestion-plugin/suggestion-plugin';
+import {
+  SuggestionDiff,
+  CommentInput,
+  ThreadSubject,
+  ThreadMessages,
+} from '.';
+import {
+  useAnnotationThreads,
+  useAnnotationUser,
+} from '../hooks/use-annotation-state';
 
 const POP_WIDTH = 380;
 
 export function AnnotationPopover() {
-  const cms = useCMS();
   const {
     api: commentApi,
     editor,
     setOption: setCommentOption,
   } = useEditorPlugin(commentPlugin);
   const { setOption: setSuggestionOption } = useEditorPlugin(suggestionPlugin);
+  const currentUser = useAnnotationUser();
+  const {
+    getThreads,
+    commitThread: commitThreadUpdate,
+    deleteThread,
+    removeEmptyThreads,
+  } = useAnnotationThreads();
 
   const commentActiveId = usePluginOption(commentPlugin, 'activeId') as
     | string
@@ -49,21 +60,7 @@ export function AnnotationPopover() {
     | null;
 
   // Get data directly from plugin options (single source of truth)
-  const comments = (editor.getOption(commentPlugin, 'threads') || {}) as Record<string, CommentThread>;
-
-  const [currentUser, setCurrentUser] = React.useState<CurrentUser>(null);
-
-  React.useEffect(() => {
-    void cms.api.tina.authProvider.getUser().then((user) => {
-      if (!user) {
-        setCurrentUser({ id: 'anonymous', name: 'Anonymous' });
-        return;
-      }
-      const id = user.id ?? user.email ?? 'anonymous';
-      const name = user.name ?? user.email ?? 'Anonymous';
-      setCurrentUser({ id, name });
-    });
-  }, [cms.api.tina.authProvider]);
+  const comments = getThreads();
 
   const [position, setPosition] = React.useState<{
     top: number;
@@ -200,36 +197,6 @@ export function AnnotationPopover() {
 
   const shouldHidePopover = (!threadId && !suggestionActiveId) || !position;
 
-  const removeEmptyThreads = React.useCallback(
-    (ids?: string[] | null) => {
-      if (!ids || ids.length === 0) return;
-
-      const currentThreads =
-        (editor.getOption(commentPlugin, 'threads') || {}) as Record<
-          string,
-          CommentThread
-        >;
-      let nextThreads: Record<string, CommentThread> | null = null;
-
-      ids.forEach((id) => {
-        const threadToCheck = currentThreads[id];
-        if (!threadToCheck) return;
-        if ((threadToCheck.messages?.length ?? 0) > 0) return;
-
-        editor.getTransforms(commentPlugin).comment.unsetMark?.({ id });
-        if (!nextThreads) {
-          nextThreads = { ...currentThreads };
-        }
-        delete nextThreads[id];
-      });
-
-      if (nextThreads) {
-        editor.setOption(commentPlugin, 'threads', nextThreads);
-      }
-    },
-    [editor]
-  );
-
   const closePopover = React.useCallback(() => {
     if (!suggestionActiveId) {
       const idsToCheck =
@@ -252,22 +219,6 @@ export function AnnotationPopover() {
     setSuggestionOption,
     suggestionActiveId,
   ]);
-
-  const commitThreadUpdate = React.useCallback(
-    (nextThread: CommentThread) => {
-      console.log('[AnnotationPopover] commitThreadUpdate', {
-        threadId: nextThread.id,
-        messageCount: nextThread.messages?.length ?? 0,
-      });
-      // Update plugin options directly (single source of truth)
-      const currentThreads = editor.getOption(commentPlugin, 'threads') || {};
-      editor.setOption(commentPlugin, 'threads', {
-        ...currentThreads,
-        [nextThread.id]: nextThread,
-      });
-    },
-    [editor]
-  );
 
   const handleReplySubmit = () => {
     if (!threadId) return;
@@ -327,14 +278,7 @@ export function AnnotationPopover() {
   const handleDeleteThread = () => {
     if (!threadId) return;
 
-    editor.getTransforms(commentPlugin).comment.unsetMark?.({
-      id: threadId,
-    });
-
-    // Update plugin options directly (single source of truth)
-    const currentThreads = editor.getOption(commentPlugin, 'threads') || {};
-    const { [threadId]: _removed, ...rest } = currentThreads;
-    editor.setOption(commentPlugin, 'threads', rest);
+    deleteThread(threadId);
     if (suggestionDiff && suggestionTargetId === threadId) {
       clearCommentThread(editor, threadId);
       setSuggestionOption('activeId', null);
@@ -386,12 +330,7 @@ export function AnnotationPopover() {
       userId: currentUser?.id,
     });
 
-    // Update plugin options directly (single source of truth)
-    const currentThreads = editor.getOption(commentPlugin, 'threads') || {};
-    if (currentThreads[suggestionTargetId]) {
-      const { [suggestionTargetId]: _removed, ...rest } = currentThreads;
-      editor.setOption(commentPlugin, 'threads', rest);
-    }
+    deleteThread(suggestionTargetId);
     clearCommentThread(editor, suggestionTargetId);
     setSuggestionOption('activeId', null);
     if (commentActiveId === suggestionTargetId) {
@@ -408,12 +347,7 @@ export function AnnotationPopover() {
       userId: currentUser?.id,
     });
 
-    // Update plugin options directly (single source of truth)
-    const currentThreads = editor.getOption(commentPlugin, 'threads') || {};
-    if (currentThreads[suggestionTargetId]) {
-      const { [suggestionTargetId]: _removed, ...rest } = currentThreads;
-      editor.setOption(commentPlugin, 'threads', rest);
-    }
+    deleteThread(suggestionTargetId);
     clearCommentThread(editor, suggestionTargetId);
     setSuggestionOption('activeId', null);
     if (commentActiveId === suggestionTargetId) {
@@ -487,51 +421,30 @@ export function AnnotationPopover() {
 
               return (
                 <div key={displayThread.id} className="flex flex-col gap-4">
-                  {displayThread.discussionSubject && (
-                    <div className="flex flex-col gap-1.5">
-                      <div className="text-sm font-medium text-foreground">Subject</div>
-                      <blockquote className="rounded-md border-l-4 border-blue-500 bg-blue-500/10 p-3 text-sm text-foreground">
-                        {displayThread.discussionSubject}
-                      </blockquote>
-                    </div>
-                  )}
+                  <ThreadSubject subject={displayThread.discussionSubject} />
 
-                  {displayThread.messages?.length ? (
-                    <div className="flex flex-col gap-1.5">
-                      <div className="text-sm font-medium">Discussion</div>
-                      <div className="max-h-[280px] overflow-y-auto">
-                        <div className="flex flex-col">
-                          {(displayThread.messages ?? []).map((message, index) => {
-                            const isLast =
-                              index === (displayThread.messages ?? []).length - 1;
-                            return (
-                              <SharedCommentMessage
-                                key={message.id}
-                                id={message.id}
-                                body={message.body}
-                                authorId={message.authorId}
-                                authorName={message.authorName}
-                                createdAt={message.createdAt}
-                                updatedAt={message.updatedAt}
-                                currentUserId={currentUser?.id}
-                                isLast={isLast}
-                                onEdit={isActiveThread ? handleEditMessage : undefined}
-                                onDelete={isActiveThread ? handleDeleteMessage : undefined}
-                                isEditing={isActiveThread && editingMessageId === message.id}
-                                editingValue={editingValue}
-                                onEditingValueChange={setEditingValue}
-                                onSubmitEdit={handleSubmitEdit}
-                                onCancelEdit={() => {
-                                  setEditingMessageId(null);
-                                  setEditingValue('');
-                                }}
-                              />
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </div>
-                  ) : null}
+                  <ThreadMessages
+                    messages={displayThread.messages}
+                    currentUserId={currentUser?.id}
+                    editingMessageId={
+                      isActiveThread ? editingMessageId : undefined
+                    }
+                    editingValue={isActiveThread ? editingValue : undefined}
+                    onEdit={isActiveThread ? handleEditMessage : undefined}
+                    onDelete={isActiveThread ? handleDeleteMessage : undefined}
+                    onEditingValueChange={
+                      isActiveThread ? setEditingValue : undefined
+                    }
+                    onSubmitEdit={isActiveThread ? handleSubmitEdit : undefined}
+                    onCancelEdit={
+                      isActiveThread
+                        ? () => {
+                            setEditingMessageId(null);
+                            setEditingValue('');
+                          }
+                        : undefined
+                    }
+                  />
 
                   {isActiveThread && (
                     <div className="flex flex-col gap-2">

@@ -7,14 +7,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@udecode/cn';
 import { usePluginOption } from '@udecode/plate/react';
 
-import { valueToPlainText } from './discussion-adapter';
-import type { TComment } from './types';
-import { discussionPlugin } from './discussion-plugin';
+import { valueToPlainText } from '../plugins/discussion-adapter';
+import type { TComment } from '../types';
+import { discussionPlugin } from '../plugins/discussion-plugin';
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '../../mdx-field-plugin/plate/components/plate-ui/avatar';
+} from '../../../mdx-field-plugin/plate/components/plate-ui/avatar';
 
 export function CommentCard({
   comment,

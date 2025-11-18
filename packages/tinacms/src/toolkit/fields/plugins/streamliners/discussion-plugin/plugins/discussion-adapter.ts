@@ -3,7 +3,7 @@
 import type { Value } from '@udecode/plate';
 
 import type { CommentThread } from './comment-plugin';
-import type { TComment, TDiscussion } from './types';
+import type { TComment, TDiscussion } from '../types';
 
 export const textToValue = (text: string): Value => [
   {

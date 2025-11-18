@@ -13,10 +13,11 @@ import {
   clearCommentThread,
   getSuggestionDiff,
   rejectActiveSuggestion,
-} from './annotation-util';
-import { Button } from '../../mdx-field-plugin/plate/components/plate-ui/button';
-import { discussionPlugin } from './discussion-plugin';
-import type { TDiscussion } from './types';
+} from '../../discussion-plugin/utils/annotation-util';
+import { Button } from '../../../mdx-field-plugin/plate/components/plate-ui/button';
+import { discussionPlugin } from '../../discussion-plugin/plugins/discussion-plugin';
+import type { TDiscussion } from '../../discussion-plugin/types';
+import { useAnnotationThreads } from '../../discussion-plugin/hooks/use-annotation-state';
 
 export function SuggestionCard({
   suggestionId,
@@ -27,6 +28,7 @@ export function SuggestionCard({
 }) {
   const { editor } = useEditorPlugin(SuggestionPlugin);
   const { editor: discussionEditor } = useEditorPlugin(discussionPlugin);
+  const { deleteThread } = useAnnotationThreads();
   const currentUserId =
     (usePluginOption(discussionPlugin, 'currentUserId') as string) ??
     'anonymous';
@@ -46,6 +48,7 @@ export function SuggestionCard({
       userId: currentUserId,
     });
     clearCommentThread(editor, suggestionId);
+    deleteThread(suggestionId);
     const next = (
       discussionEditor.getOption(discussionPlugin, 'discussions') ?? []
     ).filter((discussion: TDiscussion) => discussion.id !== suggestionId);
@@ -60,6 +63,7 @@ export function SuggestionCard({
       userId: currentUserId,
     });
     clearCommentThread(editor, suggestionId);
+    deleteThread(suggestionId);
     const next = (
       discussionEditor.getOption(discussionPlugin, 'discussions') ?? []
     ).filter((discussion: TDiscussion) => discussion.id !== suggestionId);

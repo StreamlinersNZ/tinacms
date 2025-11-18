@@ -7,7 +7,7 @@ import {
 } from '@udecode/plate-comments';
 import { toTPlatePlugin } from '@udecode/plate/react';
 
-import { CommentLeaf } from './comment-node';
+import { CommentLeaf } from '../components/comment-node';
 
 export type CommentMessage = {
   id: string;

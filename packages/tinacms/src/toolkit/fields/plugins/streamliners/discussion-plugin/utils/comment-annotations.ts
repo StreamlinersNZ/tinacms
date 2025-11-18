@@ -1,4 +1,3 @@
-'use client';
 
 import { NodeApi, TextApi } from '@udecode/plate';
 import type { PlateEditor } from '@udecode/plate/react';
@@ -9,7 +8,7 @@ import {
   isCommentKey,
 } from '@udecode/plate-comments';
 
-import type { CommentMessage, CommentThread } from './comment-plugin';
+import type { CommentMessage, CommentThread } from '../plugins/comment-plugin';
 
 const draftKey = getDraftCommentKey();
 

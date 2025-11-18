@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { CommentThread } from './comment-plugin';
+import type { CommentThread } from '../plugins/comment-plugin';
 import { areCommentMapsEqual } from './comment-annotations';
 
 export type StoredSuggestion = {

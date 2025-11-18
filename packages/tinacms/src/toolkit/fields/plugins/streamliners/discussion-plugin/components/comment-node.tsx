@@ -11,8 +11,8 @@ import { PlateLeaf, useEditorPlugin, usePluginOption } from '@udecode/plate/reac
 
 import clsx from 'clsx';
 
-import { getCommentIdsFromNode } from './comment-ids';
-import { commentPlugin } from './comment-plugin';
+import { getCommentIdsFromNode } from '../utils/comment-ids';
+import { commentPlugin } from '../plugins/comment-plugin';
 
 export interface TCommentText extends TText {
   comment?: boolean;

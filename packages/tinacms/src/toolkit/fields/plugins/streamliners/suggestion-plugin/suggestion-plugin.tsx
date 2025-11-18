@@ -15,8 +15,8 @@ import { toTPlatePlugin } from '@udecode/plate/react';
 import type { SlatePlugin } from '@udecode/plate';
 import type { TSuggestionText } from '@udecode/plate-suggestion';
 
-import { SuggestionLeaf } from './suggestion-leaf';
-import type { StoredSuggestion } from '../discussion-plugin/annotations-store';
+import { SuggestionLeaf } from './components/suggestion-leaf';
+import type { StoredSuggestion } from '../discussion-plugin/utils/annotations-store';
 
 export type SuggestionDiff = {
   insertedText?: string;

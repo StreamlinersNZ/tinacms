@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 
 import { MessageSquareTextIcon } from 'lucide-react';
@@ -7,12 +5,14 @@ import { useEditorPlugin } from '@udecode/plate/react';
 import { BaseCommentsPlugin, getCommentKey } from '@udecode/plate-comments';
 import { CommentsPlugin } from '@udecode/plate-comments/react';
 
-import { commentPlugin } from './comment-plugin';
-import { ToolbarButton } from '../../mdx-field-plugin/plate/components/plate-ui/toolbar';
-import { createAnnotationId } from './annotation-util';
+import { commentPlugin } from '../plugins/comment-plugin';
+import { ToolbarButton } from '../../../mdx-field-plugin/plate/components/plate-ui/toolbar';
+import { createAnnotationId } from '../utils/annotation-util';
+import { useAnnotationThreads } from '../hooks/use-annotation-state';
 
 export function CommentToolbarButton() {
   const { editor, setOption } = useEditorPlugin(commentPlugin);
+  const { commitThread } = useAnnotationThreads();
 
   const handleMouseDown = React.useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -51,22 +51,16 @@ export function CommentToolbarButton() {
         {
           comment: true,
           [getCommentKey(threadId)]: true,
-          [BaseCommentsPlugin.key]: true,
         },
         { at: editor.selection, match: (node) => editor.api.isText(node), split: true }
       );
 
-      // Update plugin options (single source of truth)
-      const currentThreads = editor.getOption(commentPlugin, 'threads') || {};
-      editor.setOption(commentPlugin, 'threads', {
-        ...currentThreads,
-        [threadId]: nextThread,
-      });
+      commitThread(nextThread);
 
       // Set active ID to show the thread
       setOption('activeId', threadId);
     },
-    [editor, setOption]
+    [commitThread, editor, setOption]
   );
 
   return (

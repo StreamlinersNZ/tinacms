@@ -3,8 +3,8 @@
 import React from 'react';
 import { PlateEditor } from '@udecode/plate/react';
 
-import { commentPlugin, type CommentThread } from './comment-plugin';
-import { suggestionPlugin } from '../suggestion-plugin/suggestion-plugin';
+import { commentPlugin, type CommentThread } from '../plugins/comment-plugin';
+import { suggestionPlugin } from '../../suggestion-plugin/suggestion-plugin';
 import type { StoredSuggestion } from './annotations-store';
 
 /**
