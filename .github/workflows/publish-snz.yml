@@ -317,7 +317,12 @@ jobs:
                     if (match) {
                       const packages = JSON.parse(match[1]);
                       packages.forEach(pkg => {
-                        const [name, version] = pkg.split("@");
+                        const lastAtIndex = pkg.lastIndexOf("@");
+                        if (lastAtIndex > 0) {
+                         const name = pkg.substring(0, lastAtIndex);
+                         const version = pkg.substring(lastAtIndex + 1);
+                         console.log(`${name}@${version}`);
+                 }
                         if (name && version) {
                           console.log(`${name}@${version}`);
                         }
