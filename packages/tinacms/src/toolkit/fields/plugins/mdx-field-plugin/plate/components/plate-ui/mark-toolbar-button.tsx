@@ -62,6 +62,6 @@ export const SuperscriptButton = () => (
 
 export const SubscriptButton = () => (
   <MarkToolbarButton tooltip="Subscript" nodeType={SubscriptPlugin.key}>
-      <Icons.subscript />
+      <Icons.bold />
   </MarkToolbarButton>
 );

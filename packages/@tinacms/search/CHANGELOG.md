@@ -1,45 +1,5 @@
 # @tinacms/search
 
-## 1.1.2-snz.4
-
-### Patch Changes
-
-- Updated dependencies [[`62a68a7`](https://github.com/StreamlinersNZ/tinacms/commit/62a68a7a8070616761d415abad6170ddcc190174)]:
-  - @tinacms/schema-tools@1.9.2-snz.4
-  - @tinacms/graphql@1.6.2-snz.4
-
-## 1.1.2-snz.3
-
-### Patch Changes
-
-- Updated dependencies [[`e2d72bb`](https://github.com/StreamlinersNZ/tinacms/commit/e2d72bb0ea628d827f2bad7bf9a304de99955410)]:
-  - @tinacms/schema-tools@1.9.2-snz.3
-  - @tinacms/graphql@1.6.2-snz.3
-
-## 1.1.2-snz.2
-
-### Patch Changes
-
-- Updated dependencies [[`a48d418`](https://github.com/StreamlinersNZ/tinacms/commit/a48d418c677a17f6cecf705cf693062d1e456660)]:
-  - @tinacms/schema-tools@1.9.2-snz.2
-  - @tinacms/graphql@1.6.2-snz.2
-
-## 1.1.2-snz.1
-
-### Patch Changes
-
-- Updated dependencies [[`b9dc86d`](https://github.com/StreamlinersNZ/tinacms/commit/b9dc86d4e405b351b3d80c41555e5c4c78fa1646)]:
-  - @tinacms/schema-tools@1.9.2-snz.1
-  - @tinacms/graphql@1.6.2-snz.1
-
-## 1.1.2-snz.0
-
-### Patch Changes
-
-- Updated dependencies [[`7631b6a`](https://github.com/StreamlinersNZ/tinacms/commit/7631b6ac5219f30870c5e0f7f8b35213351fb602)]:
-  - @tinacms/schema-tools@1.9.2-snz.0
-  - @tinacms/graphql@1.6.2-snz.0
-
 ## 1.1.1
 
 ### Patch Changes

@@ -1,66 +1,66 @@
 {
-  "name": "@tinacms/search",
-  "version": "1.1.2-snz.4",
-  "main": "dist/index.js",
-  "module": "dist/index-client.mjs",
-  "typings": "dist/index.d.ts",
-  "files": [
-    "package.json",
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./dist/index-client": {
-      "import": "./dist/index-client.mjs",
-      "require": "./dist/index-client.js"
-    }
-  },
-  "license": "SEE LICENSE IN LICENSE",
-  "buildConfig": {
-    "entryPoints": [
-      {
-        "name": "src/index.ts",
-        "target": "node"
-      },
-      "src/index-client.ts"
-    ]
-  },
-  "scripts": {
-    "types": "pnpm tsc",
-    "build": "tinacms-scripts build",
-    "docs": "pnpm typedoc",
-    "serve": "pnpm nodemon dist/server.js",
-    "test": "jest",
-    "test-watch": "jest --watch"
-  },
-  "dependencies": {
-    "@tinacms/graphql": "workspace:*",
-    "@tinacms/schema-tools": "workspace:*",
-    "memory-level": "catalog:",
-    "search-index": "catalog:",
-    "sqlite-level": "catalog:",
-    "stopword": "catalog:"
-  },
-  "publishConfig": {
-    "registry": "https://streamliners-npm-368438108069.d.codeartifact.ap-southeast-2.amazonaws.com/npm/tina-cms-snz/"
-  },
-  "repository": {
-    "url": "https://github.com/StreamlinersNZ/tinacms.git",
-    "directory": "packages/@tinacms/search"
-  },
-  "devDependencies": {
-    "@tinacms/scripts": "workspace:*",
-    "@types/jest": "^29.5.14",
-    "@types/micromatch": "catalog:",
-    "@types/node": "^22.13.1",
-    "@types/search-index": "catalog:",
-    "jest": "catalog:",
-    "jest-diff": "catalog:",
-    "jest-file-snapshot": "^0.7.0",
-    "jest-matcher-utils": "catalog:",
-    "typescript": "^5.7.3"
-  }
+	"name": "@tinacms/search",
+	"version": "1.1.1",
+	"main": "dist/index.js",
+	"module": "dist/index-client.mjs",
+	"typings": "dist/index.d.ts",
+	"files": [
+		"package.json",
+		"dist"
+	],
+	"exports": {
+		".": {
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		},
+		"./dist/index-client": {
+			"import": "./dist/index-client.mjs",
+			"require": "./dist/index-client.js"
+		}
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"buildConfig": {
+		"entryPoints": [
+			{
+				"name": "src/index.ts",
+				"target": "node"
+			},
+			"src/index-client.ts"
+		]
+	},
+	"scripts": {
+		"types": "pnpm tsc",
+		"build": "tinacms-scripts build",
+		"docs": "pnpm typedoc",
+		"serve": "pnpm nodemon dist/server.js",
+		"test": "jest",
+		"test-watch": "jest --watch"
+	},
+	"dependencies": {
+		"@tinacms/graphql": "workspace:*",
+		"@tinacms/schema-tools": "workspace:*",
+		"memory-level": "catalog:",
+		"search-index": "catalog:",
+		"sqlite-level": "catalog:",
+		"stopword": "catalog:"
+	},
+	"publishConfig": {
+		"registry": "https://registry.npmjs.org"
+	},
+	"repository": {
+		"url": "https://github.com/tinacms/tinacms.git",
+		"directory": "packages/@tinacms/search"
+	},
+	"devDependencies": {
+		"@tinacms/scripts": "workspace:*",
+		"@types/jest": "^29.5.14",
+		"@types/micromatch": "catalog:",
+		"@types/node": "^22.13.1",
+		"@types/search-index": "catalog:",
+		"jest": "catalog:",
+		"jest-diff": "catalog:",
+		"jest-file-snapshot": "^0.7.0",
+		"jest-matcher-utils": "catalog:",
+		"typescript": "^5.7.3"
+	}
 }

@@ -1,35 +1,5 @@
 # @tinacms/schema-tools
 
-## 1.9.2-snz.4
-
-### Patch Changes
-
-- [#33](https://github.com/StreamlinersNZ/tinacms/pull/33) [`62a68a7`](https://github.com/StreamlinersNZ/tinacms/commit/62a68a7a8070616761d415abad6170ddcc190174) Thanks [@Afea13](https://github.com/Afea13)! - applying the latest tag to only changes packages with snz tag
-
-## 1.9.2-snz.3
-
-### Patch Changes
-
-- [#33](https://github.com/StreamlinersNZ/tinacms/pull/33) [`e2d72bb`](https://github.com/StreamlinersNZ/tinacms/commit/e2d72bb0ea628d827f2bad7bf9a304de99955410) Thanks [@Afea13](https://github.com/Afea13)! - testing the tag - dry run
-
-## 1.9.2-snz.2
-
-### Patch Changes
-
-- [#34](https://github.com/StreamlinersNZ/tinacms/pull/34) [`a48d418`](https://github.com/StreamlinersNZ/tinacms/commit/a48d418c677a17f6cecf705cf693062d1e456660) Thanks [@Afea13](https://github.com/Afea13)! - testing from new branch pr
-
-## 1.9.2-snz.1
-
-### Patch Changes
-
-- [#32](https://github.com/StreamlinersNZ/tinacms/pull/32) [`b9dc86d`](https://github.com/StreamlinersNZ/tinacms/commit/b9dc86d4e405b351b3d80c41555e5c4c78fa1646) Thanks [@Afea13](https://github.com/Afea13)! - testing the patch version bump in next changeset
-
-## 1.9.2-snz.0
-
-### Patch Changes
-
-- [#32](https://github.com/StreamlinersNZ/tinacms/pull/32) [`7631b6a`](https://github.com/StreamlinersNZ/tinacms/commit/7631b6ac5219f30870c5e0f7f8b35213351fb602) Thanks [@Afea13](https://github.com/Afea13)! - patch changes for schema-tools and tinacms
-
 ## 1.9.1
 
 ### Patch Changes
