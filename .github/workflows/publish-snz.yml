@@ -321,11 +321,9 @@ jobs:
                         if (lastAtIndex > 0) {
                          const name = pkg.substring(0, lastAtIndex);
                          const version = pkg.substring(lastAtIndex + 1);
-                         console.log(`${name}@${version}`);
-                 }
-                        if (name && version) {
-                          console.log(`${name}@${version}`);
-                        }
+                         if (name && version) {
+                           console.log(`${name}@${version}`);
+                         }                        
                       });
                     }
                   ' | while read pkgver; do
