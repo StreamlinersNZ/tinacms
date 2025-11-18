@@ -323,7 +323,8 @@ jobs:
                          const version = pkg.substring(lastAtIndex + 1);
                          if (name && version) {
                            console.log(`${name}@${version}`);
-                         }                        
+                         } 
+                        }                       
                       });
                     }
                   ' | while read pkgver; do
