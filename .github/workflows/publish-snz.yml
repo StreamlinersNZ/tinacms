@@ -158,7 +158,7 @@ jobs:
       # PREVIEW: feature branches -> tag beta
       # ------------------------------------- #
       - name: Bump snapshot versions (ALL PACKAGES)
-        if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
+        if: ${{ github.ref == 'refs/heads/streamliners-main' && (github.event_name == 'workflow_dispatch' || inputs.force_snz == 'true') }}
         run: |
           set -euo pipefail
           if [[ "${CHANGED_COUNT:-0}" -eq 0 ]]; then
@@ -207,7 +207,7 @@ jobs:
    
 
       - name: Publish preview (all packages) to CodeArtifact with tag=beta
-        if: ${{ github.ref != 'refs/heads/streamliners-main' && (github.event_name != 'workflow_dispatch' || inputs.force_snz != 'true') }}
+        if: ${{ github.ref == 'refs/heads/streamliners-main' && (github.event_name == 'workflow_dispatch' || inputs.force_snz == 'true') }}
         run: |
           set -euo pipefail
           if [[ "${CHANGED_COUNT:-0}" -eq 0 ]]; then
@@ -231,7 +231,7 @@ jobs:
       # STABLE-INTERNAL (SNZ): streamliners-main or forced
       # ------------------------------------- #
       - name: Bump SNZ prerelease versions (ALL PACKAGES)
-        if: ${{ github.ref == 'refs/heads/streamliners-main' || (github.event_name == 'workflow_dispatch' && inputs.force_snz == 'true') }}
+        if: ${{ github.ref != 'refs/heads/streamliners-main' || (github.event_name != 'workflow_dispatch' && inputs.force_snz != 'true') }}
         run: |
           set -euo pipefail
           if [[ "${CHANGED_COUNT:-0}" -eq 0 ]]; then
@@ -262,9 +262,20 @@ jobs:
             }
             console.log("BUMPED_SNZ=" + JSON.stringify(bumped));
           ' | tee snz_bump.log
+           
+          echo "## 📦 SNZ Versions (tag: snz + latest)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ -f snz_bump.log ]]; then
+            grep "BUMPED_SNZ=" snz_bump.log | sed 's/BUMPED_SNZ=//' | \
+              node -e '
+                const input = require("fs").readFileSync(0, "utf8").trim();
+                const packages = JSON.parse(input);
+                packages.forEach(pkg => console.log(`- ${pkg}`));
+              ' >> $GITHUB_STEP_SUMMARY
+          fi
                 
       - name: Publish SNZ prerelease (all packages) to CodeArtifact with tag=snz
-        if: ${{ github.ref == 'refs/heads/streamliners-main' || (github.event_name == 'workflow_dispatch' && inputs.force_snz == 'true') }}
+        if: ${{ github.ref != 'refs/heads/streamliners-main' || (github.event_name != 'workflow_dispatch' && inputs.force_snz != 'true') }}
         run: |
           set -euo pipefail
           if [[ "${CHANGED_COUNT:-0}" -eq 0 ]]; then
