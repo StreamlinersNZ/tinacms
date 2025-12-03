@@ -38,6 +38,8 @@ export function BlockThreadView({ threadId, isSuggestion = false }: BlockThreadV
   const { getThreads, commitThread: commitThreadUpdate, deleteThread } =
     useAnnotationThreads();
 
+  const isLoadingUser = !currentUser;
+
   // Get comments directly from plugin options (single source of truth)
   const comments = getThreads();
   const [replyValue, setReplyValue] = React.useState('');
@@ -182,6 +184,7 @@ export function BlockThreadView({ threadId, isSuggestion = false }: BlockThreadV
           insertedText={suggestionDiff.insertedText}
           onAccept={handleAcceptSuggestion}
           onReject={handleRejectSuggestion}
+          isLoading={isLoadingUser}
         />
       )}
 
@@ -209,6 +212,7 @@ export function BlockThreadView({ threadId, isSuggestion = false }: BlockThreadV
         placeholder={thread?.messages?.length ? 'Reply…' : 'Add a comment…'}
         submitLabel={thread?.messages?.length ? 'Reply' : 'Comment'}
         minHeight="60px"
+        isLoading={isLoadingUser}
       />
 
       {thread?.messages?.[0]?.authorId === currentUser?.id || thread?.messages?.[0]?.authorId === 'anonymous' || thread?.messages?.[0]?.authorId === undefined && (

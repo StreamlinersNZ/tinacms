@@ -72,16 +72,20 @@ export const buildResolvedSuggestion = ({
   suggestionId,
   diff,
   userId,
+  userName,
 }: {
   suggestionId: string;
   diff: SuggestionDiff;
   userId?: string;
+  userName?: string;
 }) => ({
   createdAt: new Date(),
   keyId: suggestionId,
   suggestionId,
   type: diff.type,
-  userId: userId ?? 'anonymous',
+  // userId must be present; upstream UI disables actions until loaded.
+  userId: userId as string,
+  ...(userName ? { userName } : {}),
   ...(diff.deletedText ? { text: diff.deletedText } : {}),
   ...(diff.insertedText ? { newText: diff.insertedText } : {}),
 });
@@ -91,17 +95,19 @@ export const acceptActiveSuggestion = ({
   suggestionId,
   diff,
   userId,
+  userName,
 }: {
   editor: PlateEditor;
   suggestionId: string;
   diff: SuggestionDiff;
   userId?: string;
+  userName?: string;
 }) => {
   const suggestionApi = editor.getApi(suggestionPlugin).suggestion;
   suggestionApi.withoutSuggestions(() => {
     acceptSuggestion(
       editor,
-      buildResolvedSuggestion({ suggestionId, diff, userId })
+      buildResolvedSuggestion({ suggestionId, diff, userId, userName })
     );
   });
 };
@@ -111,17 +117,19 @@ export const rejectActiveSuggestion = ({
   suggestionId,
   diff,
   userId,
+  userName,
 }: {
   editor: PlateEditor;
   suggestionId: string;
   diff: SuggestionDiff;
   userId?: string;
+  userName?: string;
 }) => {
   const suggestionApi = editor.getApi(suggestionPlugin).suggestion;
   suggestionApi.withoutSuggestions(() => {
     rejectSuggestion(
       editor,
-      buildResolvedSuggestion({ suggestionId, diff, userId })
+      buildResolvedSuggestion({ suggestionId, diff, userId, userName })
     );
   });
 };

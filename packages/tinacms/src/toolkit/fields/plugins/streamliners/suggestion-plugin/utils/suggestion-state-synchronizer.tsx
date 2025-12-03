@@ -57,6 +57,7 @@ const extractSuggestionRecords = (
         createdAt: storedValue.createdAt,
         type: storedValue.type,
         userId: storedValue.userId,
+        userName: storedValue.userName,
         status: storedValue.status,
         resolvedAt: storedValue.resolvedAt,
       };

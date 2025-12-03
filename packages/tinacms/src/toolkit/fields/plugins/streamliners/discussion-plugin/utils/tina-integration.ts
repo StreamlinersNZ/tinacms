@@ -6,6 +6,88 @@ import { PlateEditor } from '@udecode/plate/react';
 import { commentPlugin, type CommentThread } from '../plugins/comment-plugin';
 import { suggestionPlugin } from '../../suggestion-plugin/suggestion-plugin';
 import type { StoredSuggestion } from './annotations-store';
+import {
+  type AnnotationState,
+  normalizeAnnotations,
+} from './annotations-store';
+
+type AnnotationEntry = {
+  path: string;
+  comments?: CommentThread[] | null;
+  suggestions?: StoredSuggestion[] | null;
+};
+
+export type TinaAnnotationsFieldValue = {
+  entries?: AnnotationEntry[] | null;
+};
+
+const listToRecord = <T extends { id?: string }>(
+  list: T[] | null | undefined,
+  fallbackPrefix: string
+): Record<string, T> => {
+  if (!list?.length) return {};
+  return list.reduce<Record<string, T>>((acc, item, index) => {
+    if (!item) return acc;
+    const id = item.id ?? `${fallbackPrefix}-${index}`;
+    acc[id] = { ...item, id };
+    return acc;
+  }, {});
+};
+
+export const annotationsFieldToMap = (
+  entries: AnnotationEntry[] | null | undefined
+): Record<string, AnnotationState> => {
+  if (!Array.isArray(entries)) return {};
+
+  return entries.reduce<Record<string, AnnotationState>>((acc, entry) => {
+    if (!entry?.path) return acc;
+    const state = normalizeAnnotations({
+      comments: listToRecord(entry.comments, `${entry.path}-comment`),
+      suggestions: listToRecord(entry.suggestions, `${entry.path}-suggestion`),
+    });
+
+    const hasData =
+      Object.keys(state.comments).length > 0 ||
+      Object.keys(state.suggestions).length > 0;
+
+    if (!hasData) return acc;
+
+    acc[entry.path] = state;
+    return acc;
+  }, {});
+};
+
+export const annotationMapToEntries = (
+  map: Record<string, AnnotationState>
+): AnnotationEntry[] => {
+  return Object.entries(map)
+    .map(([path, state]) => {
+      if (!state) return null;
+
+      const comments = Object.values(state.comments ?? {});
+      const suggestions = Object.values(state.suggestions ?? {});
+
+      if (!comments.length && !suggestions.length) return null;
+
+      return {
+        path,
+        comments,
+        suggestions,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.path.localeCompare(b.path));
+};
+
+export const areAnnotationEntriesEqual = (
+  a?: AnnotationEntry[] | null,
+  b?: AnnotationEntry[] | null
+) => {
+  if (a === b) return true;
+  const aString = JSON.stringify(a ?? []);
+  const bString = JSON.stringify(b ?? []);
+  return aString === bString;
+};
 
 /**
  * Load annotations from TinaCMS form data into Plate plugin options

@@ -10,6 +10,7 @@ export type StoredSuggestion = {
   createdAt: number | string;
   type: 'insert' | 'remove' | 'replace' | 'update' | 'block';
   userId?: string;
+  userName?: string;
   status?: 'pending' | 'accepted' | 'rejected';
   resolvedAt?: string;
 };
@@ -127,6 +128,7 @@ export const areSuggestionMapsEqual = (
     if (aValue.type !== bValue.type) return false;
     if (aValue.createdAt !== bValue.createdAt) return false;
     if (aValue.userId !== bValue.userId) return false;
+    if (aValue.userName !== bValue.userName) return false;
     if (aValue.status !== bValue.status) return false;
     if (aValue.resolvedAt !== bValue.resolvedAt) return false;
   }

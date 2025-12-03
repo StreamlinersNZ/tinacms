@@ -15,15 +15,29 @@ import FloatingToolbarButtons from './components/floating-toolbar-buttons';
 import {
   loadAnnotations,
   saveAnnotations,
+  annotationsFieldToMap,
+  annotationMapToEntries,
+  areAnnotationEntriesEqual,
 } from '../../streamliners/discussion-plugin/utils/tina-integration';
+import type { TinaAnnotationsFieldValue } from '../../streamliners/discussion-plugin/utils/tina-integration';
 import type { AnnotationState } from '../../streamliners/discussion-plugin/utils/annotations-store';
 import { normalizeAnnotations, createEmptyAnnotationState } from '../../streamliners/discussion-plugin/utils/annotations-store';
+import { suggestionPlugin } from '../../streamliners/suggestion-plugin/suggestion-plugin';
+import { useRegisterAnnotationsField } from '../../streamliners/discussion-plugin/utils/final-form-bridge';
+import { annotateSuggestionsWithUserName } from '../../streamliners/suggestion-plugin/utils/annotate-suggestions';
+import { AnnotationSync } from '../../streamliners/discussion-plugin/utils/annotation-sync';
+import { PlateEditor } from '@udecode/plate/react';
 
 const isAnnotationStateEmpty = (state: AnnotationState) =>
   Object.keys(state.comments).length === 0 &&
   Object.keys(state.suggestions).length === 0;
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
+  // Ensure annotations are registered with Final Form so annotation-only edits mark the form dirty
+  useRegisterAnnotationsField(tinaForm);
+
+  const isReadyForSync = React.useRef(false);
+
   const annotationsKey = React.useMemo(
     () => input.name ?? field.name ?? 'rich-text',
     [input.name, field.name]
@@ -44,21 +58,18 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const formValues =
     (tinaForm?.values as Record<string, any> | undefined) ??
     tinaForm?.finalForm?.getState().values;
-  const annotationsRaw =
-    typeof formValues?.annotations?.raw === 'string'
-      ? formValues.annotations.raw
-      : undefined;
+  const annotationsFieldValue =
+    (formValues?.annotations as TinaAnnotationsFieldValue | undefined) ??
+    undefined;
+  const annotationsEntries = Array.isArray(annotationsFieldValue?.entries)
+    ? annotationsFieldValue.entries
+    : undefined;
 
   const globalAnnotationsMap = React.useMemo<
     Record<string, AnnotationState>
   >(() => {
-    if (!annotationsRaw) return {};
-    try {
-      return JSON.parse(annotationsRaw) as Record<string, AnnotationState>;
-    } catch {
-      return {};
-    }
-  }, [annotationsRaw]);
+    return annotationsFieldToMap(annotationsEntries);
+  }, [annotationsEntries]);
 
   const existingFieldAnnotations = globalAnnotationsMap[annotationsKey];
   const legacyFieldAnnotations = input.value
@@ -80,7 +91,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     plugins: [...editorPlugins],
     value: initialValue,
     components: Components(),
-  });
+  }) as PlateEditor;
 
   const syncAnnotationsToForm = React.useCallback(() => {
     if (!tinaForm || !editor) return;
@@ -91,19 +102,13 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     const values =
       (tinaForm.values as Record<string, any> | undefined) ??
       tinaForm.finalForm?.getState().values;
-    const raw =
-      typeof values?.annotations?.raw === 'string'
-        ? values.annotations.raw
-        : undefined;
-    let annotationsMap: Record<string, AnnotationState> = {};
-
-    if (raw) {
-      try {
-        annotationsMap = JSON.parse(raw) as Record<string, AnnotationState>;
-      } catch {
-        annotationsMap = {};
-      }
-    }
+    const annotationsValue =
+      (values?.annotations as TinaAnnotationsFieldValue | undefined) ??
+      undefined;
+    const currentEntries = Array.isArray(annotationsValue?.entries)
+      ? annotationsValue.entries
+      : undefined;
+    let annotationsMap = annotationsFieldToMap(currentEntries);
 
     const currentIsEmpty = isAnnotationStateEmpty(currentState);
 
@@ -118,14 +123,17 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
         nextAnnotations[annotationsKey] = currentState;
       }
 
-      const hasEntries = Object.keys(nextAnnotations).length > 0;
-      const serialized = hasEntries ? JSON.stringify(nextAnnotations) : undefined;
-      console.log('[RichEditor] syncAnnotationsToForm', {
-        annotationsKey,
-        currentState,
-        serialized: serialized?.substring(0, 200),
-      });
-      tinaForm.change('annotations.raw' as any, serialized);
+      const nextEntries = annotationMapToEntries(nextAnnotations);
+      const normalizedEntries =
+        nextEntries.length > 0 ? nextEntries : undefined;
+
+      if (!areAnnotationEntriesEqual(currentEntries, normalizedEntries)) {
+        console.log('[RichEditor] syncAnnotationsToForm', {
+          annotationsKey,
+          entryCount: nextEntries.length,
+        });
+        tinaForm.change('annotations.entries' as any, normalizedEntries);
+      }
     }
   }, [annotationsKey, tinaForm, editor]);
 
@@ -135,11 +143,16 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   } | null>(null);
 
   const emitChange = React.useCallback(
-    (children: any[]) => {
+    (children: any[], force: boolean = false) => {
       if (!editor) return;
 
       const normalized = children.map(normalizeLinksInCodeBlocks);
-      const childrenHash = JSON.stringify(normalized);
+      const userName = editor.getOption(suggestionPlugin, 'currentUserName');
+      const normalizedWithNames = annotateSuggestionsWithUserName(
+        normalized,
+        userName
+      );
+      const childrenHash = JSON.stringify(normalizedWithNames);
 
       // Get annotations from plugin options
       const currentAnnotations = saveAnnotations(editor);
@@ -147,6 +160,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
 
       const last = lastEmissionRef.current;
       if (
+        !force &&
         last &&
         last.childrenHash === childrenHash &&
         last.annotationsHash === annotationsHash
@@ -156,7 +170,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       lastEmissionRef.current = { childrenHash, annotationsHash };
       input.onChange({
         type: 'root',
-        children: normalized,
+        children: normalizedWithNames,
       });
       syncAnnotationsToForm();
     },
@@ -167,6 +181,10 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   React.useEffect(() => {
     if (!editor || !initialAnnotationsRef.current) return;
     loadAnnotations(editor, initialAnnotationsRef.current);
+    // Ensure we don't trigger the dirty flag too early.
+    setTimeout(() => {
+      isReadyForSync.current = true;
+    }, 0);
   }, [editor]);
 
   // Trigger initial emit when editor is ready
@@ -201,6 +219,15 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
           emitChange(value.value as any[]);
         }}
       >
+        <AnnotationSync
+          onSync={() => {
+            // Tina only watches for changes in the rich text, but comment threads live outside of the rich text.
+            // We need to force a change so things like the save button enable. 
+            if (isReadyForSync.current) {
+              emitChange(editor.children as any[], true);
+            }
+          }}
+        />
         <EditorContainer>
           <TooltipProvider>
           <ToolbarProvider

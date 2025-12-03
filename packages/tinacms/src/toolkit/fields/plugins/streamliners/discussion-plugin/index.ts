@@ -7,6 +7,7 @@ export * from './plugins/discussion-adapter';
 export * from './plugins/discussion-plugin';
 export * from './utils/annotations-store';
 export * from './utils/comment-annotations';
+export * from './hooks/use-annotation-state';
 export * from '../suggestion-plugin/suggestion-plugin';
 export * from '../suggestion-plugin/components/suggestion-leaf';
 export * from '../suggestion-plugin/components/suggestion-toolbar-button';

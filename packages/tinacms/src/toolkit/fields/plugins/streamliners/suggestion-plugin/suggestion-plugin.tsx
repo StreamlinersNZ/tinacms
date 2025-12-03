@@ -31,6 +31,7 @@ export type SuggestionPluginConfig = ExtendConfig<
     hoverId: string | null;
     uniquePathMap: Map<string, Path>;
     isSuggesting: boolean;
+    currentUserName: string | null;
     metadata: Record<string, StoredSuggestion>; // Single source of truth for suggestion metadata
   }
 >;
@@ -83,7 +84,8 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionPluginConfig>(
       hoverId: null,
       uniquePathMap: new Map(),
       isSuggesting: false,
-      currentUserId: 'anonymous',
+      currentUserId: null,
+      currentUserName: null,
       metadata: {}, // Single source of truth - loaded from TinaCMS
     },
     render: {

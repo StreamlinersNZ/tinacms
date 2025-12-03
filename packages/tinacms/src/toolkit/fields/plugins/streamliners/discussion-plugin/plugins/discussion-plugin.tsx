@@ -15,7 +15,7 @@ export interface DiscussionPluginOptions {
 export const discussionPlugin = createPlatePlugin({
   key: 'discussion',  
   options: {
-    currentUserId: 'anonymous',
+    currentUserId: null,
     discussions: [],
     users: {},
   } satisfies DiscussionPluginOptions,

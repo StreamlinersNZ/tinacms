@@ -7,33 +7,63 @@ import { commentPlugin, type CommentThread } from '../plugins/comment-plugin';
 
 export type CurrentUser = { id?: string; name?: string } | null;
 
+// Global cache to store the user promise/result
+let userPromise: Promise<CurrentUser> | null = null;
+let cachedUser: CurrentUser = null;
+
 type ThreadsUpdater =
   | Record<string, CommentThread>
   | ((previous: Record<string, CommentThread>) => Record<string, CommentThread>);
 
 export const useAnnotationUser = () => {
   const cms = useCMS();
-  const [currentUser, setCurrentUser] = React.useState<CurrentUser>(null);
+  const [currentUser, setCurrentUser] = React.useState<CurrentUser>(cachedUser);
 
   React.useEffect(() => {
+    if (cachedUser) {
+      if (currentUser !== cachedUser) {
+        setCurrentUser(cachedUser);
+      }
+      return;
+    }
+
     let mounted = true;
 
-    void cms.api.tina.authProvider.getUser().then((user) => {
-      if (!mounted) return;
-      if (!user) {
-        setCurrentUser({ id: 'anonymous', name: 'Anonymous' });
-        return;
-      }
+    if (!userPromise) {
+      userPromise = cms.api.tina.authProvider
+        .getUser()
+        .then((user) => {
+          if (!user) {
+            return null;
+          }
 
-      const id = user.id ?? user.email ?? 'anonymous';
-      const name = user.name ?? user.email ?? 'Anonymous';
-      setCurrentUser({ id, name });
+          const id = user.id ?? user.email;
+          if (!id) {
+            return null;
+          }
+
+          const name = user.name ?? user.email ?? 'Unknown';
+          const userData = { id, name };
+          cachedUser = userData;
+          return userData;
+        })
+        .catch((error) => {
+          console.error('[useAnnotationUser] Error loading user:', error);
+          userPromise = null;
+          return null;
+        });
+    }
+
+    userPromise.then((user) => {
+      if (mounted) {
+        setCurrentUser(user);
+      }
     });
 
     return () => {
       mounted = false;
     };
-  }, [cms.api.tina.authProvider]);
+  }, [cms.api.tina.authProvider, currentUser]);
 
   return currentUser;
 };

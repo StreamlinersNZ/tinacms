@@ -31,6 +31,7 @@ import {
   useAnnotationThreads,
   useAnnotationUser,
 } from '../hooks/use-annotation-state';
+import { Loader2 } from 'lucide-react';
 
 const POP_WIDTH = 380;
 
@@ -196,6 +197,7 @@ export function AnnotationPopover() {
   }, [commentActiveId, suggestionActiveId]);
 
   const shouldHidePopover = (!threadId && !suggestionActiveId) || !position;
+  const isLoadingUser = !currentUser;
 
   const closePopover = React.useCallback(() => {
     if (!suggestionActiveId) {
@@ -404,6 +406,7 @@ export function AnnotationPopover() {
             insertedText={suggestionDiff.insertedText}
             onAccept={handleAcceptSuggestion}
             onReject={handleRejectSuggestion}
+            isLoading={isLoadingUser}
           />
         ) : null}
 
@@ -453,11 +456,16 @@ export function AnnotationPopover() {
                         onChange={setReplyValue}
                         onSubmit={handleReplySubmit}
                         placeholder={
-                          displayThread.messages?.length ? 'Reply…' : 'Add a comment…'
+                          displayThread.messages?.length
+                            ? 'Reply…'
+                            : 'Add a comment…'
                         }
-                        submitLabel={displayThread.messages?.length ? 'Reply' : 'Comment'}
+                        submitLabel={
+                          displayThread.messages?.length ? 'Reply' : 'Comment'
+                        }
                         minHeight="60px"
                         autoFocus={!displayThread.messages?.length}
+                        isLoading={isLoadingUser}
                       />
                       <div className="flex flex-wrap justify-end gap-2">
                         <button

@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
+import { Loader2 } from 'lucide-react';
 
 export interface SuggestionDiffProps {
   deletedText?: string;
   insertedText?: string;
   onAccept?: () => void;
   onReject?: () => void;
+  isLoading?: boolean;
 }
 
 export function SuggestionDiff({
@@ -14,6 +16,7 @@ export function SuggestionDiff({
   insertedText,
   onAccept,
   onReject,
+  isLoading,
 }: SuggestionDiffProps) {
   return (
     <div className="mb-4 space-y-3">
@@ -39,19 +42,21 @@ export function SuggestionDiff({
           {onAccept && (
             <button
               type="button"
+              disabled={isLoading}
               onClick={onAccept}
-              className="flex flex-1 items-center justify-center rounded-md border border-emerald-500 px-2 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-50"
+              className="flex flex-1 items-center justify-center rounded-md border border-emerald-500 px-2 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Accept
+              {isLoading ? <Loader2 className="size-3 animate-spin" /> : 'Accept'}
             </button>
           )}
           {onReject && (
             <button
               type="button"
+              disabled={isLoading}
               onClick={onReject}
-              className="flex flex-1 items-center justify-center rounded-md border border-destructive px-2 py-1 text-xs font-semibold text-destructive transition hover:bg-destructive/10"
+              className="flex flex-1 items-center justify-center rounded-md border border-destructive px-2 py-1 text-xs font-semibold text-destructive transition hover:bg-destructive/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Reject
+              {isLoading ? <Loader2 className="size-3 animate-spin" /> : 'Reject'}
             </button>
           )}
         </div>

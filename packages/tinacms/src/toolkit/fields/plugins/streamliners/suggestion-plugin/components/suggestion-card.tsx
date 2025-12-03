@@ -17,7 +17,10 @@ import {
 import { Button } from '../../../mdx-field-plugin/plate/components/plate-ui/button';
 import { discussionPlugin } from '../../discussion-plugin/plugins/discussion-plugin';
 import type { TDiscussion } from '../../discussion-plugin/types';
-import { useAnnotationThreads } from '../../discussion-plugin/hooks/use-annotation-state';
+import {
+  useAnnotationThreads,
+  useAnnotationUser,
+} from '../../discussion-plugin/hooks/use-annotation-state';
 
 export function SuggestionCard({
   suggestionId,
@@ -29,9 +32,13 @@ export function SuggestionCard({
   const { editor } = useEditorPlugin(SuggestionPlugin);
   const { editor: discussionEditor } = useEditorPlugin(discussionPlugin);
   const { deleteThread } = useAnnotationThreads();
-  const currentUserId =
-    (usePluginOption(discussionPlugin, 'currentUserId') as string) ??
-    'anonymous';
+  const annotationUser = useAnnotationUser();
+  const currentUserId = annotationUser?.id;
+  const currentUserName =
+    annotationUser?.name ||
+    (usePluginOption(discussionPlugin, 'user', annotationUser?.id)?.name as
+      | string
+      | undefined);
 
   const diff = React.useMemo(
     () => getSuggestionDiff(editor, suggestionId),
@@ -41,11 +48,13 @@ export function SuggestionCard({
   if (!diff) return null;
 
   const handleAccept = () => {
+    if (!currentUserId) return;
     acceptActiveSuggestion({
       editor,
       suggestionId,
       diff,
       userId: currentUserId,
+      userName: currentUserName,
     });
     clearCommentThread(editor, suggestionId);
     deleteThread(suggestionId);
@@ -56,11 +65,13 @@ export function SuggestionCard({
   };
 
   const handleReject = () => {
+    if (!currentUserId) return;
     rejectActiveSuggestion({
       editor,
       suggestionId,
       diff,
       userId: currentUserId,
+      userName: currentUserName,
     });
     clearCommentThread(editor, suggestionId);
     deleteThread(suggestionId);
