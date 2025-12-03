@@ -92,7 +92,7 @@ const resetBlockTypesCodeBlockRule = {
 };
 
 // View Plugins: Basic nodes and marks
-export const viewPlugins = [
+export const viewPlugins: readonly any[] = [
   BasicMarksPlugin,
   UnderlinePlugin,
   SubscriptPlugin,
@@ -110,7 +110,7 @@ const CorrectNodeBehaviorPlugin = createSlatePlugin({
 });
 
 // Editor Plugins: Functional and formatting plugins
-export const editorPlugins = [
+export const editorPlugins: readonly any[] = [
   createMdxBlockPlugin,
   createMdxInlinePlugin,
   createImgPlugin,
