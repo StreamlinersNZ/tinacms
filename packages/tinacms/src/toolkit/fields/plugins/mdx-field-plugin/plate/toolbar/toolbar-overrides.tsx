@@ -17,7 +17,6 @@ export type ToolbarOverrideType =
   | 'embed'
   | 'table'
   | 'hr'
-  | 'comment';
 
 export const STANDARD_ICON_WIDTH = 32;
 export const HEADING_ICON_WITH_TEXT = 127;
