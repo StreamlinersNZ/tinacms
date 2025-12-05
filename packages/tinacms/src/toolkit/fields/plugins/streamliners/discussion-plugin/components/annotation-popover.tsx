@@ -3,12 +3,10 @@
 import React from 'react';
 
 import { PortalBody, cn } from '@udecode/cn';
-import { BaseCommentsPlugin, getCommentKey } from '@udecode/plate-comments';
 import { useEditorPlugin, usePluginOption } from '@udecode/plate/react';
 
 import {
   commentPlugin,
-  type CommentMessage,
   type CommentThread,
 } from '../plugins/comment-plugin';
 import {
@@ -16,7 +14,6 @@ import {
   ensureCommentMark,
   clearCommentThread,
   getSuggestionDiff,
-  createAnnotationId,
   acceptActiveSuggestion,
   rejectActiveSuggestion,
 } from '../utils/annotation-util';
@@ -31,7 +28,6 @@ import {
   useAnnotationThreads,
   useAnnotationUser,
 } from '../hooks/use-annotation-state';
-import { Loader2 } from 'lucide-react';
 
 const POP_WIDTH = 380;
 
@@ -69,13 +65,7 @@ export function AnnotationPopover() {
     width: number;
   } | null>(null);
 
-  React.useEffect(() => {
-    console.log('[AnnotationPopover] state change', {
-      commentActiveId,
-      suggestionActiveId,
-      commentThreadCount: Object.keys(comments).length,
-    });
-  }, [commentActiveId, suggestionActiveId, comments]);
+  React.useEffect(() => {}, [commentActiveId, suggestionActiveId, comments]);
 
   const anchorIds = React.useMemo(() => {
     const ids: string[] = [];
@@ -88,7 +78,6 @@ export function AnnotationPopover() {
 
   React.useEffect(() => {
     if (!anchorIds.length) {
-      console.log('[AnnotationPopover] no anchor ids, hiding popover');
       setPosition(null);
       return;
     }
@@ -109,16 +98,12 @@ export function AnnotationPopover() {
     });
 
     if (!anchorElement) {
-      console.log('[AnnotationPopover] anchor element not found', {
-        selectors,
-      });
       setPosition(null);
       return;
     }
 
     const update = () => {
       const rect = anchorElement!.getBoundingClientRect();
-      console.log('[AnnotationPopover] updating position', rect);
       setPosition({
         top: window.scrollY + rect.bottom + 8,
         left: window.scrollX + rect.left,
@@ -254,10 +239,6 @@ export function AnnotationPopover() {
     }
 
     commitThreadUpdate(updatedThread);
-    console.log('[AnnotationPopover] handleReplySubmit appended reply', {
-      threadId,
-      replyLength: updatedThread.messages?.length ?? 0,
-    });
     setReplyValue('');
   };
 

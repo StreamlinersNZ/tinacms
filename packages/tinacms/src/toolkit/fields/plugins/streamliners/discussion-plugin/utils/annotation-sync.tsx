@@ -7,9 +7,19 @@ export const AnnotationSync = ({ onSync }: { onSync: () => void }) => {
   const threads = usePluginOption(commentPlugin, 'threads');
   const suggestions = usePluginOption(suggestionPlugin, 'metadata');
 
+  // Compare by stable signatures so we only emit when content actually changes
+  const threadsSig = React.useMemo(
+    () => JSON.stringify(threads ?? {}),
+    [threads]
+  );
+  const suggestionsSig = React.useMemo(
+    () => JSON.stringify(suggestions ?? {}),
+    [suggestions]
+  );
+
   React.useEffect(() => {
     onSync();
-  }, [threads, suggestions, onSync]);
+  }, [threadsSig, suggestionsSig, onSync]);
 
   return null;
 };

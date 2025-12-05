@@ -21,8 +21,6 @@ import {
 } from '../hooks/use-annotation-state';
 import { appendMessageToThread } from '../utils/annotation-util';
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 export function CommentCreateForm({
   discussionId,
   placeholder = 'Reply...',
@@ -93,13 +91,6 @@ export function CommentCreateForm({
     );
 
     setCommentOption('activeId', nextComment.discussionId);
-    if (isDev) {
-      console.debug('[CommentCreateForm] submitted comment', {
-        discussionId: nextComment.discussionId,
-        hasExistingThread: Boolean(discussionId),
-        totalDiscussions: nextDiscussions.length,
-      });
-    }
     setValue('');
   };
 

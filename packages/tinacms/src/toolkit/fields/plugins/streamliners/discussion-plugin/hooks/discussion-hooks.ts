@@ -17,7 +17,7 @@ import { SuggestionPlugin as SuggestionPluginType } from '@udecode/plate-suggest
 
 import { commentPlugin } from '../plugins/comment-plugin';
 import { suggestionPlugin } from '../../suggestion-plugin/suggestion-plugin';
-import { getCommentIdsFromNode } from '../utils/comment-ids';
+import { getCommentIdsFromNode } from '../utils/annotation-util';
 import type { StoredSuggestion } from '../utils/annotations-store';
 import type { TCommentText } from '../components/comment-node';
 

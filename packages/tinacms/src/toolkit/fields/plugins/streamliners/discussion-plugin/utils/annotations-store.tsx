@@ -3,7 +3,6 @@
 import React from 'react';
 
 import type { CommentThread } from '../plugins/comment-plugin';
-import { areCommentMapsEqual } from './comment-annotations';
 
 export type StoredSuggestion = {
   id: string;
@@ -109,6 +108,56 @@ export const areAnnotationStatesEqual = (
   if (a === b) return true;
   if (!areCommentMapsEqual(a.comments, b.comments)) return false;
   if (!areSuggestionMapsEqual(a.suggestions, b.suggestions)) return false;
+  return true;
+};
+
+export const areCommentMapsEqual = (
+  commentA: Record<string, CommentThread>,
+  commentB: Record<string, CommentThread>
+) => {
+  if (commentA === commentB) return true;
+  const aKeys = Object.keys(commentA);
+  const bKeys = Object.keys(commentB);
+
+  if (aKeys.length !== bKeys.length) return false;
+
+  for (const key of aKeys) {
+    const commentAValue = commentA[key];
+    const commentBValue = commentB[key];
+
+    if (!commentBValue) return false;
+
+    if (commentAValue.createdAt !== commentBValue.createdAt) return false;
+    if (commentAValue.updatedAt !== commentBValue.updatedAt) return false;
+    if (commentAValue.isResolved !== commentBValue.isResolved) return false;
+    if (commentAValue.documentContent !== commentBValue.documentContent)
+      return false;
+    if (commentAValue.discussionSubject !== commentBValue.discussionSubject)
+      return false;
+
+    const aMessages = commentAValue.messages ?? [];
+    const bMessages = commentBValue.messages ?? [];
+
+    if (aMessages.length !== bMessages.length) return false;
+
+    for (let i = 0; i < aMessages.length; i++) {
+      const aMessage = aMessages[i];
+      const bMessage = bMessages[i];
+
+      if (
+        !bMessage ||
+        aMessage.id !== bMessage.id ||
+        aMessage.body !== bMessage.body ||
+        aMessage.createdAt !== bMessage.createdAt ||
+        aMessage.updatedAt !== bMessage.updatedAt ||
+        aMessage.authorId !== bMessage.authorId ||
+        aMessage.authorName !== bMessage.authorName
+      ) {
+        return false;
+      }
+    }
+  }
+
   return true;
 };
 

@@ -11,7 +11,7 @@ import { PlateLeaf, useEditorPlugin, usePluginOption } from '@udecode/plate/reac
 
 import clsx from 'clsx';
 
-import { getCommentIdsFromNode } from '../utils/comment-ids';
+import { getCommentIdsFromNode } from '../utils/annotation-util';
 import { commentPlugin } from '../plugins/comment-plugin';
 
 export interface TCommentText extends TText {
@@ -41,13 +41,6 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
 
   const handleClick = () => {
     const nextId = resolvedId ?? currentId ?? null;
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[CommentLeaf] click', {
-        nextId,
-        isDraft,
-        blockState: props.leaf,
-      });
-    }
     if (commentIds.length > 1) {
       setOption('overlappingIds', commentIds);
     } else {

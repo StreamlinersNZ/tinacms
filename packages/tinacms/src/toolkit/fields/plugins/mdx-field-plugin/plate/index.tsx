@@ -14,7 +14,7 @@ import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
 import {
   loadAnnotations,
-  saveAnnotations,
+  getCurrentAnnotations,
   annotationsFieldToMap,
   annotationMapToEntries,
   areAnnotationEntriesEqual,
@@ -26,6 +26,7 @@ import { suggestionPlugin } from '../../streamliners/suggestion-plugin/suggestio
 import { useRegisterAnnotationsField } from '../../streamliners/discussion-plugin/utils/final-form-bridge';
 import { annotateSuggestionsWithUserName } from '../../streamliners/suggestion-plugin/utils/annotate-suggestions';
 import { AnnotationSync } from '../../streamliners/discussion-plugin/utils/annotation-sync';
+import { useAnnotationSyncHandler } from '../../streamliners/discussion-plugin/utils/use-annotation-sync';
 import { PlateEditor } from '@udecode/plate/react';
 
 const isAnnotationStateEmpty = (state: AnnotationState) =>
@@ -86,18 +87,20 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
 
   // No longer need React state - annotations live in plugin options
 
-  //TODO try with a wrapper?
+  // Memoize component map so Plate children aren't recreated every render
+  const components = React.useMemo(() => Components(), []);
+
   const editor = useCreateEditor({
-    plugins: [...editorPlugins],
+    plugins: editorPlugins,
     value: initialValue,
-    components: Components(),
+    components,
   }) as PlateEditor;
 
   const syncAnnotationsToForm = React.useCallback(() => {
     if (!tinaForm || !editor) return;
 
-    // Get current annotations from plugin options
-    const currentState = saveAnnotations(editor);
+    // Get current annotations from plugin options without triggering debug logging
+    const currentState = getCurrentAnnotations(editor);
 
     const values =
       (tinaForm.values as Record<string, any> | undefined) ??
@@ -155,7 +158,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       const childrenHash = JSON.stringify(normalizedWithNames);
 
       // Get annotations from plugin options
-      const currentAnnotations = saveAnnotations(editor);
+      const currentAnnotations = getCurrentAnnotations(editor);
       const annotationsHash = JSON.stringify(currentAnnotations);
 
       const last = lastEmissionRef.current;
@@ -174,7 +177,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       });
       syncAnnotationsToForm();
     },
-    [input, syncAnnotationsToForm, editor]
+    [input, syncAnnotationsToForm, editor, annotationsKey]
   );
 
   // Load annotations into plugin options on mount
@@ -211,6 +214,13 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     }
   }, [field.experimental_focusIntent, ref]);
   //
+  const handleAnnotationSync = useAnnotationSyncHandler({
+    annotationsKey,
+    editor,
+    syncAnnotationsToForm,
+    isReadyForSync,
+  });
+
   return (
     <div ref={ref}>
       <Plate
@@ -220,13 +230,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
         }}
       >
         <AnnotationSync
-          onSync={() => {
-            // Tina only watches for changes in the rich text, but comment threads live outside of the rich text.
-            // We need to force a change so things like the save button enable. 
-            if (isReadyForSync.current) {
-              emitChange(editor.children as any[], true);
-            }
-          }}
+          onSync={handleAnnotationSync}
         />
         <EditorContainer>
           <TooltipProvider>

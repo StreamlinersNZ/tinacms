@@ -32,7 +32,6 @@ import {
 } from '../../../mdx-field-plugin/plate/components/plate-ui/popover';
 import { suggestionPlugin } from '../../suggestion-plugin/suggestion-plugin';
 import { commentPlugin } from '../plugins/comment-plugin';
-import { getCommentIdsFromNode } from '../utils/comment-ids';
 import { type StoredSuggestion } from '../utils/annotations-store';
 import { BlockThreadView } from './block-thread-view';
 import type { TCommentText } from './comment-node';
@@ -53,8 +52,6 @@ type ResolvedSuggestion = {
 const isResolvedSuggestion = (
   item: TDiscussion | ResolvedSuggestion
 ): item is ResolvedSuggestion => 'suggestionId' in item;
-
-const isDevEnv = process.env.NODE_ENV !== 'production';
 
 type PopoverStateArgs = {
   blockPath: Path;
@@ -95,12 +92,6 @@ const useBlockPopoverState = ({
         setSuggestionOption('activeId', null);
       }
 
-      if (isDevEnv) {
-        console.debug('[BlockDiscussion] popover closed', {
-          blockPath: blockPathKey,
-          preserveState,
-        });
-      }
     },
     [blockPathKey, setCommentOption, setSuggestionOption]
   );
@@ -142,13 +133,7 @@ const useBlockPopoverState = ({
   );
 
   React.useEffect(() => {
-    if (!isDevEnv) return;
-    console.debug('[BlockDiscussion] popover open change', {
-      blockPath: blockPathKey,
-      open,
-      internalOpen,
-      selected,
-    });
+    return () => {};
   }, [blockPathKey, open, internalOpen, selected]);
 
   React.useEffect(() => {
@@ -215,7 +200,7 @@ const BlockDiscussionContent = ({
   commentNodes: NodeEntry<TCommentText>[];
   suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
-  const blockPathKey = React.useMemo(() => blockPath.join('.'), [blockPath]);
+
   const {
     editor: suggestionEditor,
     setOption: setSuggestionOption,
@@ -313,13 +298,6 @@ const BlockDiscussionContent = ({
               <PopoverTrigger
                 asChild
                 onClick={() => {
-                  if (isDevEnv) {
-                    console.debug('[BlockDiscussion] block button clicked', {
-                      blockPath: blockPathKey,
-                      discussionsCount,
-                      suggestionsCount,
-                    });
-                  }
                   setForceListView(true);
                 }}
               >
