@@ -91,7 +91,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const components = React.useMemo(() => Components(), []);
 
   const editor = useCreateEditor({
-    plugins: editorPlugins,
+    plugins: [...editorPlugins],
     value: initialValue,
     components,
   }) as PlateEditor;
