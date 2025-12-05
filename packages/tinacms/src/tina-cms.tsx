@@ -1,6 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { TinaCloudProvider } from './auth';
 import { FontLoader } from './toolkit/styles/font-loader';
+import { CommentHighlightStyles } from './toolkit/styles/comment-highlight-styles';
 
 import { LocalClient } from './internalClient/index';
 import { useDocumentCreatorPlugin } from './hooks/use-content-creator';
@@ -198,6 +199,7 @@ export const TinaCMSProvider2 = ({
       >
         {/* <style>{styles}</style> */}
         <FontLoader />
+        <CommentHighlightStyles />
         <ErrorBoundary>{props.children}</ErrorBoundary>
       </TinaCloudProvider>
     </>
