@@ -13,7 +13,6 @@ export const useRegisterAnnotationsField = (
     const form = tinaForm?.finalForm;
     if (!form?.registerField) return;
 
-    // We only need the field registered; no subscriptions required.
     const unregister = form.registerField(fieldPath, () => undefined, {});
     return () => {
       unregister?.();

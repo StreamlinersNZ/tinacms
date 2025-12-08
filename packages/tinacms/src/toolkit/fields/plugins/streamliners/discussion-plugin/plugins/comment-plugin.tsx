@@ -34,7 +34,7 @@ type CommentPluginConfig = ExtendConfig<
     activeId: string | null;
     hoverId: string | null;
     overlappingIds: string[] | null; // All comment IDs at the clicked location (for handling overlapping comments)
-    threads: Record<string, CommentThread>; // Single source of truth for comment threads
+    threads: Record<string, CommentThread>;
     uniquePathMap: Map<string, Path>;
   }
 >;
@@ -48,7 +48,7 @@ export const commentPlugin = toTPlatePlugin<CommentPluginConfig>(
       activeId: null,
       hoverId: null,
       overlappingIds: null,
-      threads: {}, // Single source of truth - loaded from TinaCMS
+      threads: {},
       uniquePathMap: new Map(),
     };
 
