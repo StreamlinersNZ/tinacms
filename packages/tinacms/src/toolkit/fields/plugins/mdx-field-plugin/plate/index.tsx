@@ -7,11 +7,12 @@ import { FixedToolbar } from './components/plate-ui/fixed-toolbar';
 import { TooltipProvider } from './components/plate-ui/tooltip';
 import FixedToolbarButtons from './components/fixed-toolbar-buttons';
 import { ToolbarProvider } from './toolbar/toolbar-provider';
-import { Plate } from '@udecode/plate/react';
+import { Plate, PlateEditor } from '@udecode/plate/react';
 import { useCreateEditor } from './hooks/use-create-editor';
 import { editorPlugins } from './plugins/editor-plugins';
 import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
+import { useTinaDiscussion } from '../../streamliners/discussion-plugin/hooks/use-tina-discussion';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(() => {
@@ -25,11 +26,22 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
     }
   }, []);
 
-  //TODO try with a wrapper?
+  // Memoize component map so Plate children aren't recreated every render
+  const components = React.useMemo(() => Components(), []);
+
   const editor = useCreateEditor({
     plugins: [...editorPlugins],
     value: initialValue,
-    components: Components(),
+    components,
+  }) as PlateEditor;
+
+  // Encapsulate all discussion/suggestion sync logic
+  const { onChange, SyncComponent } = useTinaDiscussion({
+    tinaForm,
+    editor,
+    input,
+    field,
+    normalizeLinksInCodeBlocks,
   });
 
   // This should be a plugin customization
@@ -50,24 +62,14 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
       }, 100);
     }
   }, [field.experimental_focusIntent, ref]);
-  //
+
   return (
     <div ref={ref}>
       <Plate
         editor={editor}
-        onChange={(value) => {
-          // Normalize links in code blocks before saving (we dont want type: 'a' inside code blocks, this will break the mdx parser)
-          // Ideal Solution: let code block provider to have a option for exclude certain plugins
-          const normalized = (value.value as any[]).map(
-            normalizeLinksInCodeBlocks
-          );
-
-          input.onChange({
-            type: 'root',
-            children: normalized,
-          });
-        }}
+        onChange={onChange}
       >
+        <SyncComponent />
         <EditorContainer>
           <TooltipProvider>
             <ToolbarProvider

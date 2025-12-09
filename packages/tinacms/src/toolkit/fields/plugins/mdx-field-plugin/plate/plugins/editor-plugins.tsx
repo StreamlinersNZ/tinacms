@@ -64,7 +64,10 @@ import {
   createHTMLInlinePlugin,
 } from './create-html-block';
 import { createHTMLBlockPlugin } from './create-html-block';
-
+import { commentPlugin } from '../../../streamliners/discussion-plugin/plugins/comment-plugin';
+import { discussionPlugin } from '../../../streamliners/discussion-plugin/plugins/discussion-plugin';
+import { suggestionPlugin } from '../../../streamliners/suggestion-plugin/suggestion-plugin';
+import { AnnotationPopover } from '../../../streamliners/discussion-plugin/components/annotation-popover';
 // Define block types that support MDX embedding
 export const HANDLES_MDX = [
   HEADING_KEYS.h1,
@@ -89,7 +92,7 @@ const resetBlockTypesCodeBlockRule = {
 };
 
 // View Plugins: Basic nodes and marks
-export const viewPlugins = [
+export const viewPlugins: readonly any[] = [
   BasicMarksPlugin,
   UnderlinePlugin,
   SubscriptPlugin,
@@ -107,7 +110,7 @@ const CorrectNodeBehaviorPlugin = createSlatePlugin({
 });
 
 // Editor Plugins: Functional and formatting plugins
-export const editorPlugins = [
+export const editorPlugins: readonly any[] = [
   createMdxBlockPlugin,
   createMdxInlinePlugin,
   createImgPlugin,
@@ -135,7 +138,11 @@ export const editorPlugins = [
   TrailingBlockPlugin, //makes sure there's always a blank paragraph at the end of the editor.
   createBreakPlugin,
   FloatingToolbarPlugin,
-
+  discussionPlugin,
+  commentPlugin.configure({
+    render: { afterEditable: () => <AnnotationPopover /> },
+  }),
+  suggestionPlugin,
   AutoformatPlugin.configure({
     options: {
       enableUndoOnDelete: true,
