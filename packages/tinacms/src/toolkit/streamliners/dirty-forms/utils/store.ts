@@ -1,4 +1,4 @@
-import type { Form } from '../../forms';
+import type { Form } from '../../../forms';
 
 export type DirtyFormEntry = {
   id: Form['id'];
