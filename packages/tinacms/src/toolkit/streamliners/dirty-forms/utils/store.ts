@@ -56,3 +56,14 @@ class DirtyFormStore {
 }
 
 export const dirtyFormStore = new DirtyFormStore();
+
+// Expose a public-only surface for TS consumers to avoid leaking private members.
+export type DirtyFormStorePublic = Pick<
+  DirtyFormStore,
+  | 'markDirty'
+  | 'markClean'
+  | 'isDirty'
+  | 'getDirtyForms'
+  | 'getDirtyFormIds'
+  | 'subscribe'
+>;

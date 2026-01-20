@@ -29,7 +29,7 @@ import {
 } from '@toolkit/fields';
 import type { FieldPlugin } from '@toolkit/form-builder';
 import type { Form } from '@toolkit/forms';
-import { dirtyFormStore } from '@toolkit/forms';
+import { dirtyFormStore, type DirtyFormStorePublic } from '@toolkit/forms';
 import {
   HtmlFieldPlaceholder,
   MarkdownFieldPlaceholder,
@@ -80,7 +80,7 @@ export class TinaCMS extends CMS {
   _alerts?: Alerts;
   state: TinaState;
   dispatch: React.Dispatch<TinaAction>;
-  dirtyForms = dirtyFormStore;
+  dirtyForms: DirtyFormStorePublic = dirtyFormStore;
   // We always attach the tina client to the cms instance
   api: { [key: string]: any; tina?: Client } = {};
 
