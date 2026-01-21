@@ -11,6 +11,7 @@ import type { FormSubscription } from 'final-form';
 import arrayMutators from 'final-form-arrays';
 import setFieldData from 'final-form-set-field-data';
 import { AnyField, Field } from './field';
+import { attachDirtyFormTracking, dirtyFormStore } from './dirty-forms';
 
 export type { FormApi };
 
@@ -117,12 +118,14 @@ export class Form<S = any, F extends Field = AnyField> implements Plugin {
         ...options.mutators,
       },
     });
+    attachDirtyFormTracking(this);
 
     this._reset = reset;
     this.actions = actions || [];
+    const saveMessage = dirtyFormStore.getDirtyForms().length > 1 ? `Save ${dirtyFormStore.getDirtyForms().length} documents` : 'Save';
     this.buttons = buttons || {
-      save: 'Save',
-      reset: 'Reset',
+      save: saveMessage,
+      reset: "Reset this document",
     };
     this.updateFields(this.fields);
 
@@ -206,6 +209,7 @@ export class Form<S = any, F extends Field = AnyField> implements Plugin {
       await this._reset();
     }
     this.finalForm.reset();
+    dirtyFormStore.markClean(this.id);
   }
 
   /**
@@ -238,6 +242,12 @@ export class Form<S = any, F extends Field = AnyField> implements Plugin {
 
       const response = await this.onSubmit(valOverride || values, form, cb);
       form.initialize(values);
+      if (
+        !response ||
+        !(typeof response === 'object' && FORM_ERROR in response)
+      ) {
+        dirtyFormStore.markClean(this.id);
+      }
       return response;
     } catch (error) {
       return { [FORM_ERROR]: error };

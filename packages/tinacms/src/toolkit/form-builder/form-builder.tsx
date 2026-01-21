@@ -33,6 +33,13 @@ import { ResetForm } from './reset-form';
 import { TinaIcon } from '@tinacms/toolkit';
 import { FieldLabel } from '@toolkit/fields';
 import { GitBranchIcon, TriangleAlert } from 'lucide-react';
+import {
+  dirtyFormStore,
+  DirtyFormSync,
+  DirtyFormsModal,
+  submitOtherDirtyForms,
+  useDirtyFormCount,
+} from '../streamliners/dirty-forms';
 
 export interface FormBuilderProps {
   form: { tinaForm: Form; activeFieldName?: string };
@@ -107,6 +114,8 @@ export const FormBuilder: FC<FormBuilderProps> = ({
   const hideFooter = !!rest.hideFooter;
   const [createBranchModalOpen, setCreateBranchModalOpen] =
     React.useState(false);
+  const dirtyFormCount = useDirtyFormCount();
+  const [dirtyListOpen, setDirtyListOpen] = React.useState(false);
 
   const tinaForm = form.tinaForm;
   const finalForm = form.tinaForm.finalForm;
@@ -182,12 +191,19 @@ export const FormBuilder: FC<FormBuilderProps> = ({
         hasValidationErrors,
       }) => {
         const usingProtectedBranch = cms.api.tina.usingProtectedBranch();
+        const saveLabel =
+          dirtyFormCount > 1
+            ? `Save ${dirtyFormCount} documents`
+            : tinaForm.buttons.save;
+        const dirtyEntries = dirtyFormStore.getDirtyForms();
 
         const canSubmit =
           !pristine &&
           !submitting &&
           !hasValidationErrors &&
           !(invalid && !dirtySinceLastSubmit);
+        const hasOtherDirtyForms = dirtyFormCount > (pristine ? 0 : 1);
+        const canSubmitAll = canSubmit || hasOtherDirtyForms;
 
         const safeSubmit = async () => {
           if (canSubmit) {
@@ -195,11 +211,19 @@ export const FormBuilder: FC<FormBuilderProps> = ({
           }
         };
 
+        const wasSubmitSuccessful = () => {
+          const state = tinaForm.finalForm.getState();
+          return !state.submitFailed;
+        };
+
         const safeHandleSubmit = async () => {
           if (usingProtectedBranch) {
             setCreateBranchModalOpen(true);
           } else {
-            safeSubmit();
+            await safeSubmit();
+            if (wasSubmitSuccessful()) {
+              await submitOtherDirtyForms(tinaForm);
+            }
           }
         };
 
@@ -214,8 +238,14 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                 close={() => setCreateBranchModalOpen(false)}
               />
             )}
+            <DirtyFormsModal
+              open={dirtyListOpen}
+              entries={dirtyEntries}
+              onClose={() => setDirtyListOpen(false)}
+            />
             <DragDropContext onDragEnd={moveArrayItem}>
               <FormKeyBindings onSubmit={safeHandleSubmit} />
+              <DirtyFormSync form={tinaForm} pristine={pristine} />
               <FormPortalProvider>
                 <FormWrapper id={tinaForm.id}>
                   {tinaForm?.fields.length ? (
@@ -230,7 +260,7 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                 </FormWrapper>
               </FormPortalProvider>
               {!hideFooter && (
-                <div className='relative flex-none w-full h-16 px-6 bg-white border-t border-gray-100 flex items-center justify-end'>
+                <div className='flex-col w-full max-h-18 min-h-16 px-6 bg-white border-t border-gray-100 flex items-center justify-end'>
                   <div className='flex-1 w-full justify-end gap-2	flex items-center max-w-form'>
                     {tinaForm.reset && (
                       <ResetForm
@@ -245,12 +275,12 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                     )}
                     <Button
                       onClick={safeHandleSubmit}
-                      disabled={!canSubmit}
+                      disabled={!canSubmitAll}
                       busy={submitting}
                       variant='primary'
                     >
                       {submitting && <LoadingDots />}
-                      {!submitting && tinaForm.buttons.save}
+                      {!submitting && saveLabel}
                     </Button>
                     {tinaForm.actions.length > 0 && (
                       <FormActionMenu
@@ -259,6 +289,15 @@ export const FormBuilder: FC<FormBuilderProps> = ({
                       />
                     )}
                   </div>
+                  {dirtyFormCount > 0 && (
+                    <button
+                      type='button'
+                      onClick={() => setDirtyListOpen(true)}
+                      className='self-end bottom-1.5 right-6 text-xs text-gray-500 hover:text-blue-500'
+                    >
+                      Click here to see what will be saved
+                    </button>
+                  )}
                 </div>
               )}
             </DragDropContext>
