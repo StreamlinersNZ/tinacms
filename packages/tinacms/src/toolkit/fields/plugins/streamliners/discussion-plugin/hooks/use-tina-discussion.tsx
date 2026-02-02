@@ -152,10 +152,17 @@ export const useTinaDiscussion = ({
     [input, syncAnnotationsToForm, editor, annotationsKey, normalizeLinksInCodeBlocks]
   );
 
-  // Load annotations into plugin options on mount
-  React.useEffect(() => {
-    if (!editor || !initialAnnotationsRef.current) return;
+  // Load annotations into plugin options synchronously before first render
+  // This ensures BlockDiscussion components have access to threads immediately
+  const isAnnotationsLoaded = React.useRef(false);
+  if (editor && initialAnnotationsRef.current && !isAnnotationsLoaded.current) {
     loadAnnotations(editor, initialAnnotationsRef.current);
+    isAnnotationsLoaded.current = true;
+  }
+
+  // Mark ready for sync after mount
+  React.useEffect(() => {
+    if (!editor) return;
     // Ensure we don't trigger the dirty flag too early.
     setTimeout(() => {
       isReadyForSync.current = true;

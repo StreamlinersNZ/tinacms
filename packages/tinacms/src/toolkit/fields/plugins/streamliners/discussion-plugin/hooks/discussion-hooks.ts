@@ -29,11 +29,14 @@ export const useResolvedDiscussions = (
   const threads = (getOption('threads') || {}) as Record<string, any>;
   const uniquePathMap = getOption('uniquePathMap');
 
+  const blockPathKey = React.useMemo(() => blockPath.join('.'), [blockPath]);
+
   const pendingMap = React.useMemo(() => {
     let nextMap: Map<string, Path> | null = null;
 
-    commentNodes.forEach(([node]) => {
+    commentNodes.forEach(([node, nodePath]) => {
       const ids = getCommentIdsFromNode(node);
+
       ids.forEach((id) => {
         const previousPath = uniquePathMap.get(id);
 
@@ -41,26 +44,51 @@ export const useResolvedDiscussions = (
           const nodes = api.comment.node({ id, at: previousPath });
 
           if (!nodes) {
+            // Previous path is stale, claim it
             if (!nextMap) nextMap = new Map(uniquePathMap);
             nextMap.set(id, blockPath);
+          } else {
+            // Previous path is valid - attempt to claim if we're deeper (closer to the comment)
+            // A deeper path has more segments, e.g., [0,1,1,13,0] is deeper than [0,1,1]
+            // Final ownership is determined in useEffect with intelligent merging
+            if (blockPath.length > previousPath.length) {
+              if (!nextMap) nextMap = new Map(uniquePathMap);
+              nextMap.set(id, blockPath);
+            }
           }
 
           return;
         }
 
+        // First time seeing this comment - claim it
         if (!nextMap) nextMap = new Map(uniquePathMap);
         nextMap.set(id, blockPath);
       });
     });
 
     return nextMap;
-  }, [api.comment, blockPath, commentNodes, uniquePathMap]);
+  }, [api.comment, blockPath, commentNodes, uniquePathMap, blockPathKey]);
 
   React.useEffect(() => {
     if (pendingMap) {
-      setOption('uniquePathMap', pendingMap);
+      const currentMap = getOption('uniquePathMap') as Map<string, Path>;
+      const mergedMap = new Map(currentMap);
+      let hasChanges = false;
+
+      pendingMap.forEach((newPath, id) => {
+        const currentPath = mergedMap.get(id);
+        // Only update if new path is deeper (longer) than current owner, or no current owner exists
+        if (!currentPath || newPath.length > currentPath.length) {
+          mergedMap.set(id, newPath);
+          hasChanges = true;
+        }
+      });
+
+      if (hasChanges) {
+        setOption('uniquePathMap', mergedMap);
+      }
     }
-  }, [pendingMap, setOption]);
+  }, [pendingMap, setOption, getOption, blockPathKey]);
 
   const mapToUse = pendingMap ?? uniquePathMap;
 
@@ -109,6 +137,8 @@ export const useResolvedSuggestions = (
   const { api, getOption, setOption } = useEditorPlugin(suggestionPlugin);
   const uniquePathMap = getOption('uniquePathMap');
 
+  const blockPathKey = React.useMemo(() => blockPath.join('.'), [blockPath]);
+
   const pendingMap = React.useMemo(() => {
     let nextMap: Map<string, Path> | null = null;
 
@@ -126,24 +156,48 @@ export const useResolvedSuggestions = (
           isText: true,
         });
         if (!nodes) {
+          // Previous path is stale, claim it
           if (!nextMap) nextMap = new Map(uniquePathMap);
           nextMap.set(id, blockPath);
+        } else {
+          // Previous path is valid - attempt to claim if we're deeper (closer to the suggestion)
+          // Final ownership is determined in useEffect with intelligent merging
+          if (blockPath.length > previousPath.length) {
+            if (!nextMap) nextMap = new Map(uniquePathMap);
+            nextMap.set(id, blockPath);
+          }
         }
         return;
       }
 
+      // First time seeing this suggestion - claim it
       if (!nextMap) nextMap = new Map(uniquePathMap);
       nextMap.set(id, blockPath);
     });
 
     return nextMap;
-  }, [api.suggestion, blockPath, suggestionNodes, uniquePathMap]);
+  }, [api.suggestion, blockPath, suggestionNodes, uniquePathMap, blockPathKey]);
 
   React.useEffect(() => {
     if (pendingMap) {
-      setOption('uniquePathMap', pendingMap);
+      const currentMap = getOption('uniquePathMap') as Map<string, Path>;
+      const mergedMap = new Map(currentMap);
+      let hasChanges = false;
+
+      pendingMap.forEach((newPath, id) => {
+        const currentPath = mergedMap.get(id);
+        // Only update if new path is deeper (longer) than current owner, or no current owner exists
+        if (!currentPath || newPath.length > currentPath.length) {
+          mergedMap.set(id, newPath);
+          hasChanges = true;
+        } 
+      });
+
+      if (hasChanges) {
+        setOption('uniquePathMap', mergedMap);
+      }
     }
-  }, [pendingMap, setOption]);
+  }, [pendingMap, setOption, getOption, blockPathKey]);
 
   const mapToUse = pendingMap ?? uniquePathMap;
 
@@ -197,7 +251,7 @@ export const useResolvedSuggestions = (
     });
 
     return resolved;
-  }, [api.suggestion, blockPath, mapToUse, suggestionMeta, suggestionNodes]);
+  }, [api.suggestion, blockPath, mapToUse, suggestionMeta, suggestionNodes, blockPathKey]);
 };
 
 export const useAnnotationAnchor = (
