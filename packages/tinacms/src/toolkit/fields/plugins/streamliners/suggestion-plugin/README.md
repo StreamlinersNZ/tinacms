@@ -9,7 +9,7 @@ It combines:
 
 ## Quick start
 
-Minimal integration has three parts: register the plugin, expose the toolbar button, and wire editor/form sync.
+Minimal integration has four parts: register the plugin, expose the toolbar button, mount the mode indicator, and wire editor/form sync.
 
 ```tsx
 // 1) Register plugins (same order used by the editor today)
@@ -37,7 +37,7 @@ function FloatingToolbarButtons() {
 ```
 
 ```tsx
-// 3) Keep suggestion metadata synced with Tina form state
+// 3) Keep suggestion metadata synced with Tina form state and mount the mode indicator
 const { onChange, SyncComponent } = useTinaDiscussion({
   tinaForm,
   editor,
@@ -50,6 +50,7 @@ return (
   <Plate editor={editor} onChange={onChange}>
     <SyncComponent />
     <Editor />
+    <SuggestionModeIndicator />
   </Plate>
 );
 ```
@@ -58,6 +59,7 @@ For full working usage, see:
 
 - `packages/tinacms/packages/tinacms/src/toolkit/fields/plugins/mdx-field-plugin/plate/plugins/editor-plugins.tsx`
 - `packages/tinacms/packages/tinacms/src/toolkit/fields/plugins/mdx-field-plugin/plate/components/floating-toolbar-buttons.tsx`
+- `packages/tinacms/packages/tinacms/src/toolkit/fields/plugins/mdx-field-plugin/plate/index.tsx`
 - `packages/tinacms/packages/tinacms/src/toolkit/fields/plugins/streamliners/discussion-plugin/hooks/use-tina-discussion.tsx`
 
 ## Plugin state
@@ -80,13 +82,19 @@ For full working usage, see:
 
 - loads the current user (`useAnnotationUser`),
 - stores user identity in plugin options (`currentUserId`, `currentUserName`),
-- toggles `isSuggesting`.
+- toggles `isSuggesting`,
+- updates button tooltip text to `Enter suggestion mode` / `Exit suggestion mode`,
+- applies a stronger active visual state when suggestion mode is on.
 
-### 2) Edit content while suggesting
+### 2) Show mode status and quick exit
+
+`SuggestionModeIndicator` renders a fixed status chip when `isSuggesting === true`, with an inline `Exit` action that turns suggestion mode off.
+
+### 3) Edit content while suggesting
 
 When suggestion mode is on, suggestion data is added to edited nodes by the underlying suggestion plugin behavior.
 
-### 3) Render suggestion marks inline
+### 4) Render suggestion marks inline
 
 `SuggestionLeaf`:
 
@@ -95,7 +103,7 @@ When suggestion mode is on, suggestion data is added to edited nodes by the unde
 - applies active/hover styling,
 - exposes `data-suggestion-leaf`/`data-suggestion-id` attributes used by annotation UI.
 
-### 4) Activate and review a suggestion
+### 5) Activate and review a suggestion
 
 - Plugin `onClick` resolves the clicked suggestion and sets `activeId`.
 - Discussion UI (`AnnotationPopover` / block discussion panels) uses the active suggestion id to show diff + actions.
@@ -114,6 +122,7 @@ Suggestion data is persisted through discussion-plugin sync utilities:
 
 - `suggestion-plugin.tsx` - plugin definition, options, click handler, leaf renderer
 - `components/suggestion-toolbar-button.tsx` - toggle suggestion mode + set user info
+- `components/suggestion-mode-indicator.tsx` - fixed "Suggestion Mode Active" status + exit action
 - `components/suggestion-leaf.tsx` - inline mark rendering and hover/active behavior
 - `utils/suggestion-helpers.ts` - diff extraction + accept/reject helpers
 - `utils/annotate-suggestions.ts` - inject userName into suggestion payloads before save
@@ -122,3 +131,4 @@ Suggestion data is persisted through discussion-plugin sync utilities:
 ## Notes
 
 - Suggestion approval/rejection UI is rendered primarily from discussion plugin surfaces (`AnnotationPopover` and block thread views).
+- The mode indicator is mounted in `packages/tinacms/packages/tinacms/src/toolkit/fields/plugins/mdx-field-plugin/plate/index.tsx`.

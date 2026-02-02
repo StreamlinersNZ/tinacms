@@ -37,12 +37,14 @@ export function SuggestionToolbarButton() {
         isLoading
           ? 'Loading user...'
           : isSuggesting
-            ? 'Turn off suggestions'
-            : 'Suggest edits'
+            ? 'Exit suggestion mode'
+            : 'Enter suggestion mode'
       }
       onClick={handleClick}
       onMouseDown={(event) => event.preventDefault()}
-      className={cn(isSuggesting && 'text-brand/80 hover:text-brand/80')}
+      className={cn(
+        isSuggesting && 'bg-brand/15 text-brand hover:bg-brand/20 hover:text-brand ring-2 ring-brand/30'
+      )}
       data-plate-prevent-overlay
       data-suggestion-toolbar-button="true"
     >
