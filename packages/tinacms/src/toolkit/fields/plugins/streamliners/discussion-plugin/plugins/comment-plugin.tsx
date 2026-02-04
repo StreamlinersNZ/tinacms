@@ -43,12 +43,16 @@ const baseCommentsPlugin = BaseCommentsPlugin as unknown as SlatePlugin<CommentP
 
 export const commentPlugin = toTPlatePlugin<CommentPluginConfig>(
   baseCommentsPlugin,
-  ({ editor, setOption }) => {
+  ({ getOptions }) => {
+    // Check if threads were already initialized (e.g., by loadAnnotations before editor mount)
+    const existingOptions = getOptions?.();
+    const existingThreads = existingOptions?.threads;
+
     const options: CommentPluginConfig['options'] = {
       activeId: null,
       hoverId: null,
       overlappingIds: null,
-      threads: {},
+      threads: existingThreads && typeof existingThreads === 'object' ? existingThreads : {},
       uniquePathMap: new Map(),
     };
 

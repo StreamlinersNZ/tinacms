@@ -13,6 +13,7 @@ import { editorPlugins } from './plugins/editor-plugins';
 import { FloatingToolbar } from './components/plate-ui/floating-toolbar';
 import FloatingToolbarButtons from './components/floating-toolbar-buttons';
 import { useTinaDiscussion } from '../../streamliners/discussion-plugin/hooks/use-tina-discussion';
+import { SuggestionModeIndicator } from '../../streamliners/suggestion-plugin/components/suggestion-mode-indicator';
 
 export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
   const initialValue = React.useMemo(() => {
@@ -89,6 +90,7 @@ export const RichEditor = ({ input, tinaForm, field }: RichTextType) => {
               ) : null}
             </ToolbarProvider>
             <Editor />
+            <SuggestionModeIndicator />
           </TooltipProvider>
         </EditorContainer>
       </Plate>
