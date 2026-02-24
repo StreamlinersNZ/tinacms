@@ -9,6 +9,7 @@ import * as React from 'react';
 import { BiPencil } from 'react-icons/bi';
 import { IoMdClose } from 'react-icons/io';
 import { wrapFieldWithNoHeader } from './wrap-field-with-meta';
+import { Transition } from '@headlessui/react';
 
 export interface GroupFieldDefinititon extends Field {
   component: 'group';
@@ -37,7 +38,6 @@ export const Group = wrapFieldWithNoHeader(
               return;
             }
 
-            // setExpanded((p) => !p)
             cms.dispatch({
               type: 'forms:set-active-field-name',
               value: { formId: tinaForm.id, fieldName: field.name },
@@ -52,12 +52,6 @@ export const Group = wrapFieldWithNoHeader(
             ></span>
           )}
         </Header>
-        {/* <Panel
-        isExpanded={isExpanded}
-        setExpanded={setExpanded}
-        field={field}
-        tinaForm={tinaForm}
-      /> */}
       </>
     );
   }
@@ -70,6 +64,7 @@ interface PanelProps {
   field: GroupFieldDefinititon;
   children?: any;
 }
+
 const Panel = function Panel({
   setExpanded,
   isExpanded,
@@ -163,25 +158,21 @@ export const GroupPanel = ({
   style = {},
   ...props
 }) => (
-  <div
+  <Transition
+    appear={true}
+    show={isExpanded}
+    as='div'
     className={`absolute w-full top-0 bottom-0 left-0 flex flex-col justify-between overflow-hidden z-10 ${className}`}
     style={{
       pointerEvents: isExpanded ? 'all' : 'none',
-      ...(isExpanded
-        ? {
-            animationName: 'fly-in-left',
-            animationDuration: '150ms',
-            animationDelay: '0',
-            animationIterationCount: 1,
-            animationTimingFunction: 'ease-out',
-            animationFillMode: 'backwards',
-          }
-        : {
-            transition: 'transform 150ms ease-out',
-            transform: 'translate3d(100%, 0, 0)',
-          }),
       ...style,
     }}
+    enter='transition-transform ease-out duration-150'
+    enterFrom='translate-x-full'
+    enterTo='translate-x-0'
+    leave='transition-transform ease-out duration-150'
+    leaveFrom='translate-x-0'
+    leaveTo='translate-x-full'
     {...props}
   />
 );

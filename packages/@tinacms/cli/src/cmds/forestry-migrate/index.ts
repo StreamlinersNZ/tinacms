@@ -1,7 +1,8 @@
 import fs from 'fs-extra';
 import path from 'path';
 import yaml from 'js-yaml';
-import minimatch from 'minimatch';
+import pkg from 'minimatch';
+const { minimatch } = pkg;
 import { parseFile, stringifyFile } from '@tinacms/graphql';
 import type {
   Collection,
@@ -87,7 +88,7 @@ export const generateAllTemplates = async ({
       });
       templateMap.set(tem, { fields, templateObj });
     } catch (e) {
-      logger.log(`Error parsing template frontmatter template', tem + '.yml'`);
+      logger.warn(`Error parsing template frontmatter template, ${tem}.yml`);
       console.error(e);
       templateMap.set(tem, { fields: [], templateObj: {} });
     }
@@ -167,7 +168,7 @@ const generateCollectionFromForestrySection = (args: {
       section.path === './' ||
       section.path === '.'
     ) {
-      logger.log(
+      logger.warn(
         warnText(
           `Warning: Section ${
             section.label
@@ -336,7 +337,7 @@ const generateCollectionFromForestrySection = (args: {
         fields,
       };
     } else {
-      logger.log(
+      logger.warn(
         warnText(
           `Error: document section has an unsupported file extension: ${extname} in ${section.path}`
         )

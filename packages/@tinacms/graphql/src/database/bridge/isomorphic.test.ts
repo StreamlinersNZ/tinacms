@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import git from 'isomorphic-git';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { IsomorphicBridge } from './isomorphic';
-import { test, afterEach, expect, describe, beforeEach, vi } from 'vitest';
 
 // Fix issue with test timing out
 vi.setConfig({ testTimeout: 20000 });
@@ -113,7 +113,7 @@ describe('isomorphic bridge', () => {
   });
 
   afterEach(async () => {
-    await fs.promises.rmdir(root, { recursive: true });
+    await fs.promises.rm(root, { recursive: true, force: true });
   });
 
   describe.each([['repo'], ['monorepo']])('glob with %p', (repoType) => {
@@ -247,4 +247,38 @@ describe('isomorphic bridge', () => {
       ]);
     });
   });
+
+  describe.each([['repo'], ['monorepo']])(
+    'path traversal rejection with %p',
+    (repoType) => {
+      let bridge: IsomorphicBridge;
+      beforeEach(() => {
+        bridge = bridgeMap[repoType];
+      });
+
+      test('get rejects traversal', async () => {
+        await expect(bridge.get('../../../etc/passwd')).rejects.toThrow(
+          'Path traversal detected'
+        );
+      });
+
+      test('put rejects traversal', async () => {
+        await expect(
+          bridge.put('../../etc/malicious', 'payload')
+        ).rejects.toThrow('Path traversal detected');
+      });
+
+      test('delete rejects traversal', async () => {
+        await expect(bridge.delete('../outside.txt')).rejects.toThrow(
+          'Path traversal detected'
+        );
+      });
+
+      test('glob rejects traversal', async () => {
+        await expect(bridge.glob('../..', '.mdx')).rejects.toThrow(
+          'Path traversal detected'
+        );
+      });
+    }
+  );
 });

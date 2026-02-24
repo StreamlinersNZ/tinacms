@@ -1,0 +1,83 @@
+// When the user switches branches
+export const BranchSwitchedEvent: string = 'branch-switched';
+export type BranchSwitchedPayload = {
+  branchSwitchedTo: string;
+};
+
+export const BranchSwitcherOpenedEvent: string = 'branch-switcher-opened';
+export type BranchSwitcherOpenedPayload = Record<string, never>;
+
+export const BranchSwitcherSearchEvent: string = 'branch-switcher-search';
+export type BranchSwitcherSearchPayload = {
+  option: string;
+};
+
+export const BranchSwitcherDropDownEvent: string = 'branch-switcher-dropdown';
+export type BranchSwitcherDropDownPayload = Record<string, never>;
+
+export const BranchSwitcherPRClickedEvent: string =
+  'branch-switcher-pr-clicked';
+export type BranchSwitcherPRClickedPayload = {
+  type: 'Open Git Pull Request' | 'Create PR';
+};
+
+// When a user clicks 'save' in the TinaCMS Editor
+export const SavedContentEvent: string = 'saved-content';
+export type SavedContentPayload = {
+  collection?: string;
+  documentPath?: string;
+};
+
+// When a user adds an item to the media manager
+export const MediaManagerContentUploadedEvent: string =
+  'media-manager-content-uploaded';
+export type MediaManagerContentUploadedPayload = Record<string, never>;
+
+// When a user deletes an item from the media manager
+export const MediaManagerContentDeletedEvent: string =
+  'media-manager-content-deleted';
+export type MediaManagerContentDeletedPayload = Record<string, never>;
+
+// Switching between raw and rich-text editor modes
+export const RichTextEditorSwitchedEvent: string = 'rich-text-editor-switched';
+export type RichTextEditorSwitchedPayload = {
+  to: 'markdown' | 'richtext';
+};
+
+// When the user navigates to Project Config (TinaCloud) from the TinaCMS editor
+export const ProjectConfigNavigatedToFromWebsiteEvent: string =
+  'cloud-navigated-to-from-website';
+export type ProjectConfigNavigatedToFromWebsitePayload = Record<string, never>;
+
+// When the user navigates to user management (TinaCloud) from the TinaCMS editor
+export const UserManagementNavigatedToFromWebsiteEvent: string =
+  'user-management-navigated-to-from-website';
+export type UserManagementNavigatedToFromWebsitePayload = Record<string, never>;
+
+export const TinaCMSStartedEvent: string = 'tina-cms-started';
+export type TinaCMSStartedPayload = {
+  tinaCMSVersion: string;
+  system: string;
+};
+
+export const CollectionListPageItemClickedEvent: string =
+  'collection-list-page-item-clicked';
+export type CollectionListPageItemClickedPayload = {
+  itemName: string;
+  itemType: 'folder' | 'document';
+  collectionName: string;
+};
+
+export const CollectionListPageSortEvent: string = 'collection-list-page-sort';
+export type CollectionListPageSortPayload = {
+  sortKey: string;
+  collectionName: string;
+};
+
+export const CollectionListPageSearchEvent: string =
+  'collection-list-page-search';
+export type CollectionListPageSearchPayload = {
+  searchQuery: string;
+};
+
+export const EventLogPageViewedEvent: string = 'event-log-page-viewed';

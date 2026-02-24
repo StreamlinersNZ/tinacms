@@ -6,10 +6,12 @@ import {
   BiLinkExternal,
   BiLockAlt,
 } from 'react-icons/bi';
-import { cn } from '../../utils/cn';
+import { cn } from '@utils/cn';
 import { Button } from '../styles/button';
 import { useBranchData } from './branch-data';
 import { BranchModal } from './branch-modal';
+import { captureEvent } from '../../lib/posthog/posthogProvider';
+import { BranchSwitcherOpenedEvent } from '../../lib/posthog/posthog';
 
 export const BranchButton = ({ className = '' }) => {
   const [open, setOpen] = React.useState(false);
@@ -30,10 +32,13 @@ export const BranchButton = ({ className = '' }) => {
         variant={'secondary'}
         size='custom'
         className={cn(
-          'pointer-events-auto px-3 py-3 flex shrink gap-1 items-center justify-between',
+          'pointer-events-auto px-3 py-3 flex shrink gap-1 items-center justify-between max-w-sm',
           className
         )}
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          captureEvent(BranchSwitcherOpenedEvent, {});
+        }}
         title={currentBranch}
       >
         {isProtected ? (
@@ -55,23 +60,23 @@ export const BranchButton = ({ className = '' }) => {
 export const BranchPreviewButton = (
   props: React.ButtonHTMLAttributes<HTMLButtonElement>
 ) => {
-  // const cms = useCMS();
-  // const branchingEnabled = cms.flags.get('branch-switcher');
+  const cms = useCMS();
+  const branchingEnabled = cms.flags.get('branch-switcher');
 
-  // if (!branchingEnabled) {
-  //   return null;
-  // }
+  if (!branchingEnabled) {
+    return null;
+  }
 
-  // const previewFunction = cms.api?.tina?.schema?.config?.config?.ui?.previewUrl;
-  // const branch = cms.api?.tina?.branch;
-  // const previewUrl =
-  //   typeof previewFunction === 'function'
-  //     ? previewFunction({ branch })?.url
-  //     : null;
+  const previewFunction = cms.api?.tina?.schema?.config?.config?.ui?.previewUrl;
+  const branch = cms.api?.tina?.branch;
+  const previewUrl =
+    typeof previewFunction === 'function'
+      ? previewFunction({ branch })?.url
+      : null;
 
-  // if (!previewUrl) {
-  //   return null;
-  // }
+  if (!previewUrl) {
+    return null;
+  }
 
   return (
     <button

@@ -1,5 +1,75 @@
 # @tinacms/schema-tools
 
+## 2.6.0
+
+### Minor Changes
+
+- [#6438](https://github.com/tinacms/tinacms/pull/6438) [`f90d47b`](https://github.com/tinacms/tinacms/commit/f90d47b746b000e65324da430aacc8fd623f5065) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - Telemetry - We’ve added anonymous telemetry to help us understand how Tina is used and prioritize improvements in areas where it matters. No personal or sensitive data is collected, and the information cannot be used to identify individual users. Telemetry is used solely to improve performance, stability, and the overall user experience. You can opt-out at any time by disabling telemetry in your Tina config.
+
+  Read more at https://tina.io/telemetry
+
+## 2.5.0
+
+### Minor Changes
+
+- [#6392](https://github.com/tinacms/tinacms/pull/6392) [`4eb9252`](https://github.com/tinacms/tinacms/commit/4eb92520249696007556b52f3c48333bdf8ebf4d) Thanks [@Calinator444](https://github.com/Calinator444)! - Updated type definition for schema tools to include filename.parse
+
+## 2.4.0
+
+### Minor Changes
+
+- [#6353](https://github.com/tinacms/tinacms/pull/6353) [`1d4fb88`](https://github.com/tinacms/tinacms/commit/1d4fb88f5dded126cf3c3796e42d26ffb4b62a3a) Thanks [@wicksipedia](https://github.com/wicksipedia)! - Collections - added ability to make yaml max line width configurable.
+  This was previously hard coded to 80 but now defaults to being disabled `-1`.
+  This is configurable though the collection's `yamlMaxLineWidth` prop.
+
+## 2.3.0
+
+### Minor Changes
+
+- [#6259](https://github.com/tinacms/tinacms/pull/6259) [`6c2c48a`](https://github.com/tinacms/tinacms/commit/6c2c48a9d869cb98e78fc656b986ecc244a5dafd) Thanks [@JackDevAU](https://github.com/JackDevAU)! - Added fuzzy search options + support. This is now set as the new default. Going forward this package will also be used on the TinaCloud side so we don't duplicate code. Search now uses the closest index instead of being exact.
+
+## 2.2.0
+
+### Minor Changes
+
+- [#6286](https://github.com/tinacms/tinacms/pull/6286) [`a63401a`](https://github.com/tinacms/tinacms/commit/a63401a3dd8271258bc6bfb4cc22593c19e94c7d) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - ✨ Half-width property for text fields in TinaCMS Editor
+
+## 2.1.0
+
+### Minor Changes
+
+- [#6233](https://github.com/tinacms/tinacms/pull/6233) [`a125472`](https://github.com/tinacms/tinacms/commit/a125472d3278c140cb416dba5cd1478fb5dfe320) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - ✨ File History Provider
+
+## 2.0.0
+
+### Major Changes
+
+- [#5982](https://github.com/tinacms/tinacms/pull/5982) [`2e1535d`](https://github.com/tinacms/tinacms/commit/2e1535dd5495dc390902f2db6ef1f26afb072396) Thanks [@brookjeynes-ssw](https://github.com/brookjeynes-ssw)! - feat: migrate from commonjs to esm
+
+### Minor Changes
+
+- [#6183](https://github.com/tinacms/tinacms/pull/6183) [`ed6025e`](https://github.com/tinacms/tinacms/commit/ed6025ee87ebe051957fc93e987ba8de8b003995) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Add in ability to disable folder creation in UI per collection
+
+## 1.10.1
+
+### Patch Changes
+
+- [#6187](https://github.com/tinacms/tinacms/pull/6187) [`a76fdb6`](https://github.com/tinacms/tinacms/commit/a76fdb639b94cfefa169ebbd184f55d62e4a8a76) Thanks [@18-th](https://github.com/18-th)! - Updated yup to v1 to remove transitive lodash dependency
+
+- [#6138](https://github.com/tinacms/tinacms/pull/6138) [`a736baf`](https://github.com/tinacms/tinacms/commit/a736bafe1b20bc1465f8e4a4c0c2281f40dcbf2f) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Update Image field type definition to include uploadDir
+
+## 1.10.0
+
+### Minor Changes
+
+- [#6142](https://github.com/tinacms/tinacms/pull/6142) [`f2577b9`](https://github.com/tinacms/tinacms/commit/f2577b911a97ecc1c3f53a98ae8218cc33bc9867) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - Folder creation validation with regex
+
+### Patch Changes
+
+- [#6147](https://github.com/tinacms/tinacms/pull/6147) [`38920ce`](https://github.com/tinacms/tinacms/commit/38920ce29a9b63c54b04f39537f19beab62d2c86) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - Fix: ui.max not applying to primitive type list:true
+
+- [#5822](https://github.com/tinacms/tinacms/pull/5822) [`4b824be`](https://github.com/tinacms/tinacms/commit/4b824be53572f9231753ebd3b5f14fd778fd73d6) Thanks [@copilot-swe-agent](https://github.com/apps/copilot-swe-agent)! - Migrate from react-beautiful-dnd to dnd-kit to fix deprecation error.
+
 ## 1.9.1
 
 ### Patch Changes

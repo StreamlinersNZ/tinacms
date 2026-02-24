@@ -102,13 +102,13 @@ export class DevCommand extends BaseCommand {
         const apiURL = await codegen.execute();
 
         if (!configManager.isUsingLegacyFolder) {
-          delete require.cache[configManager.generatedSchemaJSONPath];
-          delete require.cache[configManager.generatedLookupJSONPath];
-          delete require.cache[configManager.generatedGraphQLJSONPath];
-
-          const schemaObject = require(configManager.generatedSchemaJSONPath);
-          const lookupObject = require(configManager.generatedLookupJSONPath);
-          const graphqlSchemaObject = require(
+          const schemaObject = await fs.readJSON(
+            configManager.generatedSchemaJSONPath
+          );
+          const lookupObject = await fs.readJSON(
+            configManager.generatedLookupJSONPath
+          );
+          const graphqlSchemaObject = await fs.readJSON(
             configManager.generatedGraphQLJSONPath
           );
 
@@ -125,7 +125,8 @@ export class DevCommand extends BaseCommand {
 
           if (configManager.hasSeparateContentRoot()) {
             const rootPath = await configManager.getTinaFolderPath(
-              configManager.contentRootPath
+              configManager.contentRootPath,
+              { isContentRoot: true }
             );
             const filePath = path.join(rootPath, tinaLockFilename);
             await fs.ensureFile(filePath);
@@ -223,10 +224,21 @@ export class DevCommand extends BaseCommand {
       );
     }
 
+    // Pass both searchIndex and fuzzySearchWrapper
+    const searchIndexWithFuzzy = searchIndexClient.searchIndex as
+      | (typeof searchIndexClient.searchIndex & {
+          fuzzySearchWrapper?: typeof searchIndexClient.fuzzySearchWrapper;
+        })
+      | undefined;
+    if (searchIndexWithFuzzy && searchIndexClient.fuzzySearchWrapper) {
+      searchIndexWithFuzzy.fuzzySearchWrapper =
+        searchIndexClient.fuzzySearchWrapper;
+    }
+
     const server = await createDevServer(
       configManager,
       database,
-      searchIndexClient.searchIndex,
+      searchIndexWithFuzzy,
       apiURL,
       this.noWatch,
       dbLock
@@ -314,6 +326,12 @@ export class DevCommand extends BaseCommand {
         // },
       ],
     });
+    if (configManager?.config?.telemetry === 'anonymous') {
+      logger.info(
+        `\n📊 Note: TinaCMS now collects anonymous telemetry regarding usage. More information on TinaCMS Telemetry: https://tina.io/telemetry\n`
+      );
+    }
+
     await this.startSubCommand();
   }
 
