@@ -189,19 +189,23 @@ export const RenderForm = ({
     template?.defaultItem ||
     {};
 
+  const fileReadOnly = schemaCollection?.ui?.filename?.readonly;
+  const parse = schemaCollection?.ui?.filename?.parse;
   const filenameField = {
     name: 'filename',
     label: 'Filename',
-    component: slugFunction
-      ? wrapFieldsWithMeta(({ field, input, meta }) => {
-          return (
-            <FilenameInput
-              readOnly={schemaCollection?.ui?.filename?.readonly}
-              {...input}
-            />
-          );
-        })
-      : 'text',
+    parse,
+    component:
+      slugFunction && !fileReadOnly
+        ? wrapFieldsWithMeta(({ field, input, meta }) => {
+            return (
+              <FilenameInput
+                readOnly={schemaCollection?.ui?.filename?.readonly}
+                {...input}
+              />
+            );
+          })
+        : 'text',
     disabled: schemaCollection?.ui?.filename?.readonly,
     description: collection.ui?.filename?.description ? (
       <span

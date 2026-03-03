@@ -1,27 +1,25 @@
 import * as React from 'react';
-import { AiFillWarning } from 'react-icons/ai';
-import { cn } from '../../../lib/utils';
+import { cn } from '@utils/cn';
 import {
   MdAccessTime,
   MdCheckCircle,
-  MdError,
-  MdInfo,
   MdOutlineDataSaverOff,
   MdWifiOff,
 } from 'react-icons/md';
-import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 export const Badge = ({
   children,
   calloutStyle = 'warning',
   className = '',
+  displayIcon = true,
   ...props
 }: {
   children?: React.ReactNode;
   calloutStyle?: 'warning' | 'info' | 'success' | 'error';
+  displayIcon?: boolean;
 } & React.HTMLProps<HTMLDivElement>) => {
   const commonAlertStyles =
-    'ml-8 text-xs px-2 py-0.5 flex items-center rounded-md border';
+    'text-xs px-2 py-0.5 flex items-center rounded-md border';
 
   const styles = {
     warning: `text-amber-700 bg-amber-100 border-amber-700/20`,
@@ -50,7 +48,7 @@ export const Badge = ({
       className={cn(commonAlertStyles, styles[calloutStyle], className)}
       {...props}
     >
-      {icon[calloutStyle]} {children}
+      {displayIcon && icon[calloutStyle]} {children}
     </div>
   );
 };

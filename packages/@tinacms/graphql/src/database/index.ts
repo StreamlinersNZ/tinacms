@@ -13,7 +13,7 @@ import type {
   TinaSchema,
 } from '@tinacms/schema-tools';
 import sha from 'js-sha1';
-import set from 'lodash.set';
+import { set } from 'es-toolkit/compat';
 import { FilesystemBridge, TinaLevelClient } from '..';
 import { generatePasswordHash, mapUserFields } from '../auth/utils';
 import { NotFoundError } from '../error';
@@ -765,6 +765,7 @@ export class Database {
       {
         frontmatterFormat: collection?.frontmatterFormat,
         frontmatterDelimiters: collection?.frontmatterDelimiters,
+        yamlMaxLineWidth: collection?.yamlMaxLineWidth,
       }
     );
   };

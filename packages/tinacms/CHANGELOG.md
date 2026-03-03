@@ -1,5 +1,280 @@
 # tinacms
 
+## 3.5.0
+
+### Minor Changes
+
+- [#6438](https://github.com/tinacms/tinacms/pull/6438) [`f90d47b`](https://github.com/tinacms/tinacms/commit/f90d47b746b000e65324da430aacc8fd623f5065) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - Telemetry - We’ve added anonymous telemetry to help us understand how Tina is used and prioritize improvements in areas where it matters. No personal or sensitive data is collected, and the information cannot be used to identify individual users. Telemetry is used solely to improve performance, stability, and the overall user experience. You can opt-out at any time by disabling telemetry in your Tina config.
+
+  Read more at https://tina.io/telemetry
+
+- [#5957](https://github.com/tinacms/tinacms/pull/5957) [`89aee8a`](https://github.com/tinacms/tinacms/commit/89aee8ae3d6867e5793e4df7ff9c700dfd8a48c9) Thanks [@isaaclombardssw](https://github.com/isaaclombardssw)! - The referenced files menu is being revamped to improve the UX and increase clarity.
+
+### Patch Changes
+
+- [#6373](https://github.com/tinacms/tinacms/pull/6373) [`da837f7`](https://github.com/tinacms/tinacms/commit/da837f7b17f0540cd47025afd2c45140706d595d) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - 🔌 Modernisze Branch Switcher by adding `@tanstack/react-table`
+  💄 Replace old BranchSelector with a new BranchSelectorTable component using `react-table`
+  🧹 Cleanup duplicate `cn` references + add alias' for tsconfig and vite config
+
+- [#6436](https://github.com/tinacms/tinacms/pull/6436) [`c806e41`](https://github.com/tinacms/tinacms/commit/c806e41232e0204a13539d6236358cb58cbc7692) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - 💄 UI - Remove cursor-pointer from alert
+
+- Updated dependencies [[`f90d47b`](https://github.com/tinacms/tinacms/commit/f90d47b746b000e65324da430aacc8fd623f5065)]:
+  - @tinacms/schema-tools@2.6.0
+  - @tinacms/search@1.2.3
+  - @tinacms/mdx@2.0.6
+
+## 3.4.1
+
+### Patch Changes
+
+- Updated dependencies [[`4eb9252`](https://github.com/tinacms/tinacms/commit/4eb92520249696007556b52f3c48333bdf8ebf4d)]:
+  - @tinacms/schema-tools@2.5.0
+  - @tinacms/mdx@2.0.5
+  - @tinacms/search@1.2.2
+
+## 3.4.0
+
+### Minor Changes
+
+- [#6374](https://github.com/tinacms/tinacms/pull/6374) [`414dc87`](https://github.com/tinacms/tinacms/commit/414dc87ea0e63702d12ec7a3d3e9f4e5527eaa56) Thanks [@Calinator444](https://github.com/Calinator444)! - Added parse field for filename field
+
+### Patch Changes
+
+- [#6379](https://github.com/tinacms/tinacms/pull/6379) [`155654c`](https://github.com/tinacms/tinacms/commit/155654ce515ab68a0483cd7e797e9df0a4157431) Thanks [@kulesy](https://github.com/kulesy)! - Fix branch exists error detection with case-insensitive matching
+
+## 3.3.2
+
+### Patch Changes
+
+- [#6362](https://github.com/tinacms/tinacms/pull/6362) [`6647240`](https://github.com/tinacms/tinacms/commit/6647240db6cfffcf1efb4fa9799e9c039b929389) Thanks [@Calinator444](https://github.com/Calinator444)! - 🐛Bug Fix - Prevent user from editing read only fields when slugify method provided
+
+- Updated dependencies [[`1d4fb88`](https://github.com/tinacms/tinacms/commit/1d4fb88f5dded126cf3c3796e42d26ffb4b62a3a)]:
+  - @tinacms/schema-tools@2.4.0
+  - @tinacms/mdx@2.0.4
+  - @tinacms/search@1.2.1
+
+## 3.3.1
+
+### Patch Changes
+
+- [#6346](https://github.com/tinacms/tinacms/pull/6346) [`3fa216c`](https://github.com/tinacms/tinacms/commit/3fa216c110af6417e6b835c49a275b08981e028b) Thanks [@JackDevAU](https://github.com/JackDevAU)! - Revert "✨ Visual element highlighting between iframe and form (#6211)"
+
+- [#6348](https://github.com/tinacms/tinacms/pull/6348) [`7352c96`](https://github.com/tinacms/tinacms/commit/7352c9660869d413a0f48d3fbb003d4c4c0e3d85) Thanks [@wicksipedia](https://github.com/wicksipedia)! - Branch selector - added ability to filter based off PR number
+
+## 3.3.0
+
+### Minor Changes
+
+- [#6259](https://github.com/tinacms/tinacms/pull/6259) [`6c2c48a`](https://github.com/tinacms/tinacms/commit/6c2c48a9d869cb98e78fc656b986ecc244a5dafd) Thanks [@JackDevAU](https://github.com/JackDevAU)! - Added fuzzy search options + support. This is now set as the new default. Going forward this package will also be used on the TinaCloud side so we don't duplicate code. Search now uses the closest index instead of being exact.
+
+### Patch Changes
+
+- Updated dependencies [[`6c2c48a`](https://github.com/tinacms/tinacms/commit/6c2c48a9d869cb98e78fc656b986ecc244a5dafd)]:
+  - @tinacms/search@1.2.0
+  - @tinacms/schema-tools@2.3.0
+  - @tinacms/mdx@2.0.3
+
+## 3.2.0
+
+### Minor Changes
+
+- [#6286](https://github.com/tinacms/tinacms/pull/6286) [`a63401a`](https://github.com/tinacms/tinacms/commit/a63401a3dd8271258bc6bfb4cc22593c19e94c7d) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - ✨ Half-width property for text fields in TinaCMS Editor
+
+### Patch Changes
+
+- Updated dependencies [[`a63401a`](https://github.com/tinacms/tinacms/commit/a63401a3dd8271258bc6bfb4cc22593c19e94c7d)]:
+  - @tinacms/schema-tools@2.2.0
+  - @tinacms/mdx@2.0.2
+  - @tinacms/search@1.1.9
+
+## 3.1.3
+
+### Patch Changes
+
+- [#6211](https://github.com/tinacms/tinacms/pull/6211) [`790c860`](https://github.com/tinacms/tinacms/commit/790c860ae85c3bdcb7d3c07321ed4032ebbb7b49) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - ✨ Visual element highlighting between iframe and form
+
+- [#6282](https://github.com/tinacms/tinacms/pull/6282) [`60814a3`](https://github.com/tinacms/tinacms/commit/60814a3b56f99843211ef144576109857ad6ba86) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - 💄 ui - increase default size of rich-text editor
+
+- [#6291](https://github.com/tinacms/tinacms/pull/6291) [`b0f55b5`](https://github.com/tinacms/tinacms/commit/b0f55b511426ebf772d9f06645804f2319f9f9a2) Thanks [@brookjeynes-ssw](https://github.com/brookjeynes-ssw)! - fix: update date-fs and related types
+
+- Updated dependencies []:
+  - @tinacms/search@1.1.8
+
+## 3.1.2
+
+### Patch Changes
+
+- [#6271](https://github.com/tinacms/tinacms/pull/6271) [`8335218`](https://github.com/tinacms/tinacms/commit/833521832f91c98ff3cb48535eecb3824cb0f7bd) Thanks [@kulesy](https://github.com/kulesy)! - 💄 UI/UX - Update Alerts UI and resolve overflow issue
+
+## 3.1.1
+
+### Patch Changes
+
+- [#6262](https://github.com/tinacms/tinacms/pull/6262) [`3a12a39`](https://github.com/tinacms/tinacms/commit/3a12a392d5a8eb9bba5a5be65d080f24afa08de3) Thanks [@0xharkirat](https://github.com/0xharkirat)! - 🔒 Security: Update Next.js to 14.2.35 to address security vulnerabilities
+
+  - Address CVE-2025-55184 (high): DoS via malicious HTTP request causing server to hang
+  - Address CVE-2025-67779 (high): Complete fix for CVE-2025-55184 DoS vulnerability
+  - Updated Next.js devDependency from 14.2.10/14.2.24 to 14.2.35
+  - See: https://nextjs.org/blog/security-update-2025-12-11
+
+- Updated dependencies []:
+  - @tinacms/search@1.1.7
+
+## 3.1.0
+
+### Minor Changes
+
+- [#6233](https://github.com/tinacms/tinacms/pull/6233) [`a125472`](https://github.com/tinacms/tinacms/commit/a125472d3278c140cb416dba5cd1478fb5dfe320) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - ✨ File History Provider
+
+### Patch Changes
+
+- [#6240](https://github.com/tinacms/tinacms/pull/6240) [`998975c`](https://github.com/tinacms/tinacms/commit/998975cc8e3c71489f3ed6cbf9ca0a5a7619c18b) Thanks [@JackDevAU](https://github.com/JackDevAU)! - Fixing node cache path resolutions
+
+- [#6236](https://github.com/tinacms/tinacms/pull/6236) [`3097535`](https://github.com/tinacms/tinacms/commit/3097535275e813db907a592ee96bd8481f0eacc5) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - 🐛 Bug - Fix Toast Blocking Content Underneath
+
+- [#6198](https://github.com/tinacms/tinacms/pull/6198) [`9fb397d`](https://github.com/tinacms/tinacms/commit/9fb397da515468f72b01f5a7cf881187a9c33d6e) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Branch Selector - Add truncation and tooltip to branch name, adjust max width, add sticky header
+
+- Updated dependencies [[`a125472`](https://github.com/tinacms/tinacms/commit/a125472d3278c140cb416dba5cd1478fb5dfe320)]:
+  - @tinacms/schema-tools@2.1.0
+  - @tinacms/mdx@2.0.1
+  - @tinacms/search@1.1.6
+
+## 3.0.2
+
+### Patch Changes
+
+- [#6216](https://github.com/tinacms/tinacms/pull/6216) [`5c1e891`](https://github.com/tinacms/tinacms/commit/5c1e89181f595d392ad6cb56ca5fc0b6d9e60a23) Thanks [@JackDevAU](https://github.com/JackDevAU)! - - `@tinacms/graphql`: remove scmp dependency, replaced with modern code (now inbuilt)
+
+  - `@tinacms/metrics`: remove isomorphic-fetch dependency, now relies on global fetch
+  - `@tinacms/cli`: remove log4js dependency, replaced with custom logger implementation; update chalk to v5 (ESM-only)
+  - `@tinacms/scripts`, `create-tina-app`: update chalk to v5 (ESM-only)
+  - `next-tinacms-azure`: Buffer to Uint8Array conversion
+  - `tinacms`: TypeScript style prop typing
+
+- [#6208](https://github.com/tinacms/tinacms/pull/6208) [`f717193`](https://github.com/tinacms/tinacms/commit/f717193aa4a1d3205df42d120fd1f6192b5e41e5) Thanks [@18-th](https://github.com/18-th)! - `react-color` to `react-colorful` migration
+
+- [#6213](https://github.com/tinacms/tinacms/pull/6213) [`ac59522`](https://github.com/tinacms/tinacms/commit/ac59522053c71c713057c4c2b6ce610617bce85e) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - plate : hyperlink UI fixes for valid urls
+
+- Updated dependencies []:
+  - @tinacms/search@1.1.5
+  - @tinacms/mdx@2.0.0
+  - @tinacms/schema-tools@2.0.0
+
+## 3.0.1
+
+### Patch Changes
+
+- [#6182](https://github.com/tinacms/tinacms/pull/6182) [`50fa9f4`](https://github.com/tinacms/tinacms/commit/50fa9f4bf932a3dc45b88d245e35917efe8d3423) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - UI fix for menu icon in admin panel
+
+- [#6206](https://github.com/tinacms/tinacms/pull/6206) [`428ec7e`](https://github.com/tinacms/tinacms/commit/428ec7eca20603e2cb666d562fd4cc16dda4cbed) Thanks [@copilot-swe-agent](https://github.com/apps/copilot-swe-agent)! - Redirect to collection page after creating content on protected branch
+
+- [#6209](https://github.com/tinacms/tinacms/pull/6209) [`6946476`](https://github.com/tinacms/tinacms/commit/69464767d339a5df3c6c530ece94ef80049e534f) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - media manager - remove directory dupicate name bar
+
+- [#6152](https://github.com/tinacms/tinacms/pull/6152) [`f99bbbc`](https://github.com/tinacms/tinacms/commit/f99bbbc221eead8d714b3791348d415dd8fcd063) Thanks [@kulesy](https://github.com/kulesy)! - Style Alert component with black text and thicker border
+
+## 3.0.0
+
+### Major Changes
+
+- [#5982](https://github.com/tinacms/tinacms/pull/5982) [`2e1535d`](https://github.com/tinacms/tinacms/commit/2e1535dd5495dc390902f2db6ef1f26afb072396) Thanks [@brookjeynes-ssw](https://github.com/brookjeynes-ssw)! - feat: migrate from commonjs to esm
+
+### Minor Changes
+
+- [#6183](https://github.com/tinacms/tinacms/pull/6183) [`ed6025e`](https://github.com/tinacms/tinacms/commit/ed6025ee87ebe051957fc93e987ba8de8b003995) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Add in ability to disable folder creation in UI per collection
+
+- [#6174](https://github.com/tinacms/tinacms/pull/6174) [`3bf79e1`](https://github.com/tinacms/tinacms/commit/3bf79e19c005dca745a8ddd46546190741b322a5) Thanks [@Calinator444](https://github.com/Calinator444)! - rewrote date time picker
+
+### Patch Changes
+
+- [#6200](https://github.com/tinacms/tinacms/pull/6200) [`bb1ad6a`](https://github.com/tinacms/tinacms/commit/bb1ad6a11d10976074453ed218b178935ec96fd3) Thanks [@copilot-swe-agent](https://github.com/apps/copilot-swe-agent)! - Media Manager - View more images on larger screens with a dynamic grid layout.
+
+- Updated dependencies [[`2e1535d`](https://github.com/tinacms/tinacms/commit/2e1535dd5495dc390902f2db6ef1f26afb072396), [`ed6025e`](https://github.com/tinacms/tinacms/commit/ed6025ee87ebe051957fc93e987ba8de8b003995)]:
+  - @tinacms/mdx@2.0.0
+  - @tinacms/schema-tools@2.0.0
+  - @tinacms/search@1.1.4
+
+## 2.10.1
+
+### Patch Changes
+
+- [#6187](https://github.com/tinacms/tinacms/pull/6187) [`a76fdb6`](https://github.com/tinacms/tinacms/commit/a76fdb639b94cfefa169ebbd184f55d62e4a8a76) Thanks [@18-th](https://github.com/18-th)! - Updated yup to v1 to remove transitive lodash dependency
+
+- [#6184](https://github.com/tinacms/tinacms/pull/6184) [`dd2089d`](https://github.com/tinacms/tinacms/commit/dd2089dbde4a7b1a0116cce096f50a97fdca9d81) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Adjust styling on markdown dropdown toolbar items
+
+- Updated dependencies [[`a76fdb6`](https://github.com/tinacms/tinacms/commit/a76fdb639b94cfefa169ebbd184f55d62e4a8a76), [`a736baf`](https://github.com/tinacms/tinacms/commit/a736bafe1b20bc1465f8e4a4c0c2281f40dcbf2f)]:
+  - @tinacms/schema-tools@1.10.1
+  - @tinacms/search@1.1.3
+  - @tinacms/mdx@1.8.3
+
+## 2.10.0
+
+### Minor Changes
+
+- [#6142](https://github.com/tinacms/tinacms/pull/6142) [`f2577b9`](https://github.com/tinacms/tinacms/commit/f2577b911a97ecc1c3f53a98ae8218cc33bc9867) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - Folder creation validation with regex
+
+### Patch Changes
+
+- [#6130](https://github.com/tinacms/tinacms/pull/6130) [`3ffa092`](https://github.com/tinacms/tinacms/commit/3ffa0929e4964f17d5ffa05e0d4cbbff5d9ef4d9) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Branch selector styling adjustments
+
+- [#6147](https://github.com/tinacms/tinacms/pull/6147) [`38920ce`](https://github.com/tinacms/tinacms/commit/38920ce29a9b63c54b04f39537f19beab62d2c86) Thanks [@joshbermanssw](https://github.com/joshbermanssw)! - Fix: ui.max not applying to primitive type list:true
+
+- [#6145](https://github.com/tinacms/tinacms/pull/6145) [`d1bd1a1`](https://github.com/tinacms/tinacms/commit/d1bd1a1312fa910e237ec06608e7c11830c78346) Thanks [@18-th](https://github.com/18-th)! - Remove Lodash and replace usages with either native functions or es-toolkit equivalents
+  Removed the following lodash usages:
+
+  - debounce - was not used, removed the reference
+  - camelcase - unused, removed the reference
+  - upperfirst - unused, removed the reference
+  - flatten - replaced by native .flat()
+  - get - replaced with an existing implementation from the GraphQL package
+  - cloneDeep - replaced with cloneDeep from es-toolkit
+  - set - replaced with es-toolkit compat version. That implementation is identical to the one used by lodash
+  - uniqBy - replace with es-toolkit version. That implementation is identical to the one used by lodash
+
+- [#6149](https://github.com/tinacms/tinacms/pull/6149) [`67e1a3d`](https://github.com/tinacms/tinacms/commit/67e1a3d4c52e0acdab0a8dc53956e39f2e3075fa) Thanks [@kulesy](https://github.com/kulesy)! - Clean up default branch name formatting
+
+- [#6094](https://github.com/tinacms/tinacms/pull/6094) [`9fb1402`](https://github.com/tinacms/tinacms/commit/9fb1402491f52d16e763c875ee550f7d879c83c8) Thanks [@iloveitaly](https://github.com/iloveitaly)! - Open admin menu on main dashboard by default
+
+- [#6113](https://github.com/tinacms/tinacms/pull/6113) [`3fa1098`](https://github.com/tinacms/tinacms/commit/3fa109849f552406dd0059041afe0bf09edadb25) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Add table headings to collections pages
+
+- [#6140](https://github.com/tinacms/tinacms/pull/6140) [`ccab7a5`](https://github.com/tinacms/tinacms/commit/ccab7a5d0fd1f4167e8f72306e9d32e8750ed9bf) Thanks [@kulesy](https://github.com/kulesy)! - fix: add onClick handler to cancel button in create-branch-modal
+
+- [#5822](https://github.com/tinacms/tinacms/pull/5822) [`4b824be`](https://github.com/tinacms/tinacms/commit/4b824be53572f9231753ebd3b5f14fd778fd73d6) Thanks [@copilot-swe-agent](https://github.com/apps/copilot-swe-agent)! - Migrate from react-beautiful-dnd to dnd-kit to fix deprecation error.
+
+- [#6143](https://github.com/tinacms/tinacms/pull/6143) [`d9487bf`](https://github.com/tinacms/tinacms/commit/d9487bff276ba20a84b76944c5a7a333666f4984) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Centralise styles for collections table
+
+- Updated dependencies [[`f2577b9`](https://github.com/tinacms/tinacms/commit/f2577b911a97ecc1c3f53a98ae8218cc33bc9867), [`38920ce`](https://github.com/tinacms/tinacms/commit/38920ce29a9b63c54b04f39537f19beab62d2c86), [`d1bd1a1`](https://github.com/tinacms/tinacms/commit/d1bd1a1312fa910e237ec06608e7c11830c78346), [`4b824be`](https://github.com/tinacms/tinacms/commit/4b824be53572f9231753ebd3b5f14fd778fd73d6)]:
+  - @tinacms/schema-tools@1.10.0
+  - @tinacms/mdx@1.8.2
+  - @tinacms/search@1.1.2
+
+## 2.9.5
+
+### Patch Changes
+
+- [#6131](https://github.com/tinacms/tinacms/pull/6131) [`d900f4e`](https://github.com/tinacms/tinacms/commit/d900f4e6c6f0a86c94bba5f0925bbaa54eeb90db) Thanks [@kulesy](https://github.com/kulesy)! - Revert Sonner alert notifications
+
+## 2.9.4
+
+### Patch Changes
+
+- [#6124](https://github.com/tinacms/tinacms/pull/6124) [`e1b6d05`](https://github.com/tinacms/tinacms/commit/e1b6d05c6b31c5c0928633064a065ddd331667ca) Thanks [@kulesy](https://github.com/kulesy)! - ✨ Enhance CreateBranchModal - UI improvements and code organization
+
+- [#6126](https://github.com/tinacms/tinacms/pull/6126) [`4ee0dd9`](https://github.com/tinacms/tinacms/commit/4ee0dd95913392b0da12dd5c9344909e5292e911) Thanks [@kulesy](https://github.com/kulesy)! - feat: Integrate Sonner for alert notifications
+
+- [#6103](https://github.com/tinacms/tinacms/pull/6103) [`27e5ca9`](https://github.com/tinacms/tinacms/commit/27e5ca9b18a90f13f92425ebb2628b143d6a81be) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Refactor collections UI
+
+## 2.9.3
+
+### Patch Changes
+
+- [#6106](https://github.com/tinacms/tinacms/pull/6106) [`9e8bc37`](https://github.com/tinacms/tinacms/commit/9e8bc37402c8aa4d408c38e00d4402d596b0d896) Thanks [@kulesy](https://github.com/kulesy)! - Re-enable conditional checks for branch preview button
+
+- [#6111](https://github.com/tinacms/tinacms/pull/6111) [`0f265aa`](https://github.com/tinacms/tinacms/commit/0f265aadf918ae6f5b789e298fc2c406a6df0b16) Thanks [@kulesy](https://github.com/kulesy)! - Refactor CreateBranchModal text for clarity and conciseness
+
+- [#6107](https://github.com/tinacms/tinacms/pull/6107) [`32bd9b2`](https://github.com/tinacms/tinacms/commit/32bd9b21b54462be3e83b2d3e4b4237a48758bb1) Thanks [@Pat-Stuart](https://github.com/Pat-Stuart)! - Fix for redundant icons in modals
+
+- [#6082](https://github.com/tinacms/tinacms/pull/6082) [`ce1414c`](https://github.com/tinacms/tinacms/commit/ce1414ce1b82e6755a96c9c12949cd469b43e283) Thanks [@JackDevAU](https://github.com/JackDevAU)! - fix: update rich text editor to take up the full width
+
 ## 2.9.2
 
 ### Patch Changes

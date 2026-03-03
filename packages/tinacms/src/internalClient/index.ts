@@ -20,12 +20,25 @@ import {
 } from '@tinacms/schema-tools';
 import {
   SearchClient,
+  SearchOptions,
+  SearchQueryResponse,
+  IndexableDocument,
+  FuzzySearchOptions,
   optionsToSearchIndexOptions,
   parseSearchIndexResponse,
   queryToSearchIndexQuery,
-} from '@tinacms/search/dist/index-client';
+} from '@tinacms/search/index-client';
+
+interface TinaSearchConfig {
+  stopwordLanguages?: string[];
+  fuzzyEnabled?: boolean;
+  fuzzyOptions?: FuzzySearchOptions;
+}
 import gql from 'graphql-tag';
-import { EDITORIAL_WORKFLOW_STATUS } from '../toolkit/form-builder/editorial-workflow-constants';
+import {
+  EDITORIAL_WORKFLOW_STATUS,
+  EditorialWorkflowErrorDetails,
+} from '../toolkit/form-builder/editorial-workflow-constants';
 import { AsyncData, asyncPoll } from './asyncPoll';
 import { LocalAuthProvider, TinaCloudAuthProvider } from './authProvider';
 import { TinaCloudProject } from './types';
@@ -154,7 +167,9 @@ export class Client {
     const encodedBranch = encodeURIComponent(branchName);
     // When we change our branch, we add the 'x-branch' cookie. This is used when you change branches and want to use content from the new branch.
     // This is then used in the TinaClient to fetch the correct content from the correct branch. Instead of defaulting to the 'main' branch which is generated at build time.
-    document.cookie = `x-branch=${encodedBranch}; path=/; max-age=3600`;
+    if (typeof document !== 'undefined') {
+      document.cookie = `x-branch=${encodedBranch}; path=/; max-age=3600`;
+    }
     this.branch = encodedBranch;
     this.assetsApiUrl =
       this.options.tinaioConfig?.assetsApiUrlOverride ||
@@ -631,9 +646,16 @@ mutation addPendingDocumentMutation(
 
       if (!res.ok) {
         console.error('There was an error starting editorial workflow.');
-        throw new Error(
+        const error = new Error(
           responseBody?.message || 'Failed to start editorial workflow'
-        );
+        ) as EditorialWorkflowErrorDetails;
+        if (responseBody?.errorCode) {
+          error.errorCode = responseBody.errorCode;
+        }
+        if (responseBody?.conflictingBranch) {
+          error.conflictingBranch = responseBody.conflictingBranch;
+        }
+        throw error;
       }
 
       const requestId = responseBody.requestId;
@@ -735,64 +757,94 @@ export class LocalClient extends Client {
 }
 
 export class TinaCMSSearchClient implements SearchClient {
-  constructor(
-    private client: Client,
-    private tinaSearchConfig?: { stopwordLanguages?: string[] }
-  ) {}
-  async query(
+  protected readonly client: Client;
+  protected readonly fuzzyEnabled: boolean;
+  protected readonly stopwordLanguages?: string[];
+  protected readonly defaultFuzzyOptions?: FuzzySearchOptions;
+
+  constructor(client: Client, tinaSearchConfig?: TinaSearchConfig) {
+    this.client = client;
+    this.fuzzyEnabled = tinaSearchConfig?.fuzzyEnabled ?? true;
+    this.stopwordLanguages = tinaSearchConfig?.stopwordLanguages;
+    this.defaultFuzzyOptions = tinaSearchConfig?.fuzzyOptions;
+  }
+
+  protected getSearchBaseUrl(useFuzzy: boolean): string {
+    const version = useFuzzy ? 'v2' : '';
+    const searchPath = version ? `${version}/searchIndex` : 'searchIndex';
+
+    return `${this.client.contentApiBase}/${searchPath}/${
+      this.client.clientId
+    }/${this.client.getBranch()}`;
+  }
+
+  protected buildSearchUrl(
     query: string,
-    options?: {
-      limit?: number;
-      cursor?: string;
+    options?: SearchOptions,
+    useFuzzy?: boolean
+  ): string {
+    const baseUrl = this.getSearchBaseUrl(useFuzzy);
+
+    if (useFuzzy) {
+      const params = new URLSearchParams();
+      params.set('query', query);
+
+      if (options?.collection) {
+        params.set('collection', options.collection);
+      }
+      if (options?.limit) {
+        params.set('limit', options.limit.toString());
+      }
+      if (options?.cursor) {
+        params.set('cursor', options.cursor);
+      }
+
+      return `${baseUrl}?${params.toString()}`;
     }
-  ): Promise<{
-    results: any[];
-    nextCursor: string | null;
-    total: number;
-    prevCursor: string | null;
-  }> {
+
+    const queryWithCollection = options?.collection
+      ? `${query} AND _collection:${options.collection}`
+      : query;
     const q = queryToSearchIndexQuery(
-      query,
-      this.tinaSearchConfig?.stopwordLanguages
+      queryWithCollection,
+      this.stopwordLanguages
     );
     const opt = optionsToSearchIndexOptions(options);
     const optionsParam = opt['PAGE'] ? `&options=${JSON.stringify(opt)}` : '';
-    const res = await this.client.authProvider.fetchWithToken(
-      `${this.client.contentApiBase}/searchIndex/${
-        this.client.clientId
-      }/${this.client.getBranch()}?q=${JSON.stringify(q)}${optionsParam}`
-    );
+
+    return `${baseUrl}?q=${JSON.stringify(q)}${optionsParam}`;
+  }
+
+  async query(
+    query: string,
+    options?: SearchOptions
+  ): Promise<SearchQueryResponse> {
+    const useFuzzy =
+      options?.fuzzy !== undefined ? options.fuzzy : this.fuzzyEnabled;
+
+    const url = this.buildSearchUrl(query, options, useFuzzy);
+    const res = await this.client.authProvider.fetchWithToken(url);
     return parseSearchIndexResponse(await res.json(), options);
   }
 
-  async del(ids: string[]): Promise<any> {
+  async del(ids: string[]): Promise<void> {
+    const baseUrl = this.getSearchBaseUrl(this.fuzzyEnabled);
     const res = await this.client.authProvider.fetchWithToken(
-      `${this.client.contentApiBase}/searchIndex/${
-        this.client.clientId
-      }/${this.client.getBranch()}?ids=${ids.join(',')}`,
-      {
-        method: 'DELETE',
-      }
+      `${baseUrl}?ids=${ids.join(',')}`,
+      { method: 'DELETE' }
     );
     if (res.status !== 200) {
       throw new Error('Failed to update search index');
     }
   }
 
-  async put(docs: any[]): Promise<any> {
-    // TODO should only be called if search is enabled and supportsClientSideIndexing is true
-    const res = await this.client.authProvider.fetchWithToken(
-      `${this.client.contentApiBase}/searchIndex/${
-        this.client.clientId
-      }/${this.client.getBranch()}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ docs }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+  async put(docs: IndexableDocument[]): Promise<void> {
+    const baseUrl = this.getSearchBaseUrl(this.fuzzyEnabled);
+    const res = await this.client.authProvider.fetchWithToken(baseUrl, {
+      method: 'POST',
+      body: JSON.stringify({ docs }),
+      headers: { 'Content-Type': 'application/json' },
+    });
     if (res.status !== 200) {
       throw new Error('Failed to update search index');
     }
@@ -801,42 +853,91 @@ export class TinaCMSSearchClient implements SearchClient {
   supportsClientSideIndexing(): boolean {
     return true;
   }
+
+  getDefaultLimit(): number {
+    return 15;
+  }
 }
 
 export class LocalSearchClient implements SearchClient {
-  constructor(private client: Client) {}
-  async query(
+  protected readonly client: Client;
+  protected readonly fuzzyEnabled: boolean;
+  protected readonly defaultFuzzyOptions?: FuzzySearchOptions;
+
+  constructor(
+    client: Client,
+    tinaSearchConfig?: Omit<TinaSearchConfig, 'stopwordLanguages'>
+  ) {
+    this.client = client;
+    this.fuzzyEnabled = tinaSearchConfig?.fuzzyEnabled ?? true;
+    this.defaultFuzzyOptions = tinaSearchConfig?.fuzzyOptions;
+  }
+
+  protected getSearchBaseUrl(useFuzzy: boolean): string {
+    return useFuzzy
+      ? 'http://localhost:4001/v2/searchIndex'
+      : 'http://localhost:4001/searchIndex';
+  }
+
+  protected buildSearchUrl(
     query: string,
-    options?: {
-      limit?: number;
-      cursor?: string;
+    options?: SearchOptions,
+    useFuzzy?: boolean
+  ): string {
+    const baseUrl = this.getSearchBaseUrl(!!useFuzzy);
+
+    if (useFuzzy) {
+      const params = new URLSearchParams();
+      params.set('query', query);
+
+      if (options?.collection) {
+        params.set('collection', options.collection);
+      }
+      if (options?.limit) {
+        params.set('limit', options.limit.toString());
+      }
+      if (options?.cursor) {
+        params.set('cursor', options.cursor);
+      }
+
+      return `${baseUrl}?${params.toString()}`;
     }
-  ): Promise<{
-    results: any[];
-    nextCursor: string | null;
-    total: number;
-    prevCursor: string | null;
-  }> {
-    const q = queryToSearchIndexQuery(query);
+
+    const queryWithCollection = options?.collection
+      ? `${query} AND _collection:${options.collection}`
+      : query;
+    const q = queryToSearchIndexQuery(queryWithCollection);
     const opt = optionsToSearchIndexOptions(options);
     const optionsParam = opt['PAGE'] ? `&options=${JSON.stringify(opt)}` : '';
-    const res = await this.client.authProvider.fetchWithToken(
-      `http://localhost:4001/searchIndex?q=${JSON.stringify(q)}${optionsParam}`
-    );
+
+    return `${baseUrl}?q=${JSON.stringify(q)}${optionsParam}`;
+  }
+
+  async query(
+    query: string,
+    options?: SearchOptions
+  ): Promise<SearchQueryResponse> {
+    const useFuzzy =
+      options?.fuzzy !== undefined ? options.fuzzy : this.fuzzyEnabled;
+    const url = this.buildSearchUrl(query, options, useFuzzy);
+    const res = await this.client.authProvider.fetchWithToken(url);
     return parseSearchIndexResponse(await res.json(), options);
   }
 
-  del(ids: string[]): Promise<any> {
-    return Promise.resolve(undefined);
+  del(_ids: string[]): Promise<void> {
+    return Promise.resolve();
   }
 
-  put(docs: any[]): Promise<any> {
-    return Promise.resolve(undefined);
+  put(_docs: IndexableDocument[]): Promise<void> {
+    return Promise.resolve();
   }
 
   supportsClientSideIndexing(): boolean {
-    // chokidar will keep index updated
     return false;
+  }
+
+  getDefaultLimit(): number {
+    return 15;
   }
 }
 

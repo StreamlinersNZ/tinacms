@@ -10,7 +10,7 @@ import type { CollectionResponse, DocumentForm } from './types';
 import {
   SearchClient,
   processDocumentForIndexing,
-} from '@tinacms/search/dist/index-client';
+} from '@tinacms/search/index-client';
 
 export const CREATE_DOCUMENT_GQL = `#graphql
 mutation($collection: String!, $relativePath: String!, $params: DocumentMutation!) {
@@ -103,7 +103,7 @@ export class TinaAdminApi {
         newRelativePath
       );
       const processed = processDocumentForIndexing(
-        doc['_values'],
+        doc['_values'] as Record<string, unknown>,
         `${collection.path}/${newRelativePath}`,
         collection,
         this.maxSearchIndexFieldLength
@@ -365,7 +365,7 @@ export class TinaAdminApi {
         relativePath
       );
       const processed = processDocumentForIndexing(
-        doc['_values'],
+        doc['_values'] as Record<string, unknown>,
         `${collection.path}/${relativePath}`,
         collection,
         this.maxSearchIndexFieldLength
@@ -395,7 +395,7 @@ export class TinaAdminApi {
         relativePath
       );
       const processed = processDocumentForIndexing(
-        doc['_values'],
+        doc['_values'] as Record<string, unknown>,
         `${collection.path}/${relativePath}`,
         collection,
         this.maxSearchIndexFieldLength
