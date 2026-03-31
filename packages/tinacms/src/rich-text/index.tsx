@@ -38,9 +38,9 @@ type BaseComponents = {
   maybe_mdx?: { children: JSX.Element };
   html?: { value: string };
   html_inline?: { value: string };
-  // th?: { children: JSX.Element }
-  // td?: { children: JSX.Element }
-  // tr?: { children: JSX.Element }
+  th?: { children: JSX.Element }
+  td?: { children: JSX.Element }
+  tr?: { children: JSX.Element }
   table?: {
     align?: ('left' | 'right' | 'center')[];
     tableRows: { tableCells: { value: TinaMarkdownContent }[] }[];
@@ -521,7 +521,7 @@ const Node = ({ components, child }) => {
         ));
       const align = child.props?.align || [];
       return (
-        <TableComponent>
+        <TableComponent {...props}>
           <tbody>
             {rows.map((row, i) => {
               return (

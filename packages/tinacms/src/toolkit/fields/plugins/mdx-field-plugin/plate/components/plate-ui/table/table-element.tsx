@@ -68,6 +68,7 @@ export const TableElement = withHOC(
       marginLeft,
       props: tableProps,
     } = useTableElement();
+    const element = useElement<TTableElement & { className?: string }>();
 
     const content = (
       <PlateElement
@@ -83,6 +84,7 @@ export const TableElement = withHOC(
         <div className='group/table relative w-fit'>
           <table
             className={cn(
+              element.className,
               'mr-0 table h-px border-collapse border border-gray-200 not-tina-prose my-2',
               isSelectingCell && 'selection:bg-transparent'
             )}
