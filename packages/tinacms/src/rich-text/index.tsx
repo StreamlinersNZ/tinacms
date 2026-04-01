@@ -17,6 +17,8 @@ type BaseComponents = {
   bold?: { children: JSX.Element };
   strikethrough?: { children: JSX.Element };
   underline?: { children: JSX.Element };
+  subscript?: { children: JSX.Element };
+  superscript?: { children: JSX.Element };
   code?: { children: JSX.Element };
   text?: { children: string };
   ul?: { children: JSX.Element };
@@ -36,15 +38,17 @@ type BaseComponents = {
   maybe_mdx?: { children: JSX.Element };
   html?: { value: string };
   html_inline?: { value: string };
-  // th?: { children: JSX.Element }
-  // td?: { children: JSX.Element }
-  // tr?: { children: JSX.Element }
+  th?: { children: JSX.Element }
+  td?: { children: JSX.Element }
+  tr?: { children: JSX.Element }
   table?: {
     align?: ('left' | 'right' | 'center')[];
     tableRows: { tableCells: { value: TinaMarkdownContent }[] }[];
   };
   // Provide a fallback when a JSX component wasn't provided
   component_missing?: { name: string };
+  comment?: { children: JSX.Element };
+  suggestion?: { children: JSX.Element };
 };
 
 type BaseComponentSignature = {
@@ -125,10 +129,14 @@ const Leaf = (props: {
   italic?: boolean;
   underline?: boolean;
   strikethrough?: boolean;
+  subscript?: boolean;
+  superscript?: boolean;
   code?: boolean;
+  comment?: boolean;
+  suggestion?: boolean;
   components: Pick<
     BaseComponentSignature,
-    'bold' | 'italic' | 'underline' | 'strikethrough' | 'code' | 'text'
+    'bold' | 'italic' | 'underline' | 'strikethrough' | 'code' | 'text' | 'subscript' | 'superscript' | 'comment' | 'suggestion'
   >;
 }) => {
   if (props.bold) {
@@ -195,6 +203,38 @@ const Leaf = (props: {
       </s>
     );
   }
+   if (props.subscript) {
+    const { subscript, ...rest } = props;
+    if (props.components.subscript) {
+      const Component = props.components.subscript;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
+    return (
+      <sub>
+        <Leaf {...rest} />
+      </sub>
+    );
+  }
+  if (props.superscript) {
+    const { superscript, ...rest } = props;
+    if (props.components.superscript) {
+      const Component = props.components.superscript;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
+    return (
+      <sup>
+        <Leaf {...rest} />
+      </sup>
+    );
+  }
   if (props.code) {
     const { code, ...rest } = props;
     if (props.components.code) {
@@ -214,6 +254,28 @@ const Leaf = (props: {
   if (props.components.text) {
     const Component = props.components.text;
     return <Component>{props.text}</Component>;
+  }
+  if (props.comment) {
+    const { comment, ...rest } = props;
+    if (props.components.comment) {
+      const Component = props.components.comment;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
+  }
+  if (props.suggestion) {
+    const { suggestion, ...rest } = props;
+    if (props.components.suggestion) {
+      const Component = props.components.suggestion;
+      return (
+        <Component>
+          <Leaf {...rest} />
+        </Component>
+      );
+    }
   }
   return <>{props.text}</>;
 };
@@ -445,6 +507,7 @@ const Node = ({ components, child }) => {
           <table style={{ border: '1px solid #EDECF3' }} {...props} />
         ));
       const TrComponent = components['tr'] || ((props) => <tr {...props} />);
+      const ThComponent = components['th'] || ((props) => <th>{props.children}</th>);
       const TdComponent =
         components['td'] ||
         ((props) => (
@@ -459,22 +522,24 @@ const Node = ({ components, child }) => {
         ));
       const align = child.props?.align || [];
       return (
-        <TableComponent>
+        <TableComponent className={child.className}>
           <tbody>
             {rows.map((row, i) => {
               return (
                 <TrComponent key={i}>
-                  {row.children?.map((cell, i) => {
+                  {row.children?.map((cell, j) => {
+                    const CellComponent = cell.type === 'th' ? ThComponent : TdComponent;
                     return (
-                      <TinaMarkdown
-                        key={i}
-                        components={{
-                          p: (props) => (
-                            <TdComponent align={align[i]} {...props} />
-                          ),
-                        }}
-                        content={cell.children}
-                      />
+                      <CellComponent
+                        key={j}
+                        align={align[j]}
+                        background={cell.background}
+                        border={cell.border}
+                        colSpan={cell.colSpan}
+                        rowSpan={cell.rowSpan}
+                      >
+                        <TinaMarkdown components={components} content={cell.children} />
+                      </CellComponent>
                     );
                   })}
                 </TrComponent>
