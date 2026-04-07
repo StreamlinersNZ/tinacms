@@ -38,9 +38,9 @@ type BaseComponents = {
   maybe_mdx?: { children: JSX.Element };
   html?: { value: string };
   html_inline?: { value: string };
-  th?: { children: JSX.Element }
-  td?: { children: JSX.Element }
-  tr?: { children: JSX.Element }
+  // th?: { children: JSX.Element }
+  // td?: { children: JSX.Element }
+  // tr?: { children: JSX.Element }
   table?: {
     align?: ('left' | 'right' | 'center')[];
     tableRows: { tableCells: { value: TinaMarkdownContent }[] }[];
@@ -507,7 +507,6 @@ const Node = ({ components, child }) => {
           <table style={{ border: '1px solid #EDECF3' }} {...props} />
         ));
       const TrComponent = components['tr'] || ((props) => <tr {...props} />);
-      const ThComponent = components['th'] || ((props) => <th>{props.children}</th>);
       const TdComponent =
         components['td'] ||
         ((props) => (
@@ -522,24 +521,22 @@ const Node = ({ components, child }) => {
         ));
       const align = child.props?.align || [];
       return (
-        <TableComponent className={child.className}>
+        <TableComponent>
           <tbody>
             {rows.map((row, i) => {
               return (
                 <TrComponent key={i}>
-                  {row.children?.map((cell, j) => {
-                    const CellComponent = cell.type === 'th' ? ThComponent : TdComponent;
+                  {row.children?.map((cell, i) => {
                     return (
-                      <CellComponent
-                        key={j}
-                        align={align[j]}
-                        background={cell.background}
-                        border={cell.border}
-                        colSpan={cell.colSpan}
-                        rowSpan={cell.rowSpan}
-                      >
-                        <TinaMarkdown components={components} content={cell.children} />
-                      </CellComponent>
+                      <TinaMarkdown
+                        key={i}
+                        components={{
+                          p: (props) => (
+                            <TdComponent align={align[i]} {...props} />
+                          ),
+                        }}
+                        content={cell.children}
+                      />
                     );
                   })}
                 </TrComponent>

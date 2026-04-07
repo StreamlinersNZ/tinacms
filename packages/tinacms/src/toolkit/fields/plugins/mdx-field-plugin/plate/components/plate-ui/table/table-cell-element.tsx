@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { TTableCellElement } from '@udecode/plate-table';
+import type { BorderStyle, TTableCellElement } from '@udecode/plate-table';
 
 import { cn, withProps, withRef } from '@udecode/cn';
 import { useBlockSelected } from '@udecode/plate-selection/react';
@@ -51,15 +51,27 @@ export const TableCellElement = withRef<
     },
   };
 
+  const borderStyleToCss = (border?: BorderStyle) =>
+    border && border.size
+      ? `${border.size}px ${border.style || 'solid'} ${border.color || '#cbd5e1'}`
+      : undefined;
+
+  // When no parsed HTML border exists, build per-side borders from the plugin state.
+  const pluginBorderStyles = !element.border
+    ? {
+        borderTop: borderStyleToCss(borders.top) ?? '1px solid #e5e7eb',
+        borderRight: borderStyleToCss(borders.right) ?? '1px solid #e5e7eb',
+        borderBottom: borderStyleToCss(borders.bottom) ?? '1px solid #e5e7eb',
+        borderLeft: borderStyleToCss(borders.left) ?? '1px solid #e5e7eb',
+      }
+    : {};
+
   return (
     <PlateElement
       ref={ref}
       as={isHeader ? 'th' : 'td'}
       className={cn(
         'relative h-full overflow-visible p-0',
-        // Use the default editor border only when no parsed border is present.
-        // Parsed borders are applied via inline style so the source styling is preserved.
-        !element.border && 'border border-gray-200',
         !element.background && 'bg-background',
         cn(
           isHeader && 'text-left [&_>_*]:m-0',
@@ -73,6 +85,7 @@ export const TableCellElement = withRef<
         {
           ...(element.background ? { backgroundColor: element.background } : {}),
           ...(element.border ? { border: element.border } : {}),
+          ...pluginBorderStyles,
           maxWidth: width || 240,
           minWidth: width || 120,
           ...style,

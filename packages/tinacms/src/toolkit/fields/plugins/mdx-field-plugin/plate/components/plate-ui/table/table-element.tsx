@@ -47,11 +47,17 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuPortal,
   DropdownMenuTrigger,
 } from '../dropdown-menu';
 import { Popover, PopoverContent } from '../popover';
 import { Toolbar, ToolbarButton, ToolbarGroup } from '../toolbar';
+
+import {
+  ColorDropdownMenuItems,
+  DEFAULT_COLORS,
+} from './color-dropdown-menu-items';
 
 export const TableElement = withHOC(
   TableProvider,
@@ -348,13 +354,14 @@ function ColorDropdownMenu({ children, tooltip }: ColorDropdownMenuProps) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align='start'>
-        {/* <DropdownMenuGroup label="Colors">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Colors</DropdownMenuLabel>
           <ColorDropdownMenuItems
-            className="px-2"
+            className='px-2'
             colors={DEFAULT_COLORS}
             updateColor={onUpdateColor}
           />
-        </DropdownMenuGroup> */}
+        </DropdownMenuGroup>
         <DropdownMenuGroup>
           <DropdownMenuItem className='p-2' onClick={onClearColor}>
             <EraserIcon />
