@@ -38,9 +38,9 @@ type BaseComponents = {
   maybe_mdx?: { children: JSX.Element };
   html?: { value: string };
   html_inline?: { value: string };
-  th?: { children: JSX.Element }
-  td?: { children: JSX.Element }
-  tr?: { children: JSX.Element }
+  // th?: { children: JSX.Element }
+  // td?: { children: JSX.Element }
+  // tr?: { children: JSX.Element }
   table?: {
     align?: ('left' | 'right' | 'center')[];
     tableRows: { tableCells: { value: TinaMarkdownContent }[] }[];
@@ -499,58 +499,53 @@ const Node = ({ components, child }) => {
           return <span>{`No component provided for ${child.name}`}</span>;
         }
       }
-      case 'table': {
-        const tableRows = child.children || [];
-        const SlateTableComponent =
-          components['table'] ||
-          ((props) => (
-            <table style={{ border: '1px solid #EDECF3' }} {...props} />
-          ));
-        const SlateTrComponent =
-          components['tr'] || ((props) => <tr {...props} />);
-        const SlateThComponent =
-          components['th'] || ((props) => <th {...props} />);
-        const SlateTdComponent =
-          components['td'] ||
-          ((props) => (
-            <td
-              style={{
-                border: '1px solid #EDECF3',
-                padding: '0.25rem',
-              }}
-              {...props}
-            />
-          ));
-        return (
-          <SlateTableComponent {...props}>
-            <tbody>
-              {tableRows.map((row, rowIndex) => {
-                return (
-                  <SlateTrComponent key={rowIndex}>
-                    {row.children?.map((cell, cellIndex) => {
-                      const {
-                        children: cellChildren,
-                        type: cellType,
-                        ...cellProps
-                      } = cell;
-                      const CellComp =
-                        cellType === 'th' ? SlateThComponent : SlateTdComponent;
-                      return (
-                        <CellComp key={cellIndex} {...cellProps}>
-                          <TinaMarkdown
-                            components={components}
-                            content={cellChildren}
-                          />
-                        </CellComp>
-                      );
-                    })}
-                  </SlateTrComponent>
-                );
-              })}
-            </tbody>
-          </SlateTableComponent>
-        );
-      }
+    case 'table':
+      const rows = child.children || [];
+      const TableComponent =
+        components['table'] ||
+        ((props) => (
+          <table style={{ border: '1px solid #EDECF3' }} {...props} />
+        ));
+      const TrComponent = components['tr'] || ((props) => <tr {...props} />);
+      const TdComponent =
+        components['td'] ||
+        ((props) => (
+          <td
+            style={{
+              textAlign: props?.align || 'auto',
+              border: '1px solid #EDECF3',
+              padding: '0.25rem',
+            }}
+            {...props}
+          />
+        ));
+      const align = child.props?.align || [];
+      return (
+        <TableComponent>
+          <tbody>
+            {rows.map((row, i) => {
+              return (
+                <TrComponent key={i}>
+                  {row.children?.map((cell, i) => {
+                    return (
+                      <TinaMarkdown
+                        key={i}
+                        components={{
+                          p: (props) => (
+                            <TdComponent align={align[i]} {...props} />
+                          ),
+                        }}
+                        content={cell.children}
+                      />
+                    );
+                  })}
+                </TrComponent>
+              );
+            })}
+          </tbody>
+        </TableComponent>
+      );
+
     case 'maybe_mdx':
       /**
        * We don't want to render this as it's only displayed while editing an mdx node and should
