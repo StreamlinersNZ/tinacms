@@ -38,9 +38,9 @@ type BaseComponents = {
   maybe_mdx?: { children: JSX.Element };
   html?: { value: string };
   html_inline?: { value: string };
-  h?: { children: JSX.Element }
-  d?: { children: JSX.Element }
-  r?: { children: JSX.Element }
+  th?: { children: JSX.Element }
+  td?: { children: JSX.Element }
+  tr?: { children: JSX.Element }
   table?: {
     align?: ('left' | 'right' | 'center')[];
     tableRows: { tableCells: { value: TinaMarkdownContent }[] }[];
@@ -551,7 +551,6 @@ const Node = ({ components, child }) => {
           </SlateTableComponent>
         );
       }
-  
     case 'maybe_mdx':
       /**
        * We don't want to render this as it's only displayed while editing an mdx node and should
