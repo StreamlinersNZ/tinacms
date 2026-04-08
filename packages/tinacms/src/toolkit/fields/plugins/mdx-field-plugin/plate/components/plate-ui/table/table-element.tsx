@@ -57,7 +57,7 @@ import { Toolbar, ToolbarButton, ToolbarGroup } from '../toolbar';
 import {
   ColorDropdownMenuItems,
   DEFAULT_COLORS,
-} from './color-dropdown-menu-items';
+} from '../../../../../streamliners/color-picker/color-dropdown-menu-items';
 
 export const TableElement = withHOC(
   TableProvider,

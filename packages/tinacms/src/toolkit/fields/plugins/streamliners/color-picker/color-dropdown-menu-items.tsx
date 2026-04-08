@@ -4,7 +4,7 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 
-import { DropdownMenuItem } from '../dropdown-menu';
+import { DropdownMenuItem } from '../../mdx-field-plugin/plate/components/plate-ui/dropdown-menu';
 
 type TableCellBackgroundColor = {
   name: string;
@@ -33,26 +33,25 @@ const ColorDropdownMenuItems = ({
   updateColor,
 }: ColorDropdownMenuItemsProps): React.JSX.Element => {
   return (
-    <>
+    <div className='grid grid-cols-3 gap-1'>
       {colors.map((item) => {
         return (
           <DropdownMenuItem
             key={item.value}
-            className={cn('gap-2', className)}
+            className={cn('p-1', className)}
             onClick={() => {
               updateColor(item.value);
             }}
           >
             <span
-              aria-hidden
-              className='size-4 shrink-0 rounded border border-gray-300'
+              title={item.name}
+              className='size-6 shrink-0 rounded-full border border-gray-300'
               style={{ backgroundColor: item.value }}
             />
-            <span>{item.name}</span>
           </DropdownMenuItem>
         );
       })}
-    </>
+    </div>
   );
 };
 
