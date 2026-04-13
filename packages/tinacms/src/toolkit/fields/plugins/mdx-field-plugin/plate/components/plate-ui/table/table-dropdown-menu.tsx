@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
 
 import { cn } from '@utils/cn';
+import type { TTableElement } from '@udecode/plate-table';
 import { TablePlugin, useTableMergeState } from '@udecode/plate-table/react';
 import { useEditorPlugin, useEditorSelector } from '@udecode/plate/react';
 import {
@@ -32,6 +33,10 @@ import {
   useOpenState,
 } from '../dropdown-menu';
 import { ToolbarButton } from '../toolbar';
+import {
+  TableVariantSelector,
+  type TableVariant,
+} from './streamliners/table-type-selector/table-type-selector';
 
 export function TableDropdownMenu(props: DropdownMenuProps) {
   const tableSelected = useEditorSelector(
@@ -201,6 +206,9 @@ export function TableDropdownMenu(props: DropdownMenuProps) {
 export function TablePicker() {
   const { editor, tf } = useEditorPlugin(TablePlugin);
 
+  const [selectedVariant, setSelectedVariant] =
+    useState<TableVariant>('table--basic');
+
   const [tablePicker, setTablePicker] = useState({
     grid: Array.from({ length: 8 }, () => Array.from({ length: 8 }).fill(0)),
     size: { colCount: 0, rowCount: 0 },
@@ -223,14 +231,23 @@ export function TablePicker() {
   };
 
   return (
-    <div
-      className='m-0 flex! flex-col p-0'
-      onClick={() => {
-        tf.insert.table(tablePicker.size, { select: true });
-        editor.tf.focus();
-      }}
-    >
-      <div className='grid size-[130px] grid-cols-8 gap-0.5 p-1'>
+    <div className='m-0 flex! flex-col p-0'>
+      <TableVariantSelector
+        selectedVariant={selectedVariant}
+        onVariantChange={setSelectedVariant}
+      />
+
+      <div
+        className='grid size-[130px] grid-cols-8 gap-0.5 p-1'
+        onClick={() => {
+          tf.insert.table(tablePicker.size, { select: true });
+          editor.tf.setNodes<TTableElement & { className: string }>(
+            { className: selectedVariant },
+            { match: (n) => n.type === TablePlugin.key, mode: 'highest' }
+          );
+          editor.tf.focus();
+        }}
+      >
         {tablePicker.grid.map((rows, rowIndex) =>
           rows.map((value, columIndex) => {
             return (
@@ -249,7 +266,7 @@ export function TablePicker() {
         )}
       </div>
 
-      <div className='text-center text-xs text-current'>
+      <div className='pb-1 text-center text-xs text-current'>
         {tablePicker.size.rowCount} x {tablePicker.size.colCount}
       </div>
     </div>

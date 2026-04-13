@@ -4,7 +4,7 @@ import React from 'react';
 
 import { cn } from '@udecode/cn';
 
-import { DropdownMenuItem } from '../../mdx-field-plugin/plate/components/plate-ui/dropdown-menu';
+import { DropdownMenuItem } from '../../../dropdown-menu';
 
 type TableCellBackgroundColor = {
   name: string;
