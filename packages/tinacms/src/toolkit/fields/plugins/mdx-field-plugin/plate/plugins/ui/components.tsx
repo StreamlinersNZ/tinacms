@@ -46,6 +46,7 @@ import {
   TableCellHeaderElement,
 } from '../../components/plate-ui/table/table-cell-element';
 import { TableElement } from '../../components/plate-ui/table/table-element';
+import { StreamlinersTableCellElement } from '../../components/plate-ui/table/streamliners/table/table-cell-element';
 import { StreamlinersTableElement } from '../../components/plate-ui/table/streamliners/table/table-element';
 import { TableRowElement } from '../../components/plate-ui/table/table-row-element';
 import { classNames } from './helpers';
@@ -220,7 +221,8 @@ export const Components = () => {
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
     [HorizontalRulePlugin.key]: HrElement,
     [TableCellHeaderPlugin.key]: TableCellHeaderElement,
-    [TableCellPlugin.key]: TableCellElement,
+    [TableCellPlugin.key]: StreamlinersTableCellElement,
+    //[TableCellPlugin.key]: TableCellElement,
     [TablePlugin.key]: StreamlinersTableElement,
     //[TablePlugin.key]: TableElement,
     [TableRowPlugin.key]: TableRowElement,

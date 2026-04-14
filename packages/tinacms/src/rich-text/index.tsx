@@ -545,7 +545,6 @@ const Node = ({ components, child }) => {
           </tbody>
         </TableComponent>
       );
-
     case 'maybe_mdx':
       /**
        * We don't want to render this as it's only displayed while editing an mdx node and should
