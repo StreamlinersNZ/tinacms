@@ -107,6 +107,6 @@ export const StreamlinersTableCellElement = withRef<
   );
 });
 
-export const TableCellHeaderElement = withProps(StreamlinersTableCellElement, {
+export const StreamlinersTableCellHeaderElement = withProps(StreamlinersTableCellElement, {
   isHeader: true,
 });

@@ -41,12 +41,11 @@ import { LinkElement } from '../../components/plate-ui/link-element';
 import { ListElement } from '../../components/plate-ui/list-element';
 import { ParagraphElement } from '../../components/plate-ui/paragraph-element';
 import { SlashInputElement } from '../../components/plate-ui/slash-input-element';
-import {
-  TableCellElement,
-  TableCellHeaderElement,
-} from '../../components/plate-ui/table/table-cell-element';
 import { TableElement } from '../../components/plate-ui/table/table-element';
-import { StreamlinersTableCellElement } from '../../components/plate-ui/table/streamliners/table/table-cell-element';
+import {
+  StreamlinersTableCellElement,
+  StreamlinersTableCellHeaderElement,
+} from '../../components/plate-ui/table/streamliners/table/table-cell-element';
 import { StreamlinersTableElement } from '../../components/plate-ui/table/streamliners/table/table-element';
 import { TableRowElement } from '../../components/plate-ui/table/table-row-element';
 import { classNames } from './helpers';
@@ -220,7 +219,7 @@ export const Components = () => {
     [ItalicPlugin.key]: withProps(PlateLeaf, { as: 'em' }),
     [BoldPlugin.key]: withProps(PlateLeaf, { as: 'strong' }),
     [HorizontalRulePlugin.key]: HrElement,
-    [TableCellHeaderPlugin.key]: TableCellHeaderElement,
+    [TableCellHeaderPlugin.key]: StreamlinersTableCellHeaderElement,
     [TableCellPlugin.key]: StreamlinersTableCellElement,
     //[TableCellPlugin.key]: TableCellElement,
     [TablePlugin.key]: StreamlinersTableElement,
