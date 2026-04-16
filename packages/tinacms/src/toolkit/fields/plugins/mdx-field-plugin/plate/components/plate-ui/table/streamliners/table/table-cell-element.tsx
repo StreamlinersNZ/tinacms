@@ -106,7 +106,3 @@ export const StreamlinersTableCellElement = withRef<
     </PlateElement>
   );
 });
-
-export const StreamlinersTableCellHeaderElement = withProps(StreamlinersTableCellElement, {
-  isHeader: true,
-});
