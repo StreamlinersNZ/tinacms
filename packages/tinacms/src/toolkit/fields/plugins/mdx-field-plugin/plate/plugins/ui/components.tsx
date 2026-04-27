@@ -221,9 +221,7 @@ export const Components = () => {
     [HorizontalRulePlugin.key]: HrElement,
     [TableCellHeaderPlugin.key]: TableCellHeaderElement,
     [TableCellPlugin.key]: StreamlinersTableCellElement,
-    //[TableCellPlugin.key]: TableCellElement,
     [TablePlugin.key]: StreamlinersTableElement,
-    //[TablePlugin.key]: TableElement,
     [TableRowPlugin.key]: TableRowElement,
   };
 };
